@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.expo/
+.turbo/
+coverage/
+*.tsbuildinfo
+*.log
+.env
+.env.local
+.DS_Store
+e2e/test-results/
+e2e/playwright-report/
+e2e/videos/
+e2e/evidence/
+apps/*/node_modules/

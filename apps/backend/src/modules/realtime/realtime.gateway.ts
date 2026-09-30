@@ -1,0 +1,168 @@
+import { Inject, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { createAdapter } from '@socket.io/redis-adapter';
+import type Redis from 'ioredis';
+import { Repository } from 'typeorm';
+import { Server, Socket } from 'socket.io';
+import { ListMember } from '../../database/entities';
+import { JwtPayload } from '../../common/types';
+import { REDIS_CLIENT, REDIS_SUBSCRIBER } from '../../redis/redis.constants';
+import { listRoom, RT, userRoom } from './realtime.events';
+
+interface AuthedSocket extends Socket {
+  userId?: string;
+  email?: string;
+}
+
+/**
+ * Gateway de tiempo real.
+ *
+ * Cada cliente entra a la sala `user:<id>` (notificaciones personales) y a una
+ * sala `list:<id>` por cada lista de la que forma parte. Cuando alguien marca un
+ * producto como comprado, el resto de integrantes lo ve al instante.
+ *
+ * El adaptador de Redis permite escalar el backend a varias replicas sin perder
+ * eventos entre ellas.
+ */
+@WebSocketGateway({
+  cors: { origin: true, credentials: true },
+  transports: ['websocket', 'polling'],
+})
+export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  private readonly logger = new Logger(RealtimeGateway.name);
+
+  @WebSocketServer()
+  server: Server;
+
+  constructor(
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+    @InjectRepository(ListMember) private readonly members: Repository<ListMember>,
+    @Inject(REDIS_CLIENT) private readonly pub: Redis,
+    @Inject(REDIS_SUBSCRIBER) private readonly sub: Redis,
+  ) {}
+
+  afterInit(server: Server): void {
+    try {
+      server.adapter(createAdapter(this.pub.duplicate(), this.sub.duplicate()));
+      this.logger.log('Socket.IO enlazado al adaptador de Redis');
+    } catch (error) {
+      this.logger.warn(`No se pudo enlazar el adaptador de Redis: ${(error as Error).message}`);
+    }
+
+    // La autenticacion se resuelve ANTES de aceptar la conexion, para que el
+    // cliente reciba un `connect_error` claro en vez de una desconexion seca.
+    server.use(async (socket, next) => {
+      const token = this.extractToken(socket as Socket);
+      if (!token) return next(new Error('Falta el token de acceso'));
+      try {
+        const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
+          secret: this.config.get<string>('jwt.accessSecret'),
+        });
+        const authed = socket as AuthedSocket;
+        authed.userId = payload.sub;
+        authed.email = payload.email;
+        return next();
+      } catch {
+        return next(new Error('Token invalido o expirado'));
+      }
+    });
+  }
+
+  private extractToken(client: Socket): string | undefined {
+    const auth = client.handshake.auth as Record<string, string> | undefined;
+    if (auth?.token) return String(auth.token).replace(/^Bearer\s+/i, '');
+    const header = client.handshake.headers?.authorization;
+    if (header) return String(header).replace(/^Bearer\s+/i, '');
+    const query = client.handshake.query?.token;
+    if (query) return String(query);
+    return undefined;
+  }
+
+  async handleConnection(client: AuthedSocket): Promise<void> {
+    // El middleware de `afterInit` ya valido el token y dejo el userId puesto
+    if (!client.userId) {
+      client.disconnect(true);
+      return;
+    }
+
+    await client.join(userRoom(client.userId));
+
+    const memberships = await this.members.find({
+      where: { userId: client.userId },
+      select: { id: true, listId: true },
+    });
+    await Promise.all(memberships.map((m) => client.join(listRoom(m.listId))));
+
+    client.emit('connected', {
+      userId: client.userId,
+      lists: memberships.map((m) => m.listId),
+      serverTime: new Date().toISOString(),
+    });
+    this.logger.debug(`Conectado ${client.email} (${memberships.length} listas)`);
+  }
+
+  handleDisconnect(client: AuthedSocket): void {
+    if (client.userId) this.logger.debug(`Desconectado ${client.email ?? client.userId}`);
+  }
+
+  @SubscribeMessage(RT.JOIN)
+  async onJoin(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: { listId: string },
+  ): Promise<{ ok: boolean; listId?: string; error?: string }> {
+    if (!client.userId || !body?.listId) return { ok: false, error: 'Peticion invalida' };
+    const member = await this.members.findOne({
+      where: { listId: body.listId, userId: client.userId },
+    });
+    if (!member) return { ok: false, error: 'No perteneces a esta lista' };
+    await client.join(listRoom(body.listId));
+    client.to(listRoom(body.listId)).emit(RT.PRESENCE, {
+      listId: body.listId,
+      userId: client.userId,
+      status: 'online',
+    });
+    return { ok: true, listId: body.listId };
+  }
+
+  @SubscribeMessage(RT.LEAVE)
+  async onLeave(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: { listId: string },
+  ): Promise<{ ok: boolean }> {
+    if (body?.listId) await client.leave(listRoom(body.listId));
+    return { ok: true };
+  }
+
+  // ── API interna usada por los servicios de dominio ──────────────────
+  emitToList(listId: string, event: string, payload: unknown): void {
+    this.server?.to(listRoom(listId)).emit(event, payload);
+  }
+
+  emitToUser(userId: string, event: string, payload: unknown): void {
+    this.server?.to(userRoom(userId)).emit(event, payload);
+  }
+
+  /** Mete a un usuario ya conectado en la sala de una lista recien compartida */
+  async addUserToListRoom(userId: string, listId: string): Promise<void> {
+    const sockets = await this.server?.in(userRoom(userId)).fetchSockets();
+    await Promise.all((sockets ?? []).map((socket) => socket.join(listRoom(listId))));
+  }
+
+  async removeUserFromListRoom(userId: string, listId: string): Promise<void> {
+    const sockets = await this.server?.in(userRoom(userId)).fetchSockets();
+    await Promise.all((sockets ?? []).map((socket) => socket.leave(listRoom(listId))));
+  }
+}

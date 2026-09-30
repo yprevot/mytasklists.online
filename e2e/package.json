@@ -1,0 +1,24 @@
+{
+  "name": "@lista/e2e",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:browsers": "playwright install --with-deps chromium",
+    "test": "playwright test",
+    "test:backend": "playwright test --project=backend-api",
+    "test:frontend": "playwright test --project=frontend",
+    "test:dashboard": "playwright test --project=dashboard",
+    "test:landing": "playwright test --project=landing",
+    "test:mobile": "playwright test --project=mobile-app",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report playwright-report",
+    "evidence": "node utils/list-evidence.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.13.14",
+    "socket.io-client": "^4.8.1",
+    "typescript": "^5.8.2"
+  }
+}

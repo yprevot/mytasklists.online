@@ -1,0 +1,35 @@
+{
+  "name": "lista-de-compras",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de listas de compras compartidas con productos recurrentes y sincronizacion en tiempo real",
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend",
+    "apps/dashboard",
+    "apps/landing",
+    "e2e"
+  ],
+  "scripts": {
+    "up": "docker compose up -d --build",
+    "up:logs": "docker compose up --build",
+    "down": "docker compose down",
+    "down:clean": "docker compose down -v",
+    "logs": "docker compose logs -f",
+    "ps": "docker compose ps",
+    "seed": "docker compose exec backend node dist/database/seeds/seed.js",
+    "test:e2e": "npm run test --workspace e2e",
+    "test:e2e:report": "npm run report --workspace e2e",
+    "mobile": "npm --prefix apps/mobile run start",
+    "mobile:web": "npm --prefix apps/mobile run web",
+    "test:e2e:backend": "npm run test:backend --workspace e2e",
+    "test:e2e:frontend": "npm run test:frontend --workspace e2e",
+    "test:e2e:dashboard": "npm run test:dashboard --workspace e2e",
+    "test:e2e:landing": "npm run test:landing --workspace e2e",
+    "test:e2e:mobile": "npm run test:mobile --workspace e2e",
+    "evidence": "npm run evidence --workspace e2e"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

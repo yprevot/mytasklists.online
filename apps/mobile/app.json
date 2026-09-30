@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "ListaDeCompras",
+    "slug": "listadecompras",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "listadecompras",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#2563eb",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.listadecompras.app",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"],
+        "NSUserTrackingUsageDescription": "Solo usamos identificadores para entregar tus notificaciones."
+      }
+    },
+    "android": {
+      "package": "com.listadecompras.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#2563eb"
+      },
+      "permissions": ["NOTIFICATIONS", "POST_NOTIFICATIONS", "INTERNET"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "color": "#2563eb"
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:8080/api",
+      "socketUrl": "http://localhost:8080",
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}

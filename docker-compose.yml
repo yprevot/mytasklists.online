@@ -1,0 +1,219 @@
+name: listadecompras
+
+# ─────────────────────────────────────────────────────────────
+#  Arquitectura:
+#
+#    nginx (proxy)  ─┬─ /            → landing   (estatico)
+#                    ├─ /app/        → frontend  (React SPA)
+#                    ├─ /dashboard/  → dashboard (React SPA)
+#                    ├─ /api/        → backend   (NestJS + Fastify)
+#                    └─ /socket.io/  → backend   (WebSocket)
+#
+#    backend ─── postgres (datos)
+#            └── redis    (cache + pub/sub de Socket.IO)
+# ─────────────────────────────────────────────────────────────
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ────────────────────────── Base de datos ──────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: lc-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_USER: ${POSTGRES_USER:-lista}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lista_dev_password}
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lista} -d ${POSTGRES_DB:-listadecompras}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [lc-net]
+    logging: *default-logging
+
+  # ─────────────────────────────── Cache ──────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: lc-redis
+    restart: unless-stopped
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ];
+             then redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+             else redis-server --appendonly yes; fi'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [lc-net]
+    logging: *default-logging
+
+  # ────────────────────────────── Backend ─────────────────────────────
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: lc-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      API_PREFIX: ${API_PREFIX:-api}
+      TZ: ${TZ:-America/Mexico_City}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_USER: ${POSTGRES_USER:-lista}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lista_dev_password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev_access_secret_change_me}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_me}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8080}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      RUN_SEED: ${RUN_SEED:-true}
+      RECURRENCE_CRON: ${RECURRENCE_CRON:-0 */5 * * * *}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:8080/api/auth/google/callback}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      APPLE_CALLBACK_URL: ${APPLE_CALLBACK_URL:-http://localhost:8080/api/auth/apple/callback}
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+    networks: [lc-net]
+    logging: *default-logging
+
+  # ────────────────────────────── Frontend ────────────────────────────
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-/}
+        VITE_GOOGLE_ENABLED: ${VITE_GOOGLE_ENABLED:-true}
+        VITE_APPLE_ENABLED: ${VITE_APPLE_ENABLED:-true}
+    container_name: lc-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/app/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [lc-net]
+    logging: *default-logging
+
+  # ────────────────────────────── Dashboard ───────────────────────────
+  dashboard:
+    build:
+      context: ./apps/dashboard
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-/}
+    container_name: lc-dashboard
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/dashboard/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [lc-net]
+    logging: *default-logging
+
+  # ─────────────────────────── Landing page ───────────────────────────
+  landing:
+    build:
+      context: ./apps/landing
+      dockerfile: Dockerfile
+      args:
+        LANDING_IOS_URL: ${LANDING_IOS_URL:-#}
+        LANDING_ANDROID_URL: ${LANDING_ANDROID_URL:-#}
+    container_name: lc-landing
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [lc-net]
+    logging: *default-logging
+
+  # ──────────────────────── Proxy web (entrada) ───────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: lc-nginx
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+      dashboard:
+        condition: service_started
+      landing:
+        condition: service_started
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+    ports:
+      - "${NGINX_HTTP_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [lc-net]
+    logging: *default-logging
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  lc-net:
+    driver: bridge

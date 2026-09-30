@@ -1,0 +1,84 @@
+:root {
+  --dash-bg: #0f172a;
+  --dash-panel: #ffffff;
+  --dash-border: #e2e8f0;
+}
+
+/* Bootstrap no trae utilidad de min-width: sin ella los hijos flex con texto
+   largo no se encogen y desbordan la tarjeta. */
+.min-w-0 {
+  min-width: 0;
+}
+
+body {
+  background: #f1f5f9;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.dash-sidebar {
+  background: var(--dash-bg);
+  color: #cbd5e1;
+  min-height: 100vh;
+  width: 240px;
+  flex-shrink: 0;
+}
+.dash-sidebar a {
+  color: #cbd5e1;
+  text-decoration: none;
+  border-radius: 0.5rem;
+}
+.dash-sidebar a.active,
+.dash-sidebar a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.dash-kpi {
+  border: 1px solid var(--dash-border);
+  border-radius: 0.75rem;
+  background: var(--dash-panel);
+}
+.dash-kpi .value {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.dash-kpi .label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.dash-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 180px;
+}
+.dash-chart .bar-group {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  height: 100%;
+}
+.dash-chart .bar {
+  width: 100%;
+  max-width: 14px;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+}
+
+.table-sm td,
+.table-sm th {
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .dash-sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+}
