@@ -88,4 +88,16 @@ test.describe('App movil · acceso', () => {
     await page.getByTestId('logout-button').click();
     await expect(page.getByTestId('login-screen')).toBeVisible();
   });
+
+  test('CP-MOV-015 · recuperar la contrasena desde el telefono', async ({ page, request }) => {
+    const user = await registerUser(request, { fullName: 'Persona Movil Olvidadiza' });
+
+    await page.goto('/');
+    await page.getByTestId('go-forgot-password').click();
+    await expect(page.getByTestId('forgot-screen')).toBeVisible();
+
+    await page.getByTestId('forgot-email').fill(user.email);
+    await page.getByTestId('forgot-submit').click();
+    await expect(page.getByTestId('forgot-sent')).toBeVisible();
+  });
 });

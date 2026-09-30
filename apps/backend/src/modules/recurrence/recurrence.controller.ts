@@ -45,7 +45,7 @@ export class RecurrenceController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: { days?: number },
   ) {
-    if (this.config.get<string>('env') === 'production' && process.env.ALLOW_TIME_TRAVEL !== 'true') {
+    if (!this.config.get<boolean>('allowTimeTravel', false)) {
       throw new ForbiddenException('Esta utilidad esta deshabilitada en produccion');
     }
     const days = Number(body?.days ?? 1);

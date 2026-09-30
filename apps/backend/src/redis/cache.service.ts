@@ -9,6 +9,8 @@ import { REDIS_CLIENT } from './redis.constants';
  *  - cachear el detalle de una lista (`list:<id>:detail`)
  *  - guardar los refresh tokens vigentes (`refresh:<userId>:<jti>`)
  *  - guardar el `state` de los flujos OAuth (`oauth:state:<state>`)
+ *  - guardar los tokens de un solo uso de verificacion de correo y recuperacion
+ *    de contrasena (solo su hash SHA-256) y los retos de 2FA
  */
 @Injectable()
 export class CacheService {
@@ -93,5 +95,49 @@ export class CacheService {
 
   static oauthStateKey(state: string): string {
     return `oauth:state:${state}`;
+  }
+
+  static emailVerificationKey(tokenHash: string): string {
+    return `auth:email-verify:${tokenHash}`;
+  }
+
+  static passwordResetKey(tokenHash: string): string {
+    return `auth:pwd-reset:${tokenHash}`;
+  }
+
+  static passwordResetUserKey(userId: string): string {
+    return `auth:pwd-reset:user:${userId}`;
+  }
+
+  static loginFailuresKey(email: string): string {
+    return `auth:login-failures:${email}`;
+  }
+
+  static mfaChallengeKey(token: string): string {
+    return `auth:mfa-challenge:${token}`;
+  }
+
+  static mfaSetupKey(userId: string): string {
+    return `auth:mfa-setup:${userId}`;
+  }
+
+  static mfaLastStepKey(userId: string): string {
+    return `auth:mfa-last-step:${userId}`;
+  }
+
+  /** Incrementa un contador con caducidad y devuelve el valor nuevo */
+  async incrementWithTtl(key: string, ttlSeconds: number): Promise<number> {
+    const [[, count]] = (await this.client
+      .multi()
+      .incr(key)
+      .expire(key, ttlSeconds, 'NX')
+      .exec()) as [[Error | null, number]];
+    return count;
+  }
+
+  /** Lee y borra una clave de forma atomica (tokens de un solo uso) */
+  async take<T>(key: string): Promise<T | null> {
+    const raw = await this.client.getdel(key);
+    return raw ? (JSON.parse(raw) as T) : null;
   }
 }

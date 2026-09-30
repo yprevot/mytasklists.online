@@ -10,7 +10,11 @@ name: listadecompras
 #                    └─ /socket.io/  → backend   (WebSocket)
 #
 #    backend ─── postgres (datos)
-#            └── redis    (cache + pub/sub de Socket.IO)
+#            ├── redis    (cache + pub/sub de Socket.IO + rate limiting)
+#            └── mailpit  (SMTP de desarrollo; en produccion, tu SMTP real)
+#
+#  Este archivo es el entorno de DESARROLLO. Para produccion:
+#    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 # ─────────────────────────────────────────────────────────────
 
 x-logging: &default-logging
@@ -22,7 +26,7 @@ x-logging: &default-logging
 services:
   # ────────────────────────── Base de datos ──────────────────────────
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: lc-postgres
     restart: unless-stopped
     environment:
@@ -31,10 +35,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lista_dev_password}
       TZ: ${TZ:-America/Mexico_City}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      # Desde PostgreSQL 18 el volumen se monta en /var/lib/postgresql (los datos
+      # viven en /var/lib/postgresql/18/docker). Volumen nuevo para no mezclarlo
+      # con los datos de la 16: ver "Actualizar PostgreSQL" en el README.
+      - postgres18-data:/var/lib/postgresql
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Solo accesible desde esta maquina (herramientas de BD locales)
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lista} -d ${POSTGRES_DB:-listadecompras}"]
       interval: 5s
@@ -45,19 +53,18 @@ services:
 
   # ─────────────────────────────── Cache ──────────────────────────────
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: lc-redis
     restart: unless-stopped
     command: >
-      sh -c 'if [ -n "$$REDIS_PASSWORD" ];
-             then redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
-             else redis-server --appendonly yes; fi'
+      sh -c 'redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-lista_dev_redis}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-lista_dev_redis}
     volumes:
       - redis-data:/data
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -66,11 +73,25 @@ services:
     networks: [lc-net]
     logging: *default-logging
 
+  # ───────────────────── Correo de desarrollo (Mailpit) ───────────────
+  # Captura todos los correos que envia el backend. Bandeja: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.30.5
+    container_name: lc-mailpit
+    restart: unless-stopped
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    networks: [lc-net]
+    logging: *default-logging
+
   # ────────────────────────────── Backend ─────────────────────────────
   backend:
     build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
       target: runtime
     container_name: lc-backend
     restart: unless-stopped
@@ -91,24 +112,47 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lista_dev_password}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-lista_dev_redis}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev_access_secret_change_me}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_me}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8080}
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-}
+      ALLOW_TIME_TRAVEL: ${ALLOW_TIME_TRAVEL:-}
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
-      RUN_SEED: ${RUN_SEED:-true}
+      # Apagado por defecto: crea cuentas con contrasenas publicas (el .env de
+      # desarrollo lo enciende para las pruebas e2e)
+      RUN_SEED: ${RUN_SEED:-false}
       RECURRENCE_CRON: ${RECURRENCE_CRON:-0 */5 * * * *}
+      # Rate limiting (vacio = valores por defecto segun NODE_ENV)
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_GLOBAL: ${RATE_LIMIT_GLOBAL:-}
+      RATE_LIMIT_AUTH: ${RATE_LIMIT_AUTH:-}
+      RATE_LIMIT_SENSITIVE: ${RATE_LIMIT_SENSITIVE:-}
+      LOGIN_MAX_FAILURES: ${LOGIN_MAX_FAILURES:-10}
+      # Correo (en desarrollo, Mailpit)
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-ListaDeCompras <no-responder@listadecompras.local>}
+      # Google / Apple
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:8080/api/auth/google/callback}
+      GOOGLE_ALLOWED_AUDIENCES: ${GOOGLE_ALLOWED_AUDIENCES:-}
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
       APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
       APPLE_KEY_ID: ${APPLE_KEY_ID:-}
       APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
       APPLE_CALLBACK_URL: ${APPLE_CALLBACK_URL:-http://localhost:8080/api/auth/apple/callback}
+      APPLE_ALLOWED_AUDIENCES: ${APPLE_ALLOWED_AUDIENCES:-}
       EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
     expose:
       - "3000"
@@ -124,8 +168,8 @@ services:
   # ────────────────────────────── Frontend ────────────────────────────
   frontend:
     build:
-      context: ./apps/frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/frontend/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
         VITE_SOCKET_URL: ${VITE_SOCKET_URL:-/}
@@ -146,11 +190,10 @@ services:
   # ────────────────────────────── Dashboard ───────────────────────────
   dashboard:
     build:
-      context: ./apps/dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
-        VITE_SOCKET_URL: ${VITE_SOCKET_URL:-/}
     container_name: lc-dashboard
     restart: unless-stopped
     expose:
@@ -185,7 +228,7 @@ services:
 
   # ──────────────────────── Proxy web (entrada) ───────────────────────
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:1.30-alpine
     container_name: lc-nginx
     restart: unless-stopped
     depends_on:
@@ -199,6 +242,7 @@ services:
         condition: service_started
     volumes:
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/snippets:/etc/nginx/snippets:ro
       - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
     ports:
       - "${NGINX_HTTP_PORT:-8080}:80"
@@ -211,7 +255,7 @@ services:
     logging: *default-logging
 
 volumes:
-  postgres-data:
+  postgres18-data:
   redis-data:
 
 networks:

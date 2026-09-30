@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { JwtPayload } from '../types';
+import { AuthStateService } from '../../redis/auth-state.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -16,6 +17,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly authState: AuthStateService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,18 +36,24 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const token = header.slice(7).trim();
+    let payload: JwtPayload;
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: this.config.get<string>('jwt.accessSecret'),
       });
-      if (payload.type && payload.type !== 'access') {
-        throw new UnauthorizedException('Tipo de token invalido');
-      }
-      request.user = { id: payload.sub, email: payload.email, role: payload.role };
-      return true;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) throw error;
+    } catch {
       throw new UnauthorizedException('Token invalido o expirado');
     }
+    if (payload.type !== 'access') {
+      throw new UnauthorizedException('Tipo de token invalido');
+    }
+
+    // Cuenta desactivada o sesiones revocadas (cambio de contrasena, logout global)
+    if (!(await this.authState.isTokenAllowed(payload.sub, payload.sv))) {
+      throw new UnauthorizedException('La sesion ya no es valida. Vuelve a iniciar sesion.');
+    }
+
+    request.user = { id: payload.sub, email: payload.email, role: payload.role };
+    return true;
   }
 }

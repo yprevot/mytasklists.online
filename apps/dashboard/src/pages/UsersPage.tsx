@@ -26,6 +26,14 @@ export function UsersPage() {
     await load();
   };
 
+  const resetMfa = async (user: AdminUser) => {
+    if (!window.confirm(`¿Quitar la verificacion en dos pasos de ${user.email}? Se cerraran sus sesiones.`)) {
+      return;
+    }
+    await adminApi.resetUserMfa(user.id);
+    await load();
+  };
+
   return (
     <div data-testid="users-page">
       <h1 className="h4 mb-3">Usuarios</h1>
@@ -86,8 +94,27 @@ export function UsersPage() {
                       <span className={`badge ${user.isActive ? 'text-bg-success' : 'text-bg-secondary'}`}>
                         {user.isActive ? 'activo' : 'inactivo'}
                       </span>
+                      {user.mfaEnabled && (
+                        <span className="badge text-bg-info ms-1" title="Verificacion en dos pasos activa">
+                          2FA
+                        </span>
+                      )}
+                      {!user.emailVerified && (
+                        <span className="badge text-bg-warning ms-1" title="Correo sin confirmar">
+                          sin verificar
+                        </span>
+                      )}
                     </td>
-                    <td className="text-end">
+                    <td className="text-end text-nowrap">
+                      {user.mfaEnabled && (
+                        <button
+                          className="btn btn-sm btn-outline-warning me-1"
+                          onClick={() => resetMfa(user)}
+                          data-testid="reset-mfa"
+                        >
+                          Quitar 2FA
+                        </button>
+                      )}
                       <button
                         className="btn btn-sm btn-outline-secondary"
                         onClick={() => toggleActive(user)}

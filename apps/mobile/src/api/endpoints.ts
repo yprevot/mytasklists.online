@@ -1,18 +1,24 @@
 import { api } from './client';
-import type { AuthResponse, Item, ListDetail, ListSummary, User } from '../types';
+import type { AuthResponse, Item, ListDetail, ListSummary, LoginResponse, User } from '../types';
 
 export const authApi = {
   providers: () =>
-    api.post<{ local: boolean; google: boolean; apple: boolean }>('/auth/providers', undefined, false)
+    api
+      .get<{ local: boolean; google: boolean; apple: boolean }>('/auth/providers')
       .catch(() => ({ local: true, google: false, apple: false })),
   login: (email: string, password: string) =>
-    api.post<AuthResponse>('/auth/login', { email, password }, false),
+    api.post<LoginResponse>('/auth/login', { email, password }, false),
+  verifyMfa: (mfaToken: string, code: string) =>
+    api.post<AuthResponse>('/auth/mfa/verify', { mfaToken, code }, false),
+  forgotPassword: (email: string) =>
+    api.post<{ ok: true; message: string }>('/auth/forgot-password', { email }, false),
+  resendVerification: () => api.post<{ ok: true }>('/auth/verify-email/resend'),
   register: (payload: { fullName: string; email: string; whatsapp: string; password: string }) =>
     api.post<AuthResponse>('/auth/register', payload, false),
   google: (token: string, whatsapp?: string) =>
-    api.post<AuthResponse>('/auth/google/token', { token, whatsapp }, false),
+    api.post<LoginResponse>('/auth/google/token', { token, whatsapp }, false),
   apple: (token: string, fullName?: string, whatsapp?: string) =>
-    api.post<AuthResponse>('/auth/apple/token', { token, fullName, whatsapp }, false),
+    api.post<LoginResponse>('/auth/apple/token', { token, fullName, whatsapp }, false),
   me: () => api.get<User>('/auth/me'),
   logout: (refreshToken?: string | null) => api.post('/auth/logout', { refreshToken }),
 };

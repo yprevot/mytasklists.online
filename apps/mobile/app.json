@@ -34,6 +34,7 @@
     },
     "plugins": [
       "expo-apple-authentication",
+      "expo-secure-store",
       [
         "expo-notifications",
         {
@@ -44,6 +45,9 @@
     "extra": {
       "apiUrl": "http://localhost:8080/api",
       "socketUrl": "http://localhost:8080",
+      "googleIosClientId": "",
+      "googleAndroidClientId": "",
+      "googleWebClientId": "",
       "eas": {
         "projectId": "00000000-0000-0000-0000-000000000000"
       }

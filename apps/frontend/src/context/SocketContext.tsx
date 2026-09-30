@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { tokenStore } from '../api/client';
 import { useToast } from './ToastContext';
 import type { AppNotification } from '../types';
 
@@ -52,7 +53,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const socket = io(SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
-      auth: { token: accessToken },
+      // Funcion: cada reconexion usa el access token vigente, no el del primer connect
+      auth: (callback) => callback({ token: tokenStore.access ?? accessToken }),
       reconnection: true,
       reconnectionDelay: 800,
       reconnectionDelayMax: 5000,

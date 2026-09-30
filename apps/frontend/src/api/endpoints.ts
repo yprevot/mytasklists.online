@@ -4,6 +4,7 @@ import type {
   AuthProviders,
   AuthResponse,
   Item,
+  LoginResponse,
   ListDetail,
   ListSummary,
   User,
@@ -12,7 +13,9 @@ import type {
 export const authApi = {
   providers: () => api.get<AuthProviders>('/auth/providers', { auth: false }),
   login: (email: string, password: string) =>
-    api.post<AuthResponse>('/auth/login', { email, password }, { auth: false }),
+    api.post<LoginResponse>('/auth/login', { email, password }, { auth: false }),
+  verifyMfa: (mfaToken: string, code: string) =>
+    api.post<AuthResponse>('/auth/mfa/verify', { mfaToken, code }, { auth: false }),
   register: (payload: {
     fullName: string;
     email: string;
@@ -20,15 +23,24 @@ export const authApi = {
     password: string;
   }) => api.post<AuthResponse>('/auth/register', payload, { auth: false }),
   me: () => api.get<User>('/auth/me'),
-  logout: (refreshToken?: string | null) => api.post('/auth/logout', { refreshToken }),
+  logout: () => api.post('/auth/logout', {}),
+  verifyEmail: (token: string) =>
+    api.post<{ ok: true; email: string }>('/auth/verify-email', { token }, { auth: false }),
+  resendVerification: () => api.post<{ ok: true }>('/auth/verify-email/resend'),
+  forgotPassword: (email: string) =>
+    api.post<{ ok: true; message: string }>('/auth/forgot-password', { email }, { auth: false }),
+  resetPassword: (token: string, newPassword: string) =>
+    api.post<{ ok: true }>('/auth/reset-password', { token, newPassword }, { auth: false }),
 };
 
 export const usersApi = {
   updateProfile: (payload: Partial<Pick<User, 'fullName' | 'whatsapp' | 'notificationsEnabled'>>) =>
     api.patch<User>('/users/me', payload),
   changePassword: (currentPassword: string, newPassword: string) =>
-    api.patch<{ ok: boolean }>('/users/me/password', { currentPassword, newPassword }),
-  search: (q: string) => api.get<User[]>(`/users/search?q=${encodeURIComponent(q)}`),
+    api.patch<AuthResponse & { ok: boolean }>('/users/me/password', {
+      currentPassword: currentPassword || undefined,
+      newPassword,
+    }),
 };
 
 export const listsApi = {

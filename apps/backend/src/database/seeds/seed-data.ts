@@ -27,6 +27,9 @@ export const SEED_ACCOUNTS = {
  * arranque del contenedor.
  */
 export async function runSeed(dataSource: DataSource): Promise<string> {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('El seed crea cuentas con contrasenas publicas y no se ejecuta en produccion');
+  }
   const users = dataSource.getRepository(User);
   const lists = dataSource.getRepository(ShoppingList);
   const members = dataSource.getRepository(ListMember);

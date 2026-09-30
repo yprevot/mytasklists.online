@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { secureStorage } from './secureStorage';
 
 const extra = (Constants.expoConfig?.extra ?? {}) as { apiUrl?: string; socketUrl?: string };
 
@@ -28,22 +28,20 @@ export const tokens = {
     return refreshToken;
   },
   async load(): Promise<void> {
-    const [[, access], [, refresh]] = await AsyncStorage.multiGet([KEYS.access, KEYS.refresh]);
-    accessToken = access;
-    refreshToken = refresh;
+    [accessToken, refreshToken] = await Promise.all([
+      secureStorage.get(KEYS.access),
+      secureStorage.get(KEYS.refresh),
+    ]);
   },
   async save(access: string, refresh: string): Promise<void> {
     accessToken = access;
     refreshToken = refresh;
-    await AsyncStorage.multiSet([
-      [KEYS.access, access],
-      [KEYS.refresh, refresh],
-    ]);
+    await Promise.all([secureStorage.set(KEYS.access, access), secureStorage.set(KEYS.refresh, refresh)]);
   },
   async clear(): Promise<void> {
     accessToken = null;
     refreshToken = null;
-    await AsyncStorage.multiRemove([KEYS.access, KEYS.refresh]);
+    await Promise.all([secureStorage.remove(KEYS.access), secureStorage.remove(KEYS.refresh)]);
   },
 };
 

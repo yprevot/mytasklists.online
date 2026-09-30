@@ -9,6 +9,9 @@ export interface User {
   provider: 'local' | 'google' | 'apple';
   role: 'user' | 'admin';
   notificationsEnabled: boolean;
+  emailVerified: boolean;
+  mfaEnabled: boolean;
+  hasPassword?: boolean;
   createdAt: string;
 }
 
@@ -70,3 +73,11 @@ export interface AuthResponse {
   refreshToken: string;
   user: User;
 }
+
+/** El login devuelve un reto cuando la cuenta tiene verificacion en dos pasos */
+export interface MfaChallenge {
+  mfaRequired: true;
+  mfaToken: string;
+}
+
+export type LoginResponse = AuthResponse | MfaChallenge;

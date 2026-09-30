@@ -10,12 +10,10 @@ import {
 import { ListMember } from './list-member.entity';
 import { ShoppingList } from './shopping-list.entity';
 import { DeviceToken } from './device-token.entity';
+import { UserIdentity } from './user-identity.entity';
+import { AuthProvider } from './auth-provider.enum';
 
-export enum AuthProvider {
-  LOCAL = 'local',
-  GOOGLE = 'google',
-  APPLE = 'apple',
-}
+export { AuthProvider };
 
 export enum UserRole {
   USER = 'user',
@@ -41,6 +39,7 @@ export class User {
   @Column({ name: 'password_hash', type: 'varchar', length: 120, nullable: true, select: false })
   passwordHash: string | null;
 
+  /** Metodo con el que se creo la cuenta. Los proveedores vinculados viven en `identities` */
   @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.LOCAL })
   provider: AuthProvider;
 
@@ -58,6 +57,22 @@ export class User {
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
+
+  /** Secreto TOTP cifrado con AES-256-GCM (ver MfaService) */
+  @Column({ name: 'totp_secret', type: 'varchar', length: 255, nullable: true, select: false })
+  totpSecret: string | null;
+
+  @Column({ name: 'totp_enabled', default: false })
+  totpEnabled: boolean;
+
+  /** Hashes SHA-256 de los codigos de recuperacion de 2FA que siguen sin usarse */
+  @Column({
+    name: 'totp_recovery_codes',
+    type: 'jsonb',
+    nullable: true,
+    select: false,
+  })
+  totpRecoveryCodes: string[] | null;
 
   /** Preferencia global: recibir avisos cuando alguien mas edita una lista compartida */
   @Column({ name: 'notifications_enabled', default: true })
@@ -80,4 +95,7 @@ export class User {
 
   @OneToMany(() => DeviceToken, (token) => token.user)
   devices: DeviceToken[];
+
+  @OneToMany(() => UserIdentity, (identity) => identity.user)
+  identities: UserIdentity[];
 }

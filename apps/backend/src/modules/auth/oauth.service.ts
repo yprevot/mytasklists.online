@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { createRemoteJWKSet, importPKCS8, jwtVerify, SignJWT } from 'jose';
 import { CacheService } from '../../redis/cache.service';
 
@@ -11,6 +11,14 @@ export interface SocialProfile {
   fullName: string;
   avatarUrl?: string | null;
   emailVerified: boolean;
+  /** El correo lo generamos nosotros porque el proveedor no envio ninguno */
+  syntheticEmail?: boolean;
+}
+
+interface OAuthState {
+  provider: 'google' | 'apple';
+  nonce: string;
+  codeVerifier?: string;
 }
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -23,12 +31,22 @@ const APPLE_TOKEN_URL = 'https://appleid.apple.com/auth/token';
 const APPLE_JWKS_URL = 'https://appleid.apple.com/auth/keys';
 const APPLE_ISSUER = 'https://appleid.apple.com';
 
+const STATE_TTL_SECONDS = 600;
+
+const randomToken = (bytes = 32): string => randomBytes(bytes).toString('base64url');
+const sha256Base64Url = (value: string): string =>
+  createHash('sha256').update(value).digest('base64url');
+
 /**
  * Inicio de sesion con Google y con Apple.
  *
  * Se implementa directamente contra los endpoints OIDC de cada proveedor
  * (sin passport) para poder usar el mismo codigo desde la web (flujo con
  * redireccion) y desde la app movil (flujo con id_token nativo).
+ *
+ * Flujo web: `state` de un solo uso (anti-CSRF), `nonce` ligado al id_token
+ * (anti-repeticion) y PKCE S256 en Google. Al terminar siempre se vuelve a la
+ * app web propia: no se acepta ninguna URL de retorno del cliente.
  */
 @Injectable()
 export class OAuthService {
@@ -54,42 +72,46 @@ export class OAuthService {
   }
 
   // ── State anti-CSRF compartido por ambos flujos ──────────────────────
-  private async createState(returnTo?: string): Promise<string> {
-    const state = randomBytes(24).toString('hex');
-    await this.cache.set(CacheService.oauthStateKey(state), { returnTo: returnTo ?? null }, 600);
+  private async createState(data: OAuthState): Promise<string> {
+    const state = randomToken(24);
+    await this.cache.set(CacheService.oauthStateKey(state), data, STATE_TTL_SECONDS);
     return state;
   }
 
-  private async consumeState(state: string): Promise<{ returnTo: string | null }> {
-    const key = CacheService.oauthStateKey(state);
-    const stored = await this.cache.get<{ returnTo: string | null }>(key);
-    if (!stored) throw new BadRequestException('El parametro state no es valido o ya expiro');
-    await this.cache.del(key);
+  private async consumeState(state: string, provider: OAuthState['provider']): Promise<OAuthState> {
+    const stored = await this.cache.take<OAuthState>(CacheService.oauthStateKey(state));
+    if (!stored || stored.provider !== provider) {
+      throw new BadRequestException('El parametro state no es valido o ya expiro');
+    }
     return stored;
   }
 
   // ─────────────────────────────── Google ──────────────────────────────
-  async buildGoogleAuthUrl(returnTo?: string): Promise<string> {
+  async buildGoogleAuthUrl(): Promise<string> {
     if (!this.googleEnabled) {
       throw new NotImplementedException(
         'El inicio de sesion con Google no esta configurado (define GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET)',
       );
     }
-    const state = await this.createState(returnTo);
+    const nonce = randomToken();
+    const codeVerifier = randomToken(48);
+    const state = await this.createState({ provider: 'google', nonce, codeVerifier });
     const params = new URLSearchParams({
       client_id: this.config.get<string>('google.clientId', ''),
       redirect_uri: this.config.get<string>('google.callbackUrl', ''),
       response_type: 'code',
       scope: 'openid email profile',
       state,
-      access_type: 'offline',
+      nonce,
+      code_challenge: sha256Base64Url(codeVerifier),
+      code_challenge_method: 'S256',
       prompt: 'select_account',
     });
     return `${GOOGLE_AUTH_URL}?${params.toString()}`;
   }
 
-  async handleGoogleCallback(code: string, state: string) {
-    const { returnTo } = await this.consumeState(state);
+  async handleGoogleCallback(code: string, state: string): Promise<SocialProfile> {
+    const stored = await this.consumeState(state, 'google');
 
     const body = new URLSearchParams({
       code,
@@ -97,6 +119,7 @@ export class OAuthService {
       client_secret: this.config.get<string>('google.clientSecret', ''),
       redirect_uri: this.config.get<string>('google.callbackUrl', ''),
       grant_type: 'authorization_code',
+      code_verifier: stored.codeVerifier ?? '',
     });
 
     const response = await fetch(GOOGLE_TOKEN_URL, {
@@ -111,18 +134,27 @@ export class OAuthService {
     const tokens = (await response.json()) as { id_token?: string };
     if (!tokens.id_token) throw new BadRequestException('Google no devolvio un id_token');
 
-    return { profile: await this.verifyGoogleIdToken(tokens.id_token), returnTo };
+    return this.verifyGoogleIdToken(tokens.id_token, stored.nonce);
   }
 
-  async verifyGoogleIdToken(idToken: string): Promise<SocialProfile> {
-    if (!this.config.get<string>('google.clientId')) {
+  /**
+   * Verifica un id_token de Google. Acepta como audiencia el client_id web y los
+   * de iOS/Android (`GOOGLE_ALLOWED_AUDIENCES`), porque el SDK nativo emite el
+   * token para el client_id de la plataforma.
+   */
+  async verifyGoogleIdToken(idToken: string, expectedNonce?: string): Promise<SocialProfile> {
+    const audiences = this.config.get<string[]>('google.allowedAudiences', []);
+    if (!audiences.length) {
       throw new NotImplementedException('El inicio de sesion con Google no esta configurado');
     }
     try {
       const { payload } = await jwtVerify(idToken, this.googleJwks, {
         issuer: GOOGLE_ISSUERS,
-        audience: this.config.get<string>('google.clientId', ''),
+        audience: audiences,
       });
+      if (expectedNonce !== undefined && payload.nonce !== expectedNonce) {
+        throw new BadRequestException('El token de Google no corresponde a este inicio de sesion');
+      }
       const email = payload.email as string | undefined;
       if (!email) throw new BadRequestException('La cuenta de Google no expone un correo electronico');
       return {
@@ -131,7 +163,7 @@ export class OAuthService {
         email,
         fullName: (payload.name as string) ?? email.split('@')[0],
         avatarUrl: (payload.picture as string) ?? null,
-        emailVerified: Boolean(payload.email_verified),
+        emailVerified: payload.email_verified === true || payload.email_verified === 'true',
       };
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof NotImplementedException) throw error;
@@ -141,13 +173,14 @@ export class OAuthService {
   }
 
   // ──────────────────────────────── Apple ──────────────────────────────
-  async buildAppleAuthUrl(returnTo?: string): Promise<string> {
+  async buildAppleAuthUrl(): Promise<string> {
     if (!this.appleEnabled) {
       throw new NotImplementedException(
         'Sign in with Apple no esta configurado (define APPLE_CLIENT_ID, APPLE_TEAM_ID y APPLE_KEY_ID)',
       );
     }
-    const state = await this.createState(returnTo);
+    const nonce = randomToken();
+    const state = await this.createState({ provider: 'apple', nonce });
     const params = new URLSearchParams({
       client_id: this.config.get<string>('apple.clientId', ''),
       redirect_uri: this.config.get<string>('apple.callbackUrl', ''),
@@ -155,6 +188,7 @@ export class OAuthService {
       scope: 'name email',
       response_mode: 'form_post',
       state,
+      nonce,
     });
     return `${APPLE_AUTH_URL}?${params.toString()}`;
   }
@@ -179,8 +213,8 @@ export class OAuthService {
     idToken?: string;
     state: string;
     user?: string;
-  }) {
-    const { returnTo } = await this.consumeState(input.state);
+  }): Promise<SocialProfile> {
+    const stored = await this.consumeState(input.state, 'apple');
 
     let identityToken = input.idToken;
     if (!identityToken && input.code) {
@@ -215,19 +249,30 @@ export class OAuthService {
       }
     }
 
-    const profile = await this.verifyAppleIdentityToken(identityToken, fullNameHint);
-    return { profile, returnTo };
+    return this.verifyAppleIdentityToken(identityToken, fullNameHint, stored.nonce);
   }
 
-  async verifyAppleIdentityToken(identityToken: string, fullNameHint?: string): Promise<SocialProfile> {
-    const clientId = this.config.get<string>('apple.clientId', '');
-    if (!clientId) throw new NotImplementedException('Sign in with Apple no esta configurado');
+  /**
+   * Verifica un identityToken de Apple. La audiencia es el Service ID en la web y
+   * el bundle id en la app nativa (`APPLE_ALLOWED_AUDIENCES`).
+   */
+  async verifyAppleIdentityToken(
+    identityToken: string,
+    fullNameHint?: string,
+    expectedNonce?: string,
+  ): Promise<SocialProfile> {
+    const audiences = this.config.get<string[]>('apple.allowedAudiences', []);
+    if (!audiences.length) throw new NotImplementedException('Sign in with Apple no esta configurado');
     try {
       const { payload } = await jwtVerify(identityToken, this.appleJwks, {
         issuer: APPLE_ISSUER,
-        audience: clientId,
+        audience: audiences,
       });
-      const email = (payload.email as string) ?? `${payload.sub}@privaterelay.appleid.com`;
+      if (expectedNonce !== undefined && payload.nonce !== expectedNonce) {
+        throw new BadRequestException('El token de Apple no corresponde a este inicio de sesion');
+      }
+      const realEmail = payload.email as string | undefined;
+      const email = realEmail ?? `${payload.sub}@privaterelay.appleid.com`;
       return {
         provider: 'apple',
         providerId: String(payload.sub),
@@ -235,9 +280,10 @@ export class OAuthService {
         fullName: fullNameHint?.trim() || email.split('@')[0],
         avatarUrl: null,
         emailVerified: payload.email_verified === true || payload.email_verified === 'true',
+        syntheticEmail: !realEmail,
       };
     } catch (error) {
-      if (error instanceof NotImplementedException) throw error;
+      if (error instanceof BadRequestException || error instanceof NotImplementedException) throw error;
       this.logger.warn(`identityToken de Apple invalido: ${(error as Error).message}`);
       throw new BadRequestException('El token de Apple no es valido');
     }

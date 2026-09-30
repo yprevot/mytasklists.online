@@ -14,3 +14,6 @@ e2e/playwright-report/
 e2e/videos/
 e2e/evidence/
 apps/*/node_modules/
+
+# Volcados de base de datos (infra/postgres/upgrade-16-to-18.sh)
+pg16-dump-*.sql

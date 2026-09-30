@@ -1,9 +1,20 @@
+# Contexto de build del monorepo: solo entra lo que necesitan los Dockerfile
 **/node_modules
 **/dist
 **/build
 **/.expo
 **/coverage
+**/*.tsbuildinfo
+**/.DS_Store
+.git
+.claude
+.env
+.env.*
+!.env.example
+apps/mobile
+docs
 e2e/test-results
 e2e/playwright-report
 e2e/evidence
-.git
+infra/nginx/certs
+*.sql

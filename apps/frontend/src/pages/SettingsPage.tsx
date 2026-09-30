@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 export function SettingsPage() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, adoptSession } = useAuth();
   const { show } = useToast();
   const [fullName, setFullName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -50,10 +50,16 @@ export function SettingsPage() {
     event.preventDefault();
     setChanging(true);
     try {
-      await usersApi.changePassword(currentPassword, newPassword);
+      // El backend cierra las demas sesiones y devuelve un par nuevo para esta
+      const session = await usersApi.changePassword(currentPassword, newPassword);
+      adoptSession({ ...session, user: { ...session.user, hasPassword: true } });
       setCurrentPassword('');
       setNewPassword('');
-      show({ title: 'Contrasena actualizada', body: 'Usala la proxima vez que entres', variant: 'success' });
+      show({
+        title: 'Contrasena actualizada',
+        body: 'Cerramos tus sesiones en otros dispositivos',
+        variant: 'success',
+      });
     } catch (err) {
       show({
         title: 'No se pudo cambiar',
@@ -95,6 +101,16 @@ export function SettingsPage() {
                 <input id="profile-email" className="form-control" value={user.email} disabled />
                 <div className="form-text">
                   Cuenta creada con <strong className="text-capitalize">{user.provider}</strong>
+                  {' · '}
+                  {user.emailVerified ? (
+                    <span className="text-success" data-testid="email-verified">
+                      correo confirmado
+                    </span>
+                  ) : (
+                    <span className="text-warning-emphasis" data-testid="email-unverified">
+                      correo sin confirmar
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -139,7 +155,7 @@ export function SettingsPage() {
             <div className="card-body">
               <h2 className="h6 mb-3">Contrasena</h2>
 
-              {user.provider === 'local' && (
+              {(user.hasPassword ?? user.provider === 'local') && (
                 <div className="mb-3">
                   <label className="form-label" htmlFor="current-password">
                     Contrasena actual

@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
+import { VerifyEmailBanner } from './VerifyEmailBanner';
 
 const initials = (name: string): string =>
   name
@@ -125,6 +126,7 @@ export function Layout() {
       </nav>
 
       <main className="container lc-shell flex-grow-1 py-4">
+        <VerifyEmailBanner />
         <Outlet />
       </main>
 

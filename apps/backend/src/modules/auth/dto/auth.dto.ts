@@ -8,6 +8,7 @@ import {
   IsString,
   Length,
   Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { DevicePlatform } from '../../../database/entities';
@@ -30,6 +31,7 @@ export class RegisterDto {
   @ApiProperty({ example: 'SuperSecreta123' })
   @IsString()
   @MinLength(8, { message: 'La contrasena debe tener al menos 8 caracteres' })
+  @MaxLength(128, { message: 'La contrasena no puede superar 128 caracteres' })
   password: string;
 }
 
@@ -42,14 +44,59 @@ export class LoginDto {
   @ApiProperty({ example: 'SuperSecreta123' })
   @IsString()
   @IsNotEmpty({ message: 'La contrasena es obligatoria' })
+  @MaxLength(128)
   password: string;
 }
 
 export class RefreshDto {
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Obligatorio salvo en los clientes web, que lo envian en una cookie httpOnly',
+  })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  refreshToken: string;
+  refreshToken?: string;
+}
+
+export class VerifyEmailDto {
+  @ApiProperty({ description: 'Token recibido en el enlace del correo' })
+  @IsString()
+  @Length(20, 200)
+  token: string;
+}
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'ana@example.com' })
+  @IsEmail({}, { message: 'El correo electronico no es valido' })
+  @Transform(({ value }) => String(value ?? '').trim().toLowerCase())
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ description: 'Token recibido en el enlace del correo' })
+  @IsString()
+  @Length(20, 200)
+  token: string;
+
+  @ApiProperty({ example: 'ClaveNueva12345' })
+  @IsString()
+  @MinLength(8, { message: 'La contrasena debe tener al menos 8 caracteres' })
+  @MaxLength(128, { message: 'La contrasena no puede superar 128 caracteres' })
+  newPassword: string;
+}
+
+export class MfaCodeDto {
+  @ApiProperty({ description: 'Codigo de 6 digitos de la app autenticadora o un codigo de recuperacion' })
+  @IsString()
+  @Length(6, 20)
+  code: string;
+}
+
+export class MfaVerifyDto extends MfaCodeDto {
+  @ApiProperty({ description: 'Token del reto que devolvio el login' })
+  @IsString()
+  @Length(20, 200)
+  mfaToken: string;
 }
 
 export class SocialTokenDto {

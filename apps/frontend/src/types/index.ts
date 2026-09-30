@@ -11,17 +11,32 @@ export interface User {
   role: 'user' | 'admin';
   notificationsEnabled: boolean;
   emailVerified: boolean;
+  mfaEnabled: boolean;
   isActive: boolean;
   createdAt: string;
+  /** Solo en el perfil propio: si la cuenta tiene contrasena definida */
+  hasPassword?: boolean;
 }
 
+/** En la web el refresh token viaja en una cookie httpOnly y no llega aqui */
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   expiresIn: string;
   tokenType: 'Bearer';
   user: User;
 }
+
+/** El login devuelve esto cuando la cuenta tiene verificacion en dos pasos */
+export interface MfaChallenge {
+  mfaRequired: true;
+  mfaToken: string;
+}
+
+export type LoginResponse = AuthResponse | MfaChallenge;
+
+export const isMfaChallenge = (value: LoginResponse): value is MfaChallenge =>
+  'mfaRequired' in value && value.mfaRequired === true;
 
 export interface Item {
   id: string;

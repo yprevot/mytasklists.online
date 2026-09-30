@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { User } from '../../database/entities';
 import { CacheService } from '../../redis/cache.service';
+import { AuthStateService } from '../../redis/auth-state.service';
 import { JwtPayload } from '../../common/types';
 
 export interface TokenPair {
@@ -24,6 +25,7 @@ export class TokenService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly cache: CacheService,
+    private readonly authState: AuthStateService,
   ) {}
 
   private ttlToSeconds(ttl: string): number {
@@ -35,9 +37,14 @@ export class TokenService {
     return value * multipliers[unit];
   }
 
+  get refreshTtlSeconds(): number {
+    return this.ttlToSeconds(this.config.get<string>('jwt.refreshTtl', '30d'));
+  }
+
   async issue(user: User): Promise<TokenPair> {
     const jti = randomUUID();
-    const base: JwtPayload = { sub: user.id, email: user.email, role: user.role };
+    const sv = await this.authState.getSessionVersion(user.id);
+    const base: JwtPayload = { sub: user.id, email: user.email, role: user.role, sv };
 
     const accessTtl = this.config.get<string>('jwt.accessTtl', '15m');
     const refreshTtl = this.config.get<string>('jwt.refreshTtl', '30d');
@@ -81,7 +88,12 @@ export class TokenService {
     await this.cache.del(CacheService.refreshKey(userId, jti));
   }
 
+  /**
+   * Cierra todas las sesiones: borra los refresh tokens y marca como invalidos
+   * los access tokens ya emitidos (el JwtAuthGuard los rechaza desde ya).
+   */
   async revokeAll(userId: string): Promise<void> {
+    await this.authState.bumpSessionVersion(userId);
     await this.cache.delByPattern(`refresh:${userId}:*`);
   }
 }

@@ -1,5 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, Length, Matches, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Length,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'Ana Lopez' })
@@ -18,9 +27,10 @@ export class UpdateProfileDto {
   @IsBoolean()
   notificationsEnabled?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'https://example.com/avatar.png' })
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['https'], require_protocol: true }, { message: 'El avatar debe ser una URL https' })
+  @MaxLength(500)
   avatarUrl?: string;
 }
 
@@ -32,5 +42,6 @@ export class ChangePasswordDto {
 
   @IsString()
   @MinLength(8, { message: 'La contrasena debe tener al menos 8 caracteres' })
+  @MaxLength(128, { message: 'La contrasena no puede superar 128 caracteres' })
   newPassword: string;
 }

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from '../components/Spinner';
+import { MfaCodeForm } from '../components/MfaCodeForm';
 
 const ERROR_MESSAGES: Record<string, string> = {
   google_cancelado: 'Cancelaste el inicio de sesion con Google.',
@@ -10,33 +11,65 @@ const ERROR_MESSAGES: Record<string, string> = {
   apple_fallido: 'No pudimos validar tu cuenta de Apple. Intentalo de nuevo.',
 };
 
-/** Recibe los tokens que el backend deja en el fragmento (#) tras el flujo OAuth */
+/**
+ * Vuelta de Google/Apple. El backend ya dejo el refresh token en una cookie
+ * httpOnly; en el fragmento (#) solo llega el estado o el reto de 2FA.
+ */
 export function AuthCallbackPage() {
-  const { adoptTokens } = useAuth();
+  const { restoreSession, verifyMfa } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [mfaToken, setMfaToken] = useState<string | null>(null);
+  const started = useRef(false);
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+
     const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    // Limpia el fragmento para que no quede en el historial
+    window.history.replaceState(null, '', window.location.pathname);
+
     const failure = params.get('error');
     if (failure) {
       setError(ERROR_MESSAGES[failure] ?? 'No pudimos completar el inicio de sesion.');
       return;
     }
-
-    const accessToken = params.get('accessToken');
-    const refreshToken = params.get('refreshToken');
-    if (!accessToken || !refreshToken) {
+    const challenge = params.get('mfaToken');
+    if (challenge) {
+      setMfaToken(challenge);
+      return;
+    }
+    if (params.get('status') !== 'ok') {
       setError('La respuesta del proveedor venia incompleta.');
       return;
     }
-
-    // Limpia el fragmento para que los tokens no queden en el historial
-    window.history.replaceState(null, '', `${window.location.pathname}`);
-    adoptTokens(accessToken, refreshToken)
-      .then(() => navigate('/', { replace: true }))
+    restoreSession()
+      .then((ok) => {
+        if (ok) navigate('/', { replace: true });
+        else setError('No pudimos validar la sesion recibida.');
+      })
       .catch(() => setError('No pudimos validar la sesion recibida.'));
-  }, [adoptTokens, navigate]);
+  }, [restoreSession, navigate]);
+
+  if (mfaToken) {
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
+        <div className="card border-0 shadow-sm lc-auth-card">
+          <div className="card-body p-4">
+            <h1 className="h5 text-center mb-3">Verificacion en dos pasos</h1>
+            <MfaCodeForm
+              onSubmit={async (code) => {
+                await verifyMfa(mfaToken, code);
+                navigate('/', { replace: true });
+              }}
+              onCancel={() => navigate('/login', { replace: true })}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (

@@ -8,6 +8,7 @@ export interface AdminUser {
   role: 'user' | 'admin';
   notificationsEnabled: boolean;
   emailVerified: boolean;
+  mfaEnabled: boolean;
   isActive: boolean;
   createdAt: string;
 }

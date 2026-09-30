@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { REDIS_CLIENT, REDIS_SUBSCRIBER } from './redis.constants';
 import { CacheService } from './cache.service';
+import { AuthStateService } from './auth-state.service';
 
 const buildClient = (config: ConfigService): Redis =>
   new Redis({
@@ -20,8 +21,9 @@ const buildClient = (config: ConfigService): Redis =>
     { provide: REDIS_CLIENT, inject: [ConfigService], useFactory: buildClient },
     { provide: REDIS_SUBSCRIBER, inject: [ConfigService], useFactory: buildClient },
     CacheService,
+    AuthStateService,
   ],
-  exports: [REDIS_CLIENT, REDIS_SUBSCRIBER, CacheService],
+  exports: [REDIS_CLIENT, REDIS_SUBSCRIBER, CacheService, AuthStateService],
 })
 export class RedisModule implements OnApplicationShutdown {
   constructor(private readonly cache: CacheService) {}

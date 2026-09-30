@@ -19,6 +19,8 @@ import { Server, Socket } from 'socket.io';
 import { ListMember } from '../../database/entities';
 import { JwtPayload } from '../../common/types';
 import { REDIS_CLIENT, REDIS_SUBSCRIBER } from '../../redis/redis.constants';
+import { AuthStateService } from '../../redis/auth-state.service';
+import configuration from '../../config/configuration';
 import { listRoom, RT, userRoom } from './realtime.events';
 
 interface AuthedSocket extends Socket {
@@ -36,8 +38,14 @@ interface AuthedSocket extends Socket {
  * El adaptador de Redis permite escalar el backend a varias replicas sin perder
  * eventos entre ellas.
  */
+/** Mismos origenes que la API REST (CORS_ORIGINS); sin cabecera Origin = app nativa */
+const allowOrigin = (origin: string | undefined, callback: (err: Error | null, ok?: boolean) => void) => {
+  const origins = configuration().corsOrigins;
+  callback(null, !origin || origins.includes(origin) || origins.includes('*'));
+};
+
 @WebSocketGateway({
-  cors: { origin: true, credentials: true },
+  cors: { origin: allowOrigin, credentials: true },
   transports: ['websocket', 'polling'],
 })
 export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -52,6 +60,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     @InjectRepository(ListMember) private readonly members: Repository<ListMember>,
     @Inject(REDIS_CLIENT) private readonly pub: Redis,
     @Inject(REDIS_SUBSCRIBER) private readonly sub: Redis,
+    private readonly authState: AuthStateService,
   ) {}
 
   afterInit(server: Server): void {
@@ -71,6 +80,10 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
           secret: this.config.get<string>('jwt.accessSecret'),
         });
+        if (payload.type !== 'access') return next(new Error('Tipo de token invalido'));
+        if (!(await this.authState.isTokenAllowed(payload.sub, payload.sv))) {
+          return next(new Error('La sesion ya no es valida'));
+        }
         const authed = socket as AuthedSocket;
         authed.userId = payload.sub;
         authed.email = payload.email;
@@ -164,5 +177,10 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   async removeUserFromListRoom(userId: string, listId: string): Promise<void> {
     const sockets = await this.server?.in(userRoom(userId)).fetchSockets();
     await Promise.all((sockets ?? []).map((socket) => socket.leave(listRoom(listId))));
+  }
+
+  /** Corta todas las conexiones de un usuario (cuenta desactivada o sesiones revocadas) */
+  async disconnectUser(userId: string): Promise<void> {
+    this.server?.in(userRoom(userId)).disconnectSockets(true);
   }
 }
