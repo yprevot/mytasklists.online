@@ -38,7 +38,7 @@ export function UsersPage() {
 
   return (
     <div data-testid="users-page">
-      <h1 className="h4 mb-3">{t('users.title')}</h1>
+      <h1 className="lc-page-title mb-4">{t('users.title')}</h1>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">

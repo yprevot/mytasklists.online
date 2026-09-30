@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { AuthShell } from '../components/AuthShell';
 import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 
@@ -32,16 +32,12 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3 position-relative">
-      <LanguageSwitcher className="position-absolute top-0 end-0 m-3" />
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="forgot-card">
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <i className="bi bi-key fs-1 text-primary" aria-hidden="true" />
-            <h1 className="h4 mt-2 mb-1">{t('forgot.title')}</h1>
-            <p className="text-muted small mb-0">
-              {t('forgot.subtitle')}
-            </p>
+    <AuthShell>
+      <div data-testid="forgot-card">
+        <div>
+          <div className="lc-auth-head">
+            <h1>{t('forgot.title')}</h1>
+            <p>{t('forgot.subtitle')}</p>
           </div>
 
           {sent ? (
@@ -69,19 +65,19 @@ export function ForgotPasswordPage() {
                   {error}
                 </div>
               )}
-              <button className="btn btn-primary w-100" type="submit" disabled={submitting} data-testid="forgot-submit">
+              <button className="btn btn-primary btn-lg w-100" type="submit" disabled={submitting} data-testid="forgot-submit">
                 {submitting ? t('common.sending') : t('forgot.submit')}
               </button>
             </form>
           )}
 
-          <p className="text-center small text-muted mt-4 mb-0">
-            <Link to="/login" data-testid="go-login">
+          <p className="text-center text-muted mt-4 mb-0">
+            <Link to="/login" className="fw-semibold" data-testid="go-login">
               {t('forgot.backToLogin')}
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

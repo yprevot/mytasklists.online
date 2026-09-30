@@ -1,8 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Badge } from './ui';
-import { colors, radius, spacing } from '../theme';
+import { Badge, CheckGlyph, CrossGlyph } from './ui';
+import { colors, spacing } from '../theme';
 import type { Item } from '../types';
 
 interface Props {
@@ -10,20 +10,22 @@ interface Props {
   onRestore: (item: Item) => void;
   onClose: (item: Item) => void;
   disabled?: boolean;
+  first?: boolean;
 }
 
 /** Producto comprado: se muestra tachado y se quita con la "x" */
-export function PurchasedRow({ item, onRestore, onClose, disabled }: Props) {
+export function PurchasedRow({ item, onRestore, onClose, disabled, first }: Props) {
   const { t } = useTranslation();
   return (
-    <View style={styles.row} testID="purchased-item">
+    <View style={[styles.row, !first && styles.divided]} testID="purchased-item">
       <Pressable
         style={styles.checkbox}
         onPress={() => !disabled && onRestore(item)}
         accessibilityLabel={t('item.restore', { name: item.name })}
         testID="purchased-checkbox"
+        hitSlop={8}
       >
-        <Text style={styles.checkMark}>✓</Text>
+        <CheckGlyph size={15} />
       </Pressable>
 
       <View style={{ flex: 1 }}>
@@ -46,9 +48,10 @@ export function PurchasedRow({ item, onRestore, onClose, disabled }: Props) {
         onPress={() => !disabled && onClose(item)}
         accessibilityLabel={t('item.close', { name: item.name })}
         testID="purchased-close"
-        hitSlop={10}
+        hitSlop={12}
+        style={styles.close}
       >
-        <Text style={styles.close}>✕</Text>
+        <CrossGlyph size={14} />
       </Pressable>
     </View>
   );
@@ -59,32 +62,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.success,
-    borderRadius: radius.md,
-    paddingVertical: 12,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    minHeight: 60,
+    backgroundColor: '#fafbf9',
+    paddingVertical: 10,
+    paddingHorizontal: spacing.lg,
   },
+  divided: { borderTopWidth: 1, borderTopColor: colors.line },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    backgroundColor: colors.success,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.brand,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkMark: { color: '#fff', fontSize: 12, fontWeight: '900' },
   name: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '500',
     color: colors.muted,
     textDecorationLine: 'line-through',
   },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 3 },
-  meta: { fontSize: 12, color: colors.muted },
-  close: { fontSize: 16, color: colors.muted, fontWeight: '700', paddingHorizontal: 4 },
+  meta: { fontSize: 13, color: colors.muted },
+  close: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
 });

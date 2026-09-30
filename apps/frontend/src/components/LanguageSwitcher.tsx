@@ -7,7 +7,7 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
 
   return (
     <div
-      className={`btn-group btn-group-sm ${className}`}
+      className={`lc-lang ${className}`}
       role="group"
       aria-label={t('language.label')}
       data-testid="language-switcher"
@@ -16,7 +16,6 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
         <button
           key={language}
           type="button"
-          className={`btn ${i18n.language === language ? 'btn-primary' : 'btn-outline-secondary'}`}
           onClick={() => setLanguage(language)}
           aria-pressed={i18n.language === language}
           title={t(`language.${language}`)}

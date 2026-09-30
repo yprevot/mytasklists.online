@@ -11,7 +11,7 @@ import {
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { Button, Field } from '../components/ui';
+import { BrandMark, Button, Field } from '../components/ui';
 import { GoogleSignInButton, googleConfigured } from '../components/GoogleSignInButton';
 import { useAuth, type LoginStep } from '../context/AuthContext';
 import { ApiError } from '../api/client';
@@ -91,7 +91,9 @@ export function LoginScreen({ navigation }: any) {
         <View style={styles.languageRow}>
           <LanguageSwitcher />
         </View>
-        <Text style={styles.logo}>🛒</Text>
+        <View style={styles.logo}>
+          <BrandMark size={56} />
+        </View>
         <Text style={styles.title}>{mfaToken ? t('login.mfaTitle') : t('login.title')}</Text>
         <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
 
@@ -162,8 +164,8 @@ export function LoginScreen({ navigation }: any) {
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
                 buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-                cornerRadius={999}
-                style={{ height: 48, marginBottom: spacing.md }}
+                cornerRadius={12}
+                style={{ height: 50, marginBottom: spacing.md }}
                 onPress={appleSignIn}
               />
             ) : null}
@@ -193,17 +195,25 @@ export function LoginScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { padding: spacing.xl, paddingTop: spacing.xxl * 2, flexGrow: 1, justifyContent: 'center' },
   languageRow: { alignItems: 'flex-end', marginBottom: spacing.lg },
-  logo: { fontSize: 44, textAlign: 'center' },
-  title: { fontSize: 24, fontWeight: '800', textAlign: 'center', color: colors.ink, marginTop: spacing.sm },
+  logo: { alignItems: 'center' },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+    color: colors.ink,
+    marginTop: spacing.lg,
+    letterSpacing: -0.7,
+  },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
     color: colors.inkSoft,
-    marginBottom: spacing.xl,
+    marginTop: 4,
+    marginBottom: spacing.xl + spacing.sm,
   },
   error: { color: colors.danger, marginBottom: spacing.md, fontSize: 13 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginVertical: spacing.lg },
   divider: { flex: 1, height: 1, backgroundColor: colors.line },
-  dividerText: { color: colors.muted, fontSize: 12 },
-  link: { textAlign: 'center', color: colors.brand, marginTop: spacing.lg, fontWeight: '600' },
+  dividerText: { color: colors.muted, fontSize: 13 },
+  link: { textAlign: 'center', color: colors.brand, marginTop: spacing.lg, fontWeight: '700', fontSize: 15, paddingVertical: 6 },
 });

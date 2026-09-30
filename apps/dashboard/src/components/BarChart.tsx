@@ -6,9 +6,9 @@ interface Props {
 }
 
 const SERIES = [
-  { key: 'created' as const, color: '#0d6efd' },
-  { key: 'purchased' as const, color: '#198754' },
-  { key: 'signups' as const, color: '#fd7e14' },
+  { key: 'created' as const, color: '#1d5b45' },
+  { key: 'purchased' as const, color: '#2f6f9f' },
+  { key: 'signups' as const, color: '#b8791a' },
 ];
 
 /** Grafica de barras agrupadas sin dependencias externas */

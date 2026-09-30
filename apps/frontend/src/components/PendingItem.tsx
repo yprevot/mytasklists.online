@@ -40,7 +40,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
 
   return (
     <li
-      className={`lc-item d-flex align-items-center gap-3 px-3 py-2 mb-2 ${stateClass}`}
+      className={`lc-item ${stateClass}`}
       data-testid="pending-item"
       data-item-id={item.id}
       data-item-name={item.name}
@@ -49,7 +49,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
     >
       <input
         type="checkbox"
-        className="form-check-input lc-check m-0"
+        className="lc-check"
         checked={false}
         onChange={handlePurchase}
         disabled={disabled || busy}
@@ -62,13 +62,13 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
           <span className="lc-item-name text-truncate" data-testid="item-name">
             {item.name}
           </span>
-          <span className="badge text-bg-light border" data-testid="item-quantity">
+          <span className="lc-chip" data-testid="item-quantity">
             {formatQuantity(item)}
           </span>
 
           {item.isRecurring && (
             <span
-              className={`badge ${item.isOverdue ? 'text-bg-danger' : 'text-bg-info'}`}
+              className={`lc-chip ${item.isOverdue ? 'lc-chip--late-soft' : 'lc-chip--tag'}`}
               data-testid="item-recurrence-badge"
             >
               <i className="bi bi-arrow-repeat me-1" aria-hidden="true" />
@@ -77,32 +77,32 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
           )}
 
           {item.isOverdue && (
-            <span className="badge text-bg-warning" data-testid="item-overdue-badge">
+            <span className="lc-chip lc-chip--late" data-testid="item-overdue-badge">
               <i className="bi bi-exclamation-triangle me-1" aria-hidden="true" />
               {t('item.overdue', { count: item.daysOverdue })}
             </span>
           )}
 
           {item.isRecurring && !item.isOverdue && item.daysUntilDue !== null && (
-            <span className="text-muted small" data-testid="item-due-hint">
+            <span className="lc-hint" data-testid="item-due-hint">
               {t('item.dueIn', { count: item.daysUntilDue })}
             </span>
           )}
 
           {item.cycleCount > 0 && (
-            <span className="text-muted small" data-testid="item-cycle">
+            <span className="lc-hint" data-testid="item-cycle">
               {t('item.cycle', { count: item.cycleCount + 1 })}
             </span>
           )}
         </div>
-        {item.note && <div className="text-muted small">{item.note}</div>}
+        {item.note && <div className="lc-hint mt-1">{item.note}</div>}
       </div>
 
-      <div className="d-flex align-items-center gap-1 lc-item-actions">
+      <div className="d-flex align-items-center gap-1 flex-shrink-0">
         {item.isRecurring && (
           <div className="dropdown">
             <button
-              className="btn btn-sm btn-link text-secondary"
+              className="lc-icon-btn"
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -132,7 +132,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
         )}
 
         <button
-          className="btn btn-sm btn-link text-danger lc-close-btn"
+          className="lc-icon-btn lc-icon-btn--danger"
           type="button"
           onClick={() => onDelete(item)}
           disabled={disabled}

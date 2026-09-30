@@ -111,11 +111,11 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  name: { fontSize: 18, fontWeight: '800', color: colors.ink },
-  meta: { fontSize: 13, color: colors.inkSoft, marginTop: 2 },
+  name: { fontSize: 20, fontWeight: '800', color: colors.ink, letterSpacing: -0.4 },
+  meta: { fontSize: 14, color: colors.inkSoft, marginTop: 2 },
   divider: { height: 1, backgroundColor: colors.line, marginVertical: spacing.lg },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   languageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rowLabel: { color: colors.inkSoft, fontSize: 13 },
-  rowValue: { color: colors.ink, fontSize: 13, fontWeight: '600', textTransform: 'capitalize' },
+  rowLabel: { color: colors.inkSoft, fontSize: 14 },
+  rowValue: { color: colors.ink, fontSize: 14, fontWeight: '600', textTransform: 'capitalize' },
 });

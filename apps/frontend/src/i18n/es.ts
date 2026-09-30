@@ -132,7 +132,17 @@ export const es = {
     title: 'No encontramos esta pagina',
     text: 'Puede que el enlace haya cambiado o que la lista ya no exista.',
   },
+  brand: {
+    pitch: 'Tu despensa, siempre al dia.',
+    pitchText: 'Listas compartidas en tiempo real y productos que vuelven solos cuando toca.',
+    sampleBread: 'Pan de caja',
+    sampleEvery: 'cada 14 d',
+    sampleMilk: 'Leche entera',
+    sampleLate: 'vencido',
+    sampleBatteries: 'Pilas AA',
+  },
   layout: {
+    mainNav: 'Navegacion principal',
     openMenu: 'Abrir menu',
     lists: 'Mis listas',
     account: 'Mi cuenta',

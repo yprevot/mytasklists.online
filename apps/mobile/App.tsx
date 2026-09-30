@@ -41,7 +41,7 @@ function LiveNotifications() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <UpdateGate>
         <AuthProvider>
           <SocketProvider>

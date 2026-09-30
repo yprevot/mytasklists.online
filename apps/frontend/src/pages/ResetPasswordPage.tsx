@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { AuthShell } from '../components/AuthShell';
 import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -44,13 +44,11 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3 position-relative">
-      <LanguageSwitcher className="position-absolute top-0 end-0 m-3" />
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="reset-card">
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <i className="bi bi-shield-lock fs-1 text-primary" aria-hidden="true" />
-            <h1 className="h4 mt-2 mb-1">{t('reset.title')}</h1>
+    <AuthShell>
+      <div data-testid="reset-card">
+        <div>
+          <div className="lc-auth-head">
+            <h1>{t('reset.title')}</h1>
           </div>
 
           {!token ? (
@@ -97,19 +95,19 @@ export function ResetPasswordPage() {
                   {error}
                 </div>
               )}
-              <button className="btn btn-primary w-100" type="submit" disabled={submitting} data-testid="reset-submit">
+              <button className="btn btn-primary btn-lg w-100" type="submit" disabled={submitting} data-testid="reset-submit">
                 {submitting ? t('common.saving') : t('reset.submit')}
               </button>
             </form>
           )}
 
-          <p className="text-center small text-muted mt-4 mb-0">
-            <Link to="/login" data-testid="go-login">
+          <p className="text-center text-muted mt-4 mb-0">
+            <Link to="/login" className="fw-semibold" data-testid="go-login">
               {t('reset.goLogin')}
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

@@ -73,6 +73,6 @@ export function ForgotPasswordScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { padding: spacing.xl, flexGrow: 1, justifyContent: 'center', backgroundColor: colors.bg },
-  title: { fontSize: 18, fontWeight: '800', color: colors.ink, marginBottom: spacing.sm },
+  title: { fontSize: 20, fontWeight: '800', color: colors.ink, marginBottom: spacing.sm, letterSpacing: -0.4 },
   body: { color: colors.inkSoft, fontSize: 14, lineHeight: 20 },
 });

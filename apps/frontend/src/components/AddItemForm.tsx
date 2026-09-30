@@ -49,8 +49,8 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
   };
 
   return (
-    <form className="card border-0 shadow-sm mb-4" onSubmit={submit} data-testid="add-item-form">
-      <div className="card-body">
+    <form className="lc-add mb-4" onSubmit={submit} data-testid="add-item-form">
+      <div>
         <div className="row g-2 align-items-center">
           <div className="col-12 col-md">
             <label className="visually-hidden" htmlFor="item-name">
@@ -70,7 +70,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
           <div className="col-6 col-md-auto">
             <button
               type="button"
-              className={`btn w-100 ${expanded ? 'btn-secondary' : 'btn-outline-secondary'}`}
+              className={`btn btn-lg w-100 ${expanded ? 'btn-secondary' : 'btn-outline-secondary'}`}
               onClick={() => setExpanded((value) => !value)}
               data-testid="toggle-item-options"
               aria-expanded={expanded}
@@ -82,7 +82,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
           <div className="col-6 col-md-auto">
             <button
               type="submit"
-              className="btn btn-primary w-100"
+              className="btn btn-primary btn-lg w-100"
               disabled={disabled || saving || !name.trim()}
               data-testid="add-item-button"
             >
@@ -92,9 +92,9 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
         </div>
 
         {expanded && (
-          <div className="row g-3 mt-1 pt-3 border-top" data-testid="item-options">
+          <div className="row g-3 lc-add-options mx-0" data-testid="item-options">
             <div className="col-6 col-md-3">
-              <label className="form-label small" htmlFor="item-quantity">
+              <label className="form-label" htmlFor="item-quantity">
                 {t('addItem.quantity')}
               </label>
               <input
@@ -109,7 +109,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
               />
             </div>
             <div className="col-6 col-md-3">
-              <label className="form-label small" htmlFor="item-unit">
+              <label className="form-label" htmlFor="item-unit">
                 {t('addItem.unit')}
               </label>
               <input
@@ -139,7 +139,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
 
             {isRecurring && (
               <div className="col-12" data-testid="recurrence-options">
-                <label className="form-label small" htmlFor="item-recurrence-days">
+                <label className="form-label" htmlFor="item-recurrence-days">
                   {t('addItem.every')}
                 </label>
                 <div className="d-flex flex-wrap align-items-center gap-2">
@@ -155,14 +155,13 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
                     data-testid="item-recurrence-input"
                   />
                   <span className="text-muted small">{t('addItem.everyHint')}</span>
-                  <div className="ms-auto btn-group btn-group-sm" role="group">
+                  <div className="ms-md-auto d-flex flex-wrap gap-1" role="group">
                     {PRESET_DAYS.map((days) => (
                       <button
                         key={days}
                         type="button"
-                        className={`btn ${
-                          Number(recurrenceDays) === days ? 'btn-primary' : 'btn-outline-primary'
-                        }`}
+                        className="lc-preset"
+                        aria-pressed={Number(recurrenceDays) === days}
                         onClick={() => setRecurrenceDays(String(days))}
                         data-testid={`recurrence-preset-${days}`}
                       >

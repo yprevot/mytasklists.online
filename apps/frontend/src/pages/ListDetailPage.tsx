@@ -157,7 +157,7 @@ export function ListDetailPage() {
       <div className="alert alert-danger" role="alert" data-testid="list-error">
         {error}
         <div className="mt-2">
-          <Link className="btn btn-sm btn-outline-danger" to="/">
+          <Link className="btn btn-sm btn-outline-danger bg-white" to="/">
             {t('detail.backToLists')}
           </Link>
         </div>
@@ -170,74 +170,87 @@ export function ListDetailPage() {
   return (
     <div data-testid="list-detail-page" data-list-id={list.id}>
       {/* ── Encabezado ─────────────────────────────────────────────── */}
-      <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
-        <div className="d-flex align-items-start gap-3 min-w-0">
-          <Link to="/" className="btn btn-light btn-sm mt-1" aria-label={t('common.back')} data-testid="back-to-lists">
-            <i className="bi bi-arrow-left" aria-hidden="true" />
-          </Link>
-          <span style={{ fontSize: '2rem' }} aria-hidden="true">
-            {list.icon}
-          </span>
-          <div className="min-w-0">
-            <h1 className="h3 mb-1 text-truncate" data-testid="list-title">
-              {list.name}
-            </h1>
-            <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
-              <span data-testid="list-counters">
-                {t('detail.counters', { pending: list.pending.length, purchased: list.purchased.length })}
-              </span>
-              {overdueCount > 0 && (
-                <span className="badge text-bg-danger" data-testid="list-overdue-summary">
-                  {t('lists.overdue', { count: overdueCount })}
+      <div className="mb-4">
+        <Link
+          to="/"
+          className="btn btn-link text-secondary px-0 mb-2 d-inline-flex"
+          style={{ minHeight: '2rem' }}
+          data-testid="back-to-lists"
+        >
+          <i className="bi bi-arrow-left" aria-hidden="true" />
+          {t('layout.lists')}
+        </Link>
+
+        <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div
+            className="d-flex align-items-center gap-3 min-w-0"
+            style={{ ['--lc-list' as string]: list.color }}
+          >
+            <span className="lc-list-tile lc-list-tile--lg" aria-hidden="true">
+              {list.icon}
+            </span>
+            <div className="min-w-0">
+              <h1 className="lc-page-title text-truncate mb-1" data-testid="list-title">
+                {list.name}
+              </h1>
+              <div className="d-flex flex-wrap align-items-center gap-2 text-muted">
+                <span data-testid="list-counters">
+                  {t('detail.counters', { pending: list.pending.length, purchased: list.purchased.length })}
                 </span>
-              )}
-              {list.isShared && (
-                <span className="badge text-bg-light border" data-testid="list-members-badge">
-                  <i className="bi bi-people me-1" aria-hidden="true" />
-                  {t('detail.members', { count: list.memberCount })}
-                </span>
-              )}
+                {overdueCount > 0 && (
+                  <span className="lc-chip lc-chip--late" data-testid="list-overdue-summary">
+                    {t('lists.overdue', { count: overdueCount })}
+                  </span>
+                )}
+                {list.isShared && (
+                  <span className="lc-chip" data-testid="list-members-badge">
+                    <i className="bi bi-people" aria-hidden="true" />
+                    {t('detail.members', { count: list.memberCount })}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="d-flex align-items-center gap-2">
-          <div className="form-check form-switch mb-0" title={t('detail.notifyTitle')}>
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id="notify-switch"
-              checked={list.notifyOnChange}
-              onChange={toggleNotifications}
-              disabled={busy}
-              data-testid="notify-switch"
-            />
-            <label className="form-check-label small" htmlFor="notify-switch">
-              {t('detail.notify')}
-            </label>
-          </div>
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <div className="form-check form-switch mb-0 me-2" title={t('detail.notifyTitle')}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="notify-switch"
+                checked={list.notifyOnChange}
+                onChange={toggleNotifications}
+                disabled={busy}
+                data-testid="notify-switch"
+              />
+              <label className="form-check-label small fw-semibold" htmlFor="notify-switch">
+                {t('detail.notify')}
+              </label>
+            </div>
 
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => setShowShare(true)}
-            data-testid="share-button"
-          >
-            <i className="bi bi-person-plus me-1" aria-hidden="true" />
-            {t('detail.share')}
-          </button>
-
-          {list.ownerId === user.id && (
             <button
-              className="btn btn-outline-danger"
-              onClick={deleteList}
-              disabled={busy}
-              data-testid="delete-list-button"
-              aria-label={t('detail.deleteList')}
+              className="btn btn-outline-primary"
+              onClick={() => setShowShare(true)}
+              data-testid="share-button"
             >
-              <i className="bi bi-trash" aria-hidden="true" />
+              <i className="bi bi-person-plus" aria-hidden="true" />
+              {t('detail.share')}
             </button>
-          )}
+
+            {list.ownerId === user.id && (
+              <button
+                className="btn btn-outline-danger px-3"
+                onClick={deleteList}
+                disabled={busy}
+                data-testid="delete-list-button"
+                aria-label={t('detail.deleteList')}
+                title={t('detail.deleteList')}
+              >
+                <i className="bi bi-trash" aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -245,22 +258,20 @@ export function ListDetailPage() {
       <AddItemForm listId={list.id} disabled={busy} onError={(message) => notify(message, false)} />
 
       {/* ── Pendientes ─────────────────────────────────────────────── */}
-      <section className="mb-4" data-testid="pending-section">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="lc-divider-label mb-0">{t('detail.pendingHeading', { count: list.pending.length })}</h2>
+      <section className="mb-5" data-testid="pending-section">
+        <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+          <h2 className="lc-section-title">{t('detail.pendingHeading', { count: list.pending.length })}</h2>
         </div>
 
         {list.pending.length === 0 ? (
-          <div className="card border-0 shadow-sm">
-            <EmptyState
-              icon="bi-check2-circle"
-              title={t('detail.allDoneTitle')}
-              description={t('detail.allDoneText')}
-              testId="pending-empty"
-            />
-          </div>
+          <EmptyState
+            icon="bi-check2-circle"
+            title={t('detail.allDoneTitle')}
+            description={t('detail.allDoneText')}
+            testId="pending-empty"
+          />
         ) : (
-          <ul className="list-unstyled mb-0" data-testid="pending-list">
+          <ul className="lc-items" data-testid="pending-list">
             {list.pending.map((item) => (
               <PendingItem
                 key={item.id}
@@ -278,8 +289,8 @@ export function ListDetailPage() {
       {/* ── Comprados ──────────────────────────────────────────────── */}
       {list.purchased.length > 0 && (
         <section data-testid="purchased-section">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <h2 className="lc-divider-label mb-0">{t('detail.purchasedHeading', { count: list.purchased.length })}</h2>
+          <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+            <h2 className="lc-section-title">{t('detail.purchasedHeading', { count: list.purchased.length })}</h2>
             <button
               className="btn btn-sm btn-link text-secondary"
               onClick={clearPurchased}
@@ -289,7 +300,7 @@ export function ListDetailPage() {
               {t('detail.clear')}
             </button>
           </div>
-          <ul className="list-unstyled mb-0" data-testid="purchased-list">
+          <ul className="lc-items" data-testid="purchased-list">
             {list.purchased.map((item) => (
               <PurchasedItem
                 key={item.id}

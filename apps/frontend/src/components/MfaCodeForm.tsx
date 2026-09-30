@@ -31,7 +31,7 @@ export function MfaCodeForm({ onSubmit, onCancel }: Props) {
 
   return (
     <form onSubmit={submit} noValidate data-testid="mfa-form">
-      <p className="text-muted small">
+      <p className="text-muted">
         {t('mfa.hint')}
       </p>
       <div className="mb-3">
@@ -40,7 +40,8 @@ export function MfaCodeForm({ onSubmit, onCancel }: Props) {
         </label>
         <input
           id="mfa-code"
-          className="form-control text-center fs-5"
+          className="form-control form-control-lg text-center"
+          style={{ letterSpacing: '0.3em', fontVariantNumeric: 'tabular-nums' }}
           inputMode="numeric"
           autoComplete="one-time-code"
           autoFocus
@@ -55,7 +56,7 @@ export function MfaCodeForm({ onSubmit, onCancel }: Props) {
           {error}
         </div>
       )}
-      <button className="btn btn-primary w-100" type="submit" disabled={submitting} data-testid="mfa-submit">
+      <button className="btn btn-primary btn-lg w-100" type="submit" disabled={submitting} data-testid="mfa-submit">
         {submitting ? t('mfa.verifying') : t('mfa.verify')}
       </button>
       <button type="button" className="btn btn-link w-100 mt-2" onClick={onCancel}>

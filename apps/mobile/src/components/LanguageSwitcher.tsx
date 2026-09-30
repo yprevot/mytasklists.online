@@ -31,16 +31,29 @@ export function LanguageSwitcher() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.xs },
-  option: {
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    backgroundColor: '#fff',
+  row: {
+    flexDirection: 'row',
+    gap: 2,
+    padding: 3,
+    borderRadius: radius.md,
+    backgroundColor: '#e3e8e4',
   },
-  optionActive: { backgroundColor: colors.brand, borderColor: colors.brand },
-  text: { fontSize: 13, fontWeight: '700', color: colors.inkSoft },
-  textActive: { color: '#fff' },
+  option: {
+    minWidth: 44,
+    minHeight: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+  },
+  optionActive: {
+    backgroundColor: colors.surface,
+    shadowColor: '#15201a',
+    shadowOpacity: 0.16,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  text: { fontSize: 13, fontWeight: '700', color: colors.inkSoft, letterSpacing: 0.3 },
+  textActive: { color: colors.ink },
 });

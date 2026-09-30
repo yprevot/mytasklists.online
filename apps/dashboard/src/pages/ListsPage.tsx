@@ -20,7 +20,7 @@ export function ListsPage() {
 
   return (
     <div data-testid="lists-page">
-      <h1 className="h4 mb-3">{t('lists.title')}</h1>
+      <h1 className="lc-page-title mb-4">{t('lists.title')}</h1>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">

@@ -50,7 +50,7 @@ export function UpdateGate({ children }: { children: ReactNode }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: spacing.xl, justifyContent: 'center', backgroundColor: colors.bg },
-  title: { fontSize: 18, fontWeight: '800', color: colors.ink, marginBottom: spacing.sm },
+  title: { fontSize: 20, fontWeight: '800', color: colors.ink, marginBottom: spacing.sm, letterSpacing: -0.4 },
   body: { color: colors.inkSoft, fontSize: 14, lineHeight: 20 },
   versions: { color: colors.inkSoft, fontSize: 13, lineHeight: 18, marginTop: spacing.md },
 });

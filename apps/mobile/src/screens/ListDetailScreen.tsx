@@ -17,7 +17,7 @@ import { ItemRow } from '../components/ItemRow';
 import { PurchasedRow } from '../components/PurchasedRow';
 import { itemsApi, listsApi } from '../api/endpoints';
 import { useSocket, useSocketEvent } from '../context/SocketContext';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, shadow, spacing } from '../theme';
 import type { Item, ListDetail } from '../types';
 
 const PRESETS = [3, 7, 14, 30];
@@ -141,7 +141,7 @@ export function ListDetailScreen({ route, navigation }: any) {
             testID="item-recurring-switch"
             value={isRecurring}
             onValueChange={setIsRecurring}
-            trackColor={{ true: colors.brand }}
+            trackColor={{ true: colors.brand, false: colors.lineStrong }}
           />
         </View>
 
@@ -221,7 +221,7 @@ export function ListDetailScreen({ route, navigation }: any) {
               testID="notify-switch"
               value={list.notifyOnChange}
               onValueChange={(value) => guard(() => listsApi.setMyNotifications(listId, value))}
-              trackColor={{ true: colors.brand }}
+              trackColor={{ true: colors.brand, false: colors.lineStrong }}
             />
           </View>
         </View>
@@ -229,11 +229,12 @@ export function ListDetailScreen({ route, navigation }: any) {
 
       {/* ── Pendientes ───────────────────────────────────────────────── */}
       <SectionLabel>{t('detail.pendingHeading', { count: list.pending.length })}</SectionLabel>
-      <View testID="pending-list">
-        {list.pending.map((item) => (
+      <View testID="pending-list" style={list.pending.length > 0 ? styles.sheet : undefined}>
+        {list.pending.map((item, index) => (
           <ItemRow
             key={item.id}
             item={item}
+            first={index === 0}
             disabled={busy}
             onPurchase={(target: Item) => guard(() => itemsApi.purchase(target.id))}
             onLongPress={(target: Item) =>
@@ -267,11 +268,12 @@ export function ListDetailScreen({ route, navigation }: any) {
       {list.purchased.length > 0 && (
         <>
           <SectionLabel>{t('detail.purchasedHeading', { count: list.purchased.length })}</SectionLabel>
-          <View testID="purchased-list">
-            {list.purchased.map((item) => (
+          <View testID="purchased-list" style={styles.sheet}>
+            {list.purchased.map((item, index) => (
               <PurchasedRow
                 key={item.id}
                 item={item}
+                first={index === 0}
                 disabled={busy}
                 onRestore={(target) => guard(() => itemsApi.restore(target.id))}
                 onClose={(target) => guard(() => itemsApi.close(target.id))}
@@ -286,22 +288,32 @@ export function ListDetailScreen({ route, navigation }: any) {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+  sheet: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.line,
+    overflow: 'hidden',
+    ...shadow.card,
+  },
   addCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.line,
     padding: spacing.lg,
+    ...shadow.card,
   },
   addInput: {
+    minHeight: 50,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.lineStrong,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ink,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   recurRow: {
     flexDirection: 'row',
@@ -309,32 +321,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: spacing.md,
   },
-  recurLabel: { fontSize: 14, color: colors.ink, fontWeight: '600' },
+  recurLabel: { fontSize: 15, color: colors.ink, fontWeight: '600' },
   presetRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   preset: {
+    minHeight: 40,
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.pill,
+    borderColor: colors.lineStrong,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    backgroundColor: colors.surface,
   },
-  presetActive: { backgroundColor: colors.brand, borderColor: colors.brand },
-  presetText: { fontSize: 13, color: colors.inkSoft, fontWeight: '600' },
-  presetTextActive: { color: '#fff' },
+  presetActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  presetText: { fontSize: 14, color: colors.ink, fontWeight: '700' },
+  presetTextActive: { color: colors.ink },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     marginTop: spacing.lg,
   },
-  linkAction: { color: colors.brand, fontWeight: '700' },
+  linkAction: { color: colors.brand, fontWeight: '700', fontSize: 15, paddingVertical: 8 },
   shareCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.line,
     padding: spacing.lg,
     marginTop: spacing.md,
+    ...shadow.card,
   },
   notifyRow: {
     flexDirection: 'row',
@@ -347,7 +362,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: colors.inkSoft,
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
     paddingVertical: spacing.xl,
   },

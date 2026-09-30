@@ -9,10 +9,10 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Field } from '../components/ui';
+import { Badge, Button, Field, ListTile, PlusGlyph } from '../components/ui';
 import { listsApi } from '../api/endpoints';
 import { useSocketEvent } from '../context/SocketContext';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, shadow, spacing } from '../theme';
 import type { ListSummary } from '../types';
 
 export function ListsScreen({ navigation }: any) {
@@ -112,7 +112,9 @@ export function ListsScreen({ navigation }: any) {
         }
         ListEmptyComponent={
           <View style={styles.empty} testID="lists-empty">
-            <Text style={{ fontSize: 40 }}>🛒</Text>
+            <View style={styles.emptyIcon}>
+              <View style={styles.emptyCheck} />
+            </View>
             <Text style={styles.emptyTitle}>{t('lists.emptyTitle')}</Text>
             <Text style={styles.emptyBody}>
               {t('lists.emptyText')}
@@ -124,9 +126,9 @@ export function ListsScreen({ navigation }: any) {
             testID="list-card"
             accessibilityLabel={list.name}
             onPress={() => navigation.navigate('ListDetail', { id: list.id, name: list.name })}
-            style={[styles.card, { borderLeftColor: list.color }]}
+            style={({ pressed }) => [styles.card, pressed && { backgroundColor: '#f8faf7' }]}
           >
-            <Text style={styles.icon}>{list.icon}</Text>
+            <ListTile icon={list.icon} color={list.color} />
             <View style={{ flex: 1 }}>
               <Text style={styles.name} testID="list-card-name" numberOfLines={1}>
                 {list.name}
@@ -146,7 +148,7 @@ export function ListsScreen({ navigation }: any) {
 
       {!showForm && (
         <Pressable style={styles.fab} onPress={() => setShowForm(true)} testID="new-list-button">
-          <Text style={styles.fabText}>+</Text>
+          <PlusGlyph size={22} />
         </Pressable>
       )}
     </View>
@@ -159,43 +161,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.line,
-    borderLeftWidth: 5,
     padding: spacing.lg,
     marginBottom: spacing.md,
+    ...shadow.card,
   },
-  icon: { fontSize: 24 },
-  name: { fontSize: 16, fontWeight: '700', color: colors.ink },
+  name: { fontSize: 17, fontWeight: '700', color: colors.ink, letterSpacing: -0.25 },
   badges: { flexDirection: 'row', gap: spacing.xs, marginTop: 6, flexWrap: 'wrap' },
   form: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.line,
     padding: spacing.lg,
     marginBottom: spacing.lg,
+    ...shadow.card,
   },
   empty: { alignItems: 'center', paddingVertical: spacing.xxl * 2, gap: spacing.sm },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.ink },
-  emptyBody: { fontSize: 13, color: colors.inkSoft, textAlign: 'center', paddingHorizontal: spacing.xl },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: colors.brandSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  emptyCheck: {
+    width: 14,
+    height: 26,
+    borderRightWidth: 4,
+    borderBottomWidth: 4,
+    borderColor: colors.brand,
+    borderRadius: 1,
+    transform: [{ rotate: '45deg' }, { translateY: -3 }],
+  },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.ink, letterSpacing: -0.25 },
+  emptyBody: { fontSize: 14, color: colors.inkSoft, textAlign: 'center', paddingHorizontal: spacing.xl },
   fab: {
     position: 'absolute',
     right: spacing.xl,
     bottom: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 58,
+    height: 58,
+    borderRadius: 18,
     backgroundColor: colors.brand,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0b1220',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    ...shadow.pop,
   },
-  fabText: { color: '#fff', fontSize: 30, lineHeight: 34, fontWeight: '300' },
 });

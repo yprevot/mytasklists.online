@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
 import { SocialButtons } from '../components/SocialButtons';
@@ -61,18 +61,12 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3 position-relative">
-      <LanguageSwitcher className="position-absolute top-0 end-0 m-3" />
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="register-card">
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <div style={{ fontSize: '2.5rem' }} aria-hidden="true">
-              🛒
-            </div>
-            <h1 className="h4 mt-2 mb-1">{t('register.title')}</h1>
-            <p className="text-muted small mb-0">
-              {t('register.subtitle')}
-            </p>
+    <AuthShell>
+      <div data-testid="register-card">
+        <div>
+          <div className="lc-auth-head">
+            <h1>{t('register.title')}</h1>
+            <p>{t('register.subtitle')}</p>
           </div>
 
           <form onSubmit={submit} noValidate data-testid="register-form">
@@ -162,7 +156,7 @@ export function RegisterPage() {
             )}
 
             <button
-              className="btn btn-primary w-100"
+              className="btn btn-primary btn-lg w-100"
               type="submit"
               disabled={submitting}
               data-testid="register-submit"
@@ -171,22 +165,18 @@ export function RegisterPage() {
             </button>
           </form>
 
-          <div className="d-flex align-items-center gap-2 my-3">
-            <hr className="flex-grow-1" />
-            <span className="text-muted small">{t('common.or')}</span>
-            <hr className="flex-grow-1" />
-          </div>
+          <div className="lc-divider">{t('common.or')}</div>
 
           <SocialButtons disabled={submitting} />
 
-          <p className="text-center small text-muted mt-4 mb-0">
+          <p className="text-center text-muted mt-4 mb-0">
             {t('register.haveAccount')}{' '}
-            <Link to="/login" data-testid="go-login">
+            <Link to="/login" className="fw-semibold" data-testid="go-login">
               {t('register.login')}
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

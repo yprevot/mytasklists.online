@@ -133,7 +133,17 @@ export const en: Catalog<typeof es> = {
     title: "We couldn't find this page",
     text: 'The link may have changed or the list may no longer exist.',
   },
+  brand: {
+    pitch: 'Your pantry, always up to date.',
+    pitchText: 'Shared lists in real time and items that come back on their own when it is time.',
+    sampleBread: 'Sliced bread',
+    sampleEvery: 'every 14 d',
+    sampleMilk: 'Whole milk',
+    sampleLate: 'overdue',
+    sampleBatteries: 'AA batteries',
+  },
   layout: {
+    mainNav: 'Main navigation',
     openMenu: 'Open menu',
     lists: 'My lists',
     account: 'My account',

@@ -26,7 +26,7 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
   const { t } = useTranslation();
   return (
     <li
-      className="lc-item lc-item--comprado d-flex align-items-center gap-3 px-3 py-2 mb-2"
+      className="lc-item lc-item--comprado"
       data-testid="purchased-item"
       data-item-id={item.id}
       data-item-name={item.name}
@@ -34,7 +34,7 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
     >
       <input
         type="checkbox"
-        className="form-check-input lc-check m-0"
+        className="lc-check"
         checked
         onChange={() => onRestore(item)}
         disabled={disabled}
@@ -47,12 +47,12 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
           <span className="lc-item-name text-truncate" data-testid="purchased-name">
             {item.name}
           </span>
-          <span className="text-muted small" data-testid="purchased-meta">
+          <span className="lc-hint" data-testid="purchased-meta">
             {item.purchasedByName ? `${item.purchasedByName} · ` : ''}
             {relativeDate(item.purchasedAt, t)}
           </span>
           {item.isRecurring && item.daysUntilReactivation !== null && (
-            <span className="badge text-bg-info" data-testid="purchased-return-badge">
+            <span className="lc-chip lc-chip--tag" data-testid="purchased-return-badge">
               <i className="bi bi-arrow-repeat me-1" aria-hidden="true" />
               {t('item.returnsIn', { count: item.daysUntilReactivation })}
             </span>
@@ -61,7 +61,7 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
       </div>
 
       <button
-        className="btn btn-sm btn-link text-secondary lc-close-btn"
+        className="lc-icon-btn"
         type="button"
         onClick={() => onClose(item)}
         disabled={disabled}

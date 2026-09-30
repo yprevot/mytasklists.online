@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { BrandMark } from '../components/Brand';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { ApiError } from '../api/client';
@@ -50,14 +51,14 @@ export function LoginPage() {
   return (
     <div className="d-flex align-items-center justify-content-center min-vh-100 p-3 position-relative">
       <LanguageSwitcher className="position-absolute top-0 end-0 m-3" />
-      <div className="card border-0 shadow-sm" style={{ maxWidth: 420, width: '100%' }} data-testid="login-card">
+      <div className="card lc-rise" style={{ maxWidth: 420, width: '100%' }} data-testid="login-card">
         <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <div style={{ fontSize: '2.2rem' }} aria-hidden="true">
-              📊
-            </div>
-            <h1 className="h5 mt-2 mb-1">{t('auth.title')}</h1>
-            <p className="text-muted small mb-0">{t('auth.subtitle')}</p>
+          <div className="mb-4">
+            <BrandMark size={40} />
+            <h1 className="lc-page-title mt-3 mb-2" style={{ fontSize: '1.75rem' }}>
+              {t('auth.title')}
+            </h1>
+            <p className="text-muted mb-0">{t('auth.subtitle')}</p>
           </div>
 
           {mfaToken ? (
@@ -68,7 +69,7 @@ export function LoginPage() {
                 </label>
                 <input
                   id="mfa-code"
-                  className="form-control text-center fs-5"
+                  className="form-control form-control-lg text-center"
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   autoFocus
@@ -85,7 +86,7 @@ export function LoginPage() {
                   {error}
                 </div>
               )}
-              <button className="btn btn-primary w-100" disabled={submitting} data-testid="mfa-submit">
+              <button className="btn btn-primary btn-lg w-100" disabled={submitting} data-testid="mfa-submit">
                 {submitting ? t('common.verifying') : t('common.verify')}
               </button>
               <button type="button" className="btn btn-link w-100 mt-2" onClick={() => setMfaToken(null)}>
@@ -129,7 +130,7 @@ export function LoginPage() {
                 </div>
               )}
 
-              <button className="btn btn-primary w-100" disabled={submitting} data-testid="login-submit">
+              <button className="btn btn-primary btn-lg w-100" disabled={submitting} data-testid="login-submit">
                 {submitting ? t('auth.submitting') : t('auth.submit')}
               </button>
             </form>

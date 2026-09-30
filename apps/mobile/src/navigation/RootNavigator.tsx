@@ -13,6 +13,14 @@ import { ListDetailScreen } from '../screens/ListDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { colors } from '../theme';
 
+const initials = (name: string): string =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+
 const Stack = createNativeStackNavigator();
 
 export function RootNavigator() {
@@ -34,9 +42,11 @@ export function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: colors.brand },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: '800' },
+          headerStyle: { backgroundColor: colors.surface },
+          headerShadowVisible: false,
+          headerTintColor: colors.brand,
+          headerTitleStyle: { fontWeight: '800', color: colors.ink },
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
         {user ? (
@@ -50,9 +60,20 @@ export function RootNavigator() {
                   <Pressable
                     onPress={() => navigation.navigate('Settings')}
                     testID="open-settings"
+                    accessibilityLabel={t('nav.account')}
                     hitSlop={12}
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 17,
+                      backgroundColor: colors.brand,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
                   >
-                    <Text style={{ color: '#fff', fontSize: 18 }}>⚙︎</Text>
+                    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+                      {initials(user.fullName)}
+                    </Text>
                   </Pressable>
                 ),
               })}

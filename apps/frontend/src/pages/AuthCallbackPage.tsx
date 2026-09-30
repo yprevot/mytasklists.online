@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { AuthShell } from '../components/AuthShell';
 import { Spinner } from '../components/Spinner';
 import { MfaCodeForm } from '../components/MfaCodeForm';
 
@@ -54,39 +55,32 @@ export function AuthCallbackPage() {
 
   if (mfaToken) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
-        <div className="card border-0 shadow-sm lc-auth-card">
-          <div className="card-body p-4">
-            <h1 className="h5 text-center mb-3">{t('login.mfaTitle')}</h1>
-            <MfaCodeForm
-              onSubmit={async (code) => {
-                await verifyMfa(mfaToken, code);
-                navigate('/', { replace: true });
-              }}
-              onCancel={() => navigate('/login', { replace: true })}
-            />
-          </div>
+      <AuthShell>
+        <div className="lc-auth-head">
+          <h1>{t('login.mfaTitle')}</h1>
         </div>
-      </div>
+        <MfaCodeForm
+          onSubmit={async (code) => {
+            await verifyMfa(mfaToken, code);
+            navigate('/', { replace: true });
+          }}
+          onCancel={() => navigate('/login', { replace: true })}
+        />
+      </AuthShell>
     );
   }
 
   if (error) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
-        <div className="card border-0 shadow-sm lc-auth-card">
-          <div className="card-body p-4 text-center">
-            <i className="bi bi-x-octagon text-danger fs-1" aria-hidden="true" />
-            <h1 className="h5 mt-3">{t('callback.errorTitle')}</h1>
-            <p className="text-muted small" data-testid="oauth-error">
-              {error}
-            </p>
-            <button className="btn btn-primary" onClick={() => navigate('/login', { replace: true })}>
-              {t('callback.backToLogin')}
-            </button>
-          </div>
+      <AuthShell>
+        <div className="lc-auth-head">
+          <h1>{t('callback.errorTitle')}</h1>
+          <p data-testid="oauth-error">{error}</p>
         </div>
-      </div>
+        <button className="btn btn-primary btn-lg w-100" onClick={() => navigate('/login', { replace: true })}>
+          {t('callback.backToLogin')}
+        </button>
+      </AuthShell>
     );
   }
 

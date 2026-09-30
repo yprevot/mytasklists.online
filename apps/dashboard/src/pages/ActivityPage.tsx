@@ -36,7 +36,7 @@ export function ActivityPage() {
 
   return (
     <div data-testid="activity-page">
-      <h1 className="h4 mb-3">{t('activity.title')}</h1>
+      <h1 className="lc-page-title mb-4">{t('activity.title')}</h1>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">

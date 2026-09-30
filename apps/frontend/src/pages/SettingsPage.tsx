@@ -76,13 +76,13 @@ export function SettingsPage() {
 
   return (
     <div data-testid="settings-page">
-      <h1 className="h3 mb-4">{t('settings.title')}</h1>
+      <h1 className="lc-page-title mb-4">{t('settings.title')}</h1>
 
       <div className="row g-4">
         <div className="col-12 col-lg-7">
           <form className="card border-0 shadow-sm" onSubmit={saveProfile} data-testid="profile-form">
             <div className="card-body">
-              <h2 className="h6 mb-3">{t('settings.personal')}</h2>
+              <h2 className="h5 mb-3">{t('settings.personal')}</h2>
 
               <div className="mb-3">
                 <label className="form-label" htmlFor="profile-name">
@@ -156,7 +156,7 @@ export function SettingsPage() {
         <div className="col-12 col-lg-5">
           <form className="card border-0 shadow-sm" onSubmit={changePassword} data-testid="password-form">
             <div className="card-body">
-              <h2 className="h6 mb-3">{t('settings.passwordTitle')}</h2>
+              <h2 className="h5 mb-3">{t('settings.passwordTitle')}</h2>
 
               {(user.hasPassword ?? user.provider === 'local') && (
                 <div className="mb-3">
@@ -204,9 +204,9 @@ export function SettingsPage() {
 
           <div className="card border-0 shadow-sm mt-4" data-testid="language-card">
             <div className="card-body">
-              <h2 className="h6 mb-2">{t('settings.languageTitle')}</h2>
+              <h2 className="h5 mb-3">{t('settings.languageTitle')}</h2>
               <LanguageSwitcher />
-              <div className="form-text">{t('settings.languageHint')}</div>
+              <div className="form-text mt-2">{t('settings.languageHint')}</div>
             </div>
           </div>
         </div>

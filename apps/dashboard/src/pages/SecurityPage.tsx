@@ -65,11 +65,11 @@ export function SecurityPage() {
 
   return (
     <div data-testid="security-page">
-      <h1 className="h4 mb-3">{t('security.title')}</h1>
+      <h1 className="lc-page-title mb-4">{t('security.title')}</h1>
 
       <div className="card border-0 shadow-sm" style={{ maxWidth: 640 }}>
         <div className="card-body">
-          <h2 className="h6 d-flex align-items-center gap-2">
+          <h2 className="h5 d-flex align-items-center gap-2">
             {t('security.mfa')}
             <span
               className={`badge ${user.mfaEnabled ? 'text-bg-success' : 'text-bg-secondary'}`}

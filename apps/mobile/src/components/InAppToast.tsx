@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, shadow, spacing } from '../theme';
 
 export interface ToastPayload {
   id: string;
@@ -36,13 +36,16 @@ export function InAppToast({ toast, onHide }: { toast: ToastPayload | null; onHi
 
   return (
     <Animated.View style={[styles.wrap, { transform: [{ translateY }] }]} testID="in-app-toast">
-      <View style={[styles.card, { borderLeftColor: accent }]}>
-        <Text style={styles.title} testID="toast-title">
-          {toast.title}
-        </Text>
-        <Text style={styles.body} testID="toast-body">
-          {toast.body}
-        </Text>
+      <View style={styles.card}>
+        <View style={[styles.dot, { backgroundColor: accent }]} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title} testID="toast-title">
+            {toast.title}
+          </Text>
+          <Text style={styles.body} testID="toast-body">
+            {toast.body}
+          </Text>
+        </View>
       </View>
     </Animated.View>
   );
@@ -59,18 +62,17 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: radius.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.line,
-    borderLeftWidth: 5,
-    padding: spacing.md,
-    shadowColor: '#0b1220',
-    shadowOpacity: 0.14,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    padding: spacing.lg,
+    ...shadow.pop,
   },
-  title: { fontWeight: '800', color: colors.ink, marginBottom: 2 },
-  body: { color: colors.inkSoft, fontSize: 13 },
+  dot: { width: 10, height: 10, borderRadius: 5, marginTop: 5 },
+  title: { fontWeight: '700', fontSize: 15, color: colors.ink, marginBottom: 2 },
+  body: { color: colors.inkSoft, fontSize: 14 },
 });

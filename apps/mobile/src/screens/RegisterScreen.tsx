@@ -110,8 +110,8 @@ export function RegisterScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { padding: spacing.xl, flexGrow: 1, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: colors.ink },
-  subtitle: { fontSize: 14, color: colors.inkSoft, marginBottom: spacing.xl },
+  title: { fontSize: 28, fontWeight: '800', color: colors.ink, letterSpacing: -0.7 },
+  subtitle: { fontSize: 15, color: colors.inkSoft, marginTop: 4, marginBottom: spacing.xl },
   error: { color: colors.danger, marginBottom: spacing.md, fontSize: 13 },
-  link: { textAlign: 'center', color: colors.brand, marginTop: spacing.lg, fontWeight: '600' },
+  link: { textAlign: 'center', color: colors.brand, marginTop: spacing.lg, fontWeight: '700', fontSize: 15, paddingVertical: 6 },
 });

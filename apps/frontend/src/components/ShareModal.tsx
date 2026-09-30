@@ -100,7 +100,7 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
                 </p>
               )}
 
-              <h6 className="lc-divider-label mb-2">{t('share.members', { count: list.members.length })}</h6>
+              <h6 className="lc-section-title mb-2">{t('share.members', { count: list.members.length })}</h6>
               <ul className="list-group list-group-flush" data-testid="member-list">
                 {list.members.map((member) => (
                   <li

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
 import { SocialButtons } from '../components/SocialButtons';
@@ -41,18 +41,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3 position-relative">
-      <LanguageSwitcher className="position-absolute top-0 end-0 m-3" />
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="login-card">
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <div style={{ fontSize: '2.5rem' }} aria-hidden="true">
-              🛒
-            </div>
-            <h1 className="h4 mt-2 mb-1">{mfaToken ? t('login.mfaTitle') : t('login.title')}</h1>
-            <p className="text-muted small mb-0">
-              {t('login.subtitle')}
-            </p>
+    <AuthShell>
+      <div data-testid="login-card">
+        <div>
+          <div className="lc-auth-head">
+            <h1>{mfaToken ? t('login.mfaTitle') : t('login.title')}</h1>
+            <p>{t('login.subtitle')}</p>
           </div>
 
           {mfaToken ? (
@@ -108,7 +102,7 @@ export function LoginPage() {
                 )}
 
                 <button
-                  className="btn btn-primary w-100"
+                  className="btn btn-primary btn-lg w-100"
                   type="submit"
                   disabled={submitting}
                   data-testid="login-submit"
@@ -117,23 +111,19 @@ export function LoginPage() {
                 </button>
 
                 <div className="text-center mt-3">
-                  <Link to="/forgot-password" className="small" data-testid="go-forgot-password">
+                  <Link to="/forgot-password" className="small fw-semibold" data-testid="go-forgot-password">
                     {t('login.forgot')}
                   </Link>
                 </div>
               </form>
 
-              <div className="d-flex align-items-center gap-2 my-3">
-                <hr className="flex-grow-1" />
-                <span className="text-muted small">{t('common.or')}</span>
-                <hr className="flex-grow-1" />
-              </div>
+              <div className="lc-divider">{t('common.or')}</div>
 
               <SocialButtons disabled={submitting} />
 
-              <p className="text-center small text-muted mt-4 mb-0">
+              <p className="text-center text-muted mt-4 mb-0">
                 {t('login.noAccount')}{' '}
-                <Link to="/register" data-testid="go-register">
+                <Link to="/register" className="fw-semibold" data-testid="go-register">
                   {t('login.register')}
                 </Link>
               </p>
@@ -141,6 +131,6 @@ export function LoginPage() {
           )}
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

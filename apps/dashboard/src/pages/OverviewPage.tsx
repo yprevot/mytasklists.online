@@ -55,7 +55,7 @@ export function OverviewPage() {
   if (!stats) {
     return (
       <div className="d-flex justify-content-center py-5" data-testid="spinner">
-        <div className="spinner-border text-primary" role="status" />
+        <div className="lc-spinner" role="status" />
       </div>
     );
   }
@@ -64,7 +64,7 @@ export function OverviewPage() {
     <div data-testid="overview-page">
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-          <h1 className="h4 mb-1">{t('overview.title')}</h1>
+          <h1 className="lc-page-title mb-1">{t('overview.title')}</h1>
           <p className="text-muted small mb-0">
             {t('overview.updated', {
               time: new Date(stats.generatedAt).toLocaleTimeString(LOCALE_TAGS[currentLanguage()]),
@@ -78,7 +78,7 @@ export function OverviewPage() {
             </span>
           )}
           <button
-            className="btn btn-outline-primary btn-sm"
+            className="btn btn-outline-primary"
             onClick={runRecurrence}
             disabled={running}
             data-testid="run-recurrence"
@@ -89,8 +89,7 @@ export function OverviewPage() {
         </div>
       </div>
 
-      <div className="row g-3 mb-4">
-        <div className="col-6 col-lg-3">
+      <div className="dash-kpis mb-4">
           <KpiCard
             testId="kpi-users"
             label={t('overview.users')}
@@ -98,8 +97,6 @@ export function OverviewPage() {
             hint={t('overview.usersHint', { active: stats.users.active, recent: stats.users.newLast7Days })}
             icon="bi-people-fill"
           />
-        </div>
-        <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-lists"
             label={t('overview.lists')}
@@ -108,8 +105,6 @@ export function OverviewPage() {
             icon="bi-card-checklist"
             variant="success"
           />
-        </div>
-        <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-recurring"
             label={t('overview.recurring')}
@@ -118,8 +113,6 @@ export function OverviewPage() {
             icon="bi-arrow-repeat"
             variant="info"
           />
-        </div>
-        <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-overdue"
             label={t('overview.overdue')}
@@ -128,14 +121,13 @@ export function OverviewPage() {
             icon="bi-exclamation-triangle-fill"
             variant="danger"
           />
-        </div>
       </div>
 
       <div className="row g-3">
         <div className="col-12 col-xl-8">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <h2 className="h6 mb-3">{t('overview.activity')}</h2>
+              <h2 className="h5 mb-3">{t('overview.activity')}</h2>
               <BarChart data={series} />
             </div>
           </div>
@@ -144,9 +136,9 @@ export function OverviewPage() {
         <div className="col-12 col-xl-4">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <h2 className="h6 mb-3">{t('overview.distribution')}</h2>
+              <h2 className="h5 mb-3">{t('overview.distribution')}</h2>
 
-              <h3 className="label small text-uppercase text-muted">{t('overview.signupMethod')}</h3>
+              <h3 className="lc-section-title mb-1">{t('overview.signupMethod')}</h3>
               <ul className="list-group list-group-flush mb-3" data-testid="provider-breakdown">
                 {Object.entries(stats.users.byProvider).map(([provider, count]) => (
                   <li
@@ -159,7 +151,7 @@ export function OverviewPage() {
                 ))}
               </ul>
 
-              <h3 className="label small text-uppercase text-muted">{t('overview.items')}</h3>
+              <h3 className="lc-section-title mb-1">{t('overview.items')}</h3>
               <ul className="list-group list-group-flush" data-testid="items-breakdown">
                 <li className="list-group-item d-flex justify-content-between px-0 py-1">
                   <span>{t('overview.pending')}</span>
