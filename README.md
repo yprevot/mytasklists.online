@@ -321,6 +321,10 @@ están en [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md).
 
 ## Despliegue en producción
 
+Hay dos caminos. El recomendado es **Coolify con GitHub Actions** (`compose.prod.yml`, imágenes en GHCR, sin compilar
+en el servidor): la guía completa, con tokens, DNS y el alta de Google, está en
+[`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md). La alternativa es **autoalojar** con certificados propios:
+
 ```bash
 # 1. Secretos (cada uno distinto)
 openssl rand -base64 48   # JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, APP_ENCRYPTION_KEY
@@ -440,11 +444,12 @@ npm run test:maestro                          # corre apps/mobile/.maestro/flows
 ```
 .
 ├── docker-compose.yml            Los 8 servicios (entorno de desarrollo)
-├── docker-compose.prod.yml       Ajustes de producción (HTTPS, sin puertos de BD, sin Mailpit)
+├── docker-compose.prod.yml       Alternativa autoalojada: HTTPS propio, sin puertos de BD, sin Mailpit
+├── compose.prod.yml              Producción en Coolify: imágenes de GHCR, sin puertos en el host (docs/DESPLIEGUE.md)
 ├── .env.example                  Todas las variables de entorno
 ├── packages/contracts/           Contrato de la API (solo tipos) que comparten backend, web, panel y app
 ├── scripts/                      impact.mjs y contract-check.mjs: qué se despliega y si rompe algo
-├── .github/workflows/            CI, deploy de servicios y publicación de la app móvil
+├── .github/workflows/            CI, publicación + despliegue en Coolify y publicación de la app móvil
 ├── apps/
 │   ├── backend/                  NestJS + Fastify + TypeORM + Socket.IO
 │   │   └── src/
@@ -532,6 +537,7 @@ Eventos de WebSocket: `item:created`, `item:updated`, `item:purchased`, `item:re
 ## Documentación adicional
 
 - [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) — modelo de datos, decisiones y flujos internos.
+- [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) — desarrollo vs producción, qué llega al servidor, tokens, Coolify y Google.
 - [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 159 casos de prueba, uno por uno.
 - [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md) — qué se puede desplegar sin miedo, contrato
   compartido, versión mínima de la app y workflows de CI/CD.

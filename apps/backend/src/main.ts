@@ -9,7 +9,6 @@ import helmet from '@fastify/helmet';
 import { DataSource } from 'typeorm';
 import { AppModule } from './app.module';
 import configuration from './config/configuration';
-import { runSeed } from './database/seeds/seed-data';
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
@@ -101,6 +100,8 @@ async function bootstrap(): Promise<void> {
   // ── Datos de demostración (nunca en producción) ──────────────────────
   if (config.get<boolean>('database.runSeed', false)) {
     try {
+      // Import dinámico: la imagen de producción no lleva los seeds (ver el Dockerfile)
+      const { runSeed } = await import('./database/seeds/seed-data.js');
       const dataSource = app.get(DataSource);
       const summary = await runSeed(dataSource);
       logger.log(`Seed: ${summary}`);

@@ -233,7 +233,7 @@ if (!files.length) {
   out.push('');
   if (warnings.length) {
     const icon = { alto: '🔴', medio: '🟡', bajo: '🔵' };
-    out.push('### Que revisar', '');
+    out.push('### Qué revisar', '');
     for (const w of warnings) out.push(`- ${icon[w.level]} ${w.text}`);
   } else {
     out.push('Nada que coordinar: cada parte se puede desplegar por su lado.');

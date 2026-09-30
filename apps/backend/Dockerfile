@@ -14,10 +14,15 @@ COPY packages/contracts           packages/contracts/
 
 # ─────────────── Etapa 2: dependencias + compilación ───────────────
 FROM manifests AS builder
+# KEEP_SEED=true (desarrollo y e2e) conserva los datos de demostración; las
+# imágenes de producción se construyen con KEEP_SEED=false (ver deploy.yml).
+ARG KEEP_SEED=true
 RUN npm ci --workspace @lista/backend --no-audit --no-fund
 COPY apps/backend/tsconfig.json apps/backend/nest-cli.json apps/backend/
 COPY apps/backend/src apps/backend/src
-RUN npm run build --workspace @lista/backend
+RUN npm run build --workspace @lista/backend \
+ && find apps/backend/dist -name '*.map' -delete \
+ && if [ "$KEEP_SEED" != "true" ]; then rm -rf apps/backend/dist/database/seeds; fi
 
 # ─────────────── Etapa 3: dependencias de producción ───────────────
 FROM manifests AS deps

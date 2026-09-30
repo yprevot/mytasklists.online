@@ -4,7 +4,7 @@ El sistema se publica por tres caminos que no avanzan al mismo ritmo:
 
 | Qué | Cómo llega a la gente | Quién decide cuándo |
 | --- | --- | --- |
-| Backend, web, panel y landing | Docker (`deploy-services.yml`) | Nosotros, todo a la vez |
+| Backend, web, panel y landing | Imágenes en GHCR + Coolify (`deploy.yml`) | Nosotros, todo a la vez |
 | App móvil, cambio solo de JavaScript | Actualización OTA con EAS Update (`mobile.yml`) | Nosotros, llega en minutos |
 | App móvil, cambio nativo | Build nuevo en App Store y Google Play (`mobile.yml`) | Cada persona, cuando actualiza |
 
@@ -141,19 +141,19 @@ resto, por OTA.
 | Workflow | Cuando | Qué hace |
 | --- | --- | --- |
 | `.github/workflows/ci.yml` | Cada PR y cada push a `main` | Impacto, contrato, tipos y build de todo, pruebas e2e |
-| `.github/workflows/deploy-services.yml` | Push a `main` que no sea solo de la app, docs o pruebas | Despliega por SSH con Docker; se niega con 🔴 salvo lanzamiento manual |
+| `.github/workflows/deploy.yml` | Push a `main` que no sea solo de la app, docs o pruebas | Publica las imágenes en GHCR y despliega en Coolify; se niega con 🔴 salvo lanzamiento manual |
 | `.github/workflows/mobile.yml` | Push a `main` que toca `apps/mobile` o el contrato | OTA con EAS Update o build de tienda |
 
 Configuración en GitHub (Settings → Environments / Secrets and variables):
 
 | Nombre | Tipo | Para |
 | --- | --- | --- |
-| `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH` | Variables del environment `production` | Servidor y carpeta del repositorio |
-| `DEPLOY_SSH_KEY` | Secreto | Clave privada con acceso al servidor |
-| `DEPLOY_KNOWN_HOSTS` | Secreto | Salida de `ssh-keyscan tu-servidor` |
+| `DEPLOY_ENABLED` | Variable del **repositorio** | `true` para publicar y desplegar |
+| `SITE_URL` | Variable del environment `production` | URL pública (comprueba `/version.json`) |
+| `COOLIFY_WEBHOOK`, `COOLIFY_TOKEN` | Secretos del environment `production` | Webhook de la app y token de Coolify solo con permiso `deploy` |
 | `EAS_ENABLED` | Variable | `true` para activar las publicaciones de la app |
 | `EXPO_TOKEN` | Secreto | Token de expo.dev → Access tokens |
 
-Sin `DEPLOY_HOST` o sin `EAS_ENABLED=true` los workflows de publicación no hacen nada. Antes de
+Sin `DEPLOY_ENABLED=true` o sin `EAS_ENABLED=true` los workflows de publicación no hacen nada. Antes de
 activar el de la app hay que vincularla una vez con EAS: `npx eas init` y
 `npx eas update:configure` dentro de `apps/mobile`.
