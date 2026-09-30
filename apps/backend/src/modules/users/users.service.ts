@@ -1,3 +1,4 @@
+import type { Locale } from '@lista/contracts';
 import {
   BadRequestException,
   ConflictException,
@@ -19,6 +20,7 @@ export interface CreateUserInput {
   providerId?: string | null;
   avatarUrl?: string | null;
   emailVerified?: boolean;
+  locale?: Locale;
 }
 
 export interface SocialLoginInput {
@@ -104,6 +106,7 @@ export class UsersService {
       providerId: input.providerId ?? null,
       avatarUrl: input.avatarUrl ?? null,
       emailVerified: input.emailVerified ?? false,
+      locale: input.locale,
     });
     return this.repo.save(user);
   }
@@ -205,6 +208,7 @@ export class UsersService {
       whatsapp: dto.whatsapp ?? user.whatsapp,
       avatarUrl: dto.avatarUrl ?? user.avatarUrl,
       notificationsEnabled: dto.notificationsEnabled ?? user.notificationsEnabled,
+      locale: dto.locale ?? user.locale,
     });
     return this.repo.save(user);
   }

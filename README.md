@@ -283,6 +283,25 @@ oculta los botones en consecuencia. La app movil usa los endpoints nativos
 
 ---
 
+## Idiomas (espanol e ingles)
+
+La web, el panel, la landing y la app movil estan en espanol e ingles.
+
+- **Idioma inicial**: el del navegador o el telefono. Si no es espanol ni ingles, se usa ingles.
+- **Cambiarlo**: selector ES / EN en el login y en "Mi cuenta" (web y app), en el menu del panel
+  y en la cabecera de la landing. La eleccion se guarda y gana sobre el idioma del dispositivo; la
+  web, el panel y la landing la comparten porque se sirven desde el mismo dominio.
+- **Backend**: responde los errores en el idioma de `Accept-Language`, que cada cliente manda con
+  su idioma actual. Correos y avisos (pop-up y push) salen en el idioma de cada persona
+  (`users.locale`), que los clientes igualan al de su interfaz; en una lista compartida cada
+  integrante los recibe en el suyo.
+- **Textos**: `src/i18n/es.ts` y `src/i18n/en.ts` en cada app (i18next). `en.ts` debe tener las
+  mismas claves que `es.ts`: si falta una traduccion, no compila. En el backend los mensajes de
+  error se traducen en `src/i18n/errors.en.ts`; los correos en `mail.templates.ts` y los avisos en
+  `notification.texts.ts`.
+
+---
+
 ## Compatibilidad y despliegues independientes
 
 La app movil vive en este repositorio pero se publica aparte, y las versiones de las tiendas
@@ -342,7 +361,7 @@ como respaldo. Cuando compruebes que todo esta bien: `docker volume rm listadeco
 
 ## Pruebas end-to-end con Playwright
 
-**150 casos** repartidos en cinco proyectos, uno por servicio mas la app movil.
+**159 casos** repartidos en cinco proyectos, uno por servicio mas la app movil.
 Todos los casos con interfaz **graban un video de evidencia**. Los de correo leen la bandeja
 de Mailpit (`E2E_MAILPIT_URL`, por defecto http://localhost:8025).
 
@@ -354,7 +373,7 @@ npm --prefix e2e install
 npm --prefix e2e run install:browsers
 
 # desde la raiz del repositorio
-npm run test:e2e                 # los 5 proyectos (150 casos)
+npm run test:e2e                 # los 5 proyectos (159 casos)
 npm run test:e2e:backend         # solo la API
 npm run test:e2e:frontend        # solo la app web
 npm run test:e2e:dashboard       # solo el panel
@@ -379,11 +398,11 @@ e2e/evidence/
 
 | Proyecto     | Casos | Video |
 | ------------ | ----- | ----- |
-| `backend-api`| 76    | no aplica (servicio sin interfaz) |
-| `frontend`   | 37    | si |
-| `dashboard`  | 14    | si |
-| `landing`    | 6     | si |
-| `mobile-app` | 17    | si |
+| `backend-api`| 80    | no aplica (servicio sin interfaz) |
+| `frontend`   | 39    | si |
+| `dashboard`  | 15    | si |
+| `landing`    | 7     | si |
+| `mobile-app` | 18    | si |
 
 El catalogo completo esta en [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md).
 
@@ -412,6 +431,7 @@ npm run test:maestro                          # corre apps/mobile/.maestro/flows
 | --- | --- |
 | `01-acceso.yaml` | Credenciales invalidas muestran el error; con las correctas entra a sus listas |
 | `02-listas.yaml` | Crear una lista, agregar un producto y marcarlo como comprado |
+| `03-idioma.yaml` | Cambiar la app entre espanol e ingles |
 
 ---
 
@@ -512,6 +532,6 @@ Eventos de WebSocket: `item:created`, `item:updated`, `item:purchased`, `item:re
 ## Documentacion adicional
 
 - [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) — modelo de datos, decisiones y flujos internos.
-- [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 150 casos de prueba, uno por uno.
+- [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 159 casos de prueba, uno por uno.
 - [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md) — que se puede desplegar sin miedo, contrato
   compartido, version minima de la app y workflows de CI/CD.

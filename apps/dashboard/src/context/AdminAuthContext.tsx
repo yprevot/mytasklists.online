@@ -7,6 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n, { currentLanguage } from '../i18n';
 import { ApiError, refreshSession, tokenStore } from '../api/client';
 import { adminApi, type AdminSession } from '../api/endpoints';
 import type { AdminUser } from '../types';
@@ -27,6 +29,17 @@ const AdminAuthContext = createContext<Value | null>(null);
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // El backend escribe los correos en `user.locale`: se iguala al idioma del panel
+  const { i18n: i18next } = useTranslation();
+  useEffect(() => {
+    const language = currentLanguage();
+    if (!user || user.locale === language) return;
+    adminApi
+      .updateProfile({ locale: language })
+      .then((updated) => setUser((current) => (current ? { ...current, locale: updated.locale } : current)))
+      .catch(() => undefined);
+  }, [user, i18next.language]);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +66,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       tokenStore.save(session.accessToken);
       await adminApi.logout().catch(() => undefined);
       tokenStore.clear();
-      throw new ApiError('Esta cuenta no tiene acceso al panel de administracion', 403);
+      throw new ApiError(i18n.t('auth.notAdmin'), 403);
     }
     tokenStore.save(session.accessToken);
     setUser(session.user);

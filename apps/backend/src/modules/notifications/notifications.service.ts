@@ -11,6 +11,8 @@ import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { RT } from '../realtime/realtime.events';
 import { PushService } from './push.service';
 import { toNotificationView } from './notification.mapper';
+import { NOTIFICATION_TEXTS } from './notification.texts';
+import { DEFAULT_LOCALE, type Locale } from '../../i18n/locale';
 
 export interface NotifyInput {
   listId: string;
@@ -19,8 +21,8 @@ export interface NotifyInput {
   actorId?: string | null;
   actorName?: string;
   type: NotificationType;
-  title: string;
-  body: string;
+  /** Titulo y cuerpo en el idioma de cada destinatario */
+  render: (texts: (typeof NOTIFICATION_TEXTS)[Locale]) => { title: string; body: string };
   payload?: Record<string, unknown>;
   /** Si se indica, esa persona no recibe el aviso (normalmente quien hizo el cambio) */
   excludeUserId?: string | null;
@@ -67,15 +69,17 @@ export class NotificationsService {
     const recipients = await this.resolveRecipients(input);
     if (!recipients.length) return;
 
+    const localeOf = (member: ListMember): Locale => member.user?.locale ?? DEFAULT_LOCALE;
+    const texts = (locale: Locale) => input.render(NOTIFICATION_TEXTS[locale]);
+
     const rows = recipients.map((member) =>
       this.repo.create({
+        ...texts(localeOf(member)),
         userId: member.userId,
         listId: input.listId,
         itemId: input.itemId ?? null,
         actorId: input.actorId ?? null,
         type: input.type,
-        title: input.title,
-        body: input.body,
         channel: NotificationChannel.BOTH,
         payload: {
           listName: input.listName,
@@ -91,15 +95,16 @@ export class NotificationsService {
       this.realtime.emitToUser(notification.userId, RT.NOTIFICATION, toNotificationView(notification));
     }
 
-    // Push en iOS/Android
-    await this.push.sendToUsers(
-      recipients.map((member) => member.userId),
-      {
-        title: input.title,
-        body: input.body,
-        data: { listId: input.listId, itemId: input.itemId ?? null, type: input.type },
-      },
-    );
+    // Push en iOS/Android: un envio por idioma
+    for (const locale of new Set(recipients.map(localeOf))) {
+      await this.push.sendToUsers(
+        recipients.filter((member) => localeOf(member) === locale).map((member) => member.userId),
+        {
+          ...texts(locale),
+          data: { listId: input.listId, itemId: input.itemId ?? null, type: input.type },
+        },
+      );
+    }
   }
 
   async listForUser(userId: string, onlyUnread = false, limit = 50): Promise<Notification[]> {

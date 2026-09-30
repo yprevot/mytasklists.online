@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Badge, Button, Field } from '../components/ui';
 import { listsApi } from '../api/endpoints';
 import { useSocketEvent } from '../context/SocketContext';
@@ -15,6 +16,7 @@ import { colors, radius, spacing } from '../theme';
 import type { ListSummary } from '../types';
 
 export function ListsScreen({ navigation }: any) {
+  const { t } = useTranslation();
   const [lists, setLists] = useState<ListSummary[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -83,23 +85,23 @@ export function ListsScreen({ navigation }: any) {
           showForm ? (
             <View style={styles.form} testID="new-list-form">
               <Field
-                label="Nombre de la lista"
+                label={t('lists.listName')}
                 testID="new-list-name"
                 value={name}
                 onChangeText={setName}
-                placeholder="Despensa quincenal"
+                placeholder={t('lists.namePlaceholder')}
                 autoFocus
               />
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
                 <Button
-                  title="Crear"
+                  title={t('lists.create')}
                   onPress={create}
                   loading={creating}
                   testID="new-list-submit"
                   style={{ flex: 1 }}
                 />
                 <Button
-                  title="Cancelar"
+                  title={t('common.cancel')}
                   variant="ghost"
                   onPress={() => setShowForm(false)}
                   style={{ flex: 1 }}
@@ -111,9 +113,9 @@ export function ListsScreen({ navigation }: any) {
         ListEmptyComponent={
           <View style={styles.empty} testID="lists-empty">
             <Text style={{ fontSize: 40 }}>🛒</Text>
-            <Text style={styles.emptyTitle}>Crea tu primera lista</Text>
+            <Text style={styles.emptyTitle}>{t('lists.emptyTitle')}</Text>
             <Text style={styles.emptyBody}>
-              Agrega productos puntuales o recurrentes y compartelos con quien quieras.
+              {t('lists.emptyText')}
             </Text>
           </View>
         }
@@ -130,12 +132,12 @@ export function ListsScreen({ navigation }: any) {
                 {list.name}
               </Text>
               <View style={styles.badges}>
-                <Badge tone="muted" text={`${list.pendingCount} por comprar`} />
-                {list.recurringCount > 0 && <Badge tone="info" text={`${list.recurringCount} rec.`} />}
+                <Badge tone="muted" text={t('lists.pending', { count: list.pendingCount })} />
+                {list.recurringCount > 0 && <Badge tone="info" text={t('lists.recurring', { count: list.recurringCount })} />}
                 {list.overdueCount > 0 && (
-                  <Badge tone="danger" text={`${list.overdueCount} vencidos`} />
+                  <Badge tone="danger" text={t('lists.overdue', { count: list.overdueCount })} />
                 )}
-                {list.isShared && <Badge tone="success" text={`${list.memberCount} personas`} />}
+                {list.isShared && <Badge tone="success" text={t('lists.people', { count: list.memberCount })} />}
               </View>
             </View>
           </Pressable>

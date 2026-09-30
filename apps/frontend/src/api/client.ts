@@ -1,4 +1,5 @@
 import type { AuthResponse } from '../types';
+import i18n, { currentLanguage } from '../i18n';
 
 const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
@@ -9,6 +10,9 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
  * Al recargar la pagina la sesion se recupera con /auth/refresh.
  */
 const CLIENT_HEADERS = { 'X-Auth-Client': 'web' };
+
+/** La API responde los errores en el idioma de la interfaz */
+const languageHeader = () => ({ 'Accept-Language': currentLanguage() });
 
 let accessToken: string | null = null;
 
@@ -58,7 +62,7 @@ async function callRefresh(): Promise<AuthResponse | null> {
   const response = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...CLIENT_HEADERS },
+    headers: { 'Content-Type': 'application/json', ...CLIENT_HEADERS, ...languageHeader() },
     body: '{}',
   });
   if (!response.ok) return null;
@@ -99,6 +103,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const finalHeaders: Record<string, string> = {
     Accept: 'application/json',
     ...CLIENT_HEADERS,
+    ...languageHeader(),
     ...((headers as Record<string, string>) ?? {}),
   };
   if (body !== undefined) finalHeaders['Content-Type'] = 'application/json';
@@ -116,7 +121,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     if (renewed) return request<T>(path, { ...options, retry: false });
     tokenStore.clear();
     unauthorizedListeners.forEach((listener) => listener());
-    throw new ApiError('Tu sesion expiro. Vuelve a iniciar sesion.', 401);
+    throw new ApiError(i18n.t('common.sessionExpired'), 401);
   }
 
   if (response.status === 204) return undefined as T;
@@ -126,7 +131,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
   if (!response.ok) {
     const raw = payload?.message;
-    const message = Array.isArray(raw) ? raw.join('. ') : (raw ?? 'Ocurrio un error inesperado');
+    const message = Array.isArray(raw) ? raw.join('. ') : (raw ?? i18n.t('common.unexpectedError'));
     throw new ApiError(message, response.status, payload);
   }
 

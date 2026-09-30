@@ -9,6 +9,9 @@ export type AuthProvider = 'local' | 'google' | 'apple';
 export type UserRole = 'user' | 'admin';
 export type DevicePlatform = 'ios' | 'android' | 'web';
 
+/** Idiomas de la interfaz, los correos y los avisos */
+export type Locale = 'es' | 'en';
+
 /**
  * Tipos de aviso conocidos. `AppNotification.type` es un texto abierto: el backend
  * puede sumar tipos nuevos y los clientes deben mostrar los que no reconozcan.
@@ -37,6 +40,8 @@ export interface User {
   emailVerified: boolean;
   mfaEnabled: boolean;
   isActive: boolean;
+  /** Idioma de sus correos y avisos; los clientes lo igualan al de su interfaz */
+  locale: Locale;
   createdAt: string;
   /** Solo en el perfil propio: si la cuenta tiene contrasena definida */
   hasPassword?: boolean;

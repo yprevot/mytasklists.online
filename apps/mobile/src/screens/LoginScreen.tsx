@@ -9,6 +9,8 @@ import {
   View,
 } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { Button, Field } from '../components/ui';
 import { GoogleSignInButton, googleConfigured } from '../components/GoogleSignInButton';
 import { useAuth, type LoginStep } from '../context/AuthContext';
@@ -17,6 +19,7 @@ import { colors, spacing } from '../theme';
 
 export function LoginScreen({ navigation }: any) {
   const { login, verifyMfa, loginWithApple, loginWithGoogle } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -34,8 +37,8 @@ export function LoginScreen({ navigation }: any) {
     try {
       await action();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo iniciar sesion');
-      if (err instanceof ApiError && err.status === 401 && /vuelve/i.test(err.message)) {
+      setError(err instanceof ApiError ? err.message : t('login.failed'));
+      if (err instanceof ApiError && err.status === 401 && /vuelve|again/i.test(err.message)) {
         setMfaToken(null);
       }
     } finally {
@@ -64,7 +67,7 @@ export function LoginScreen({ navigation }: any) {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      if (!credential.identityToken) throw new Error('Apple no devolvio el token');
+      if (!credential.identityToken) throw new Error(t('login.appleNoToken'));
       const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
         .filter(Boolean)
         .join(' ');
@@ -74,7 +77,7 @@ export function LoginScreen({ navigation }: any) {
     } catch (err) {
       const message = (err as Error).message ?? '';
       if (!message.includes('ERR_REQUEST_CANCELED')) {
-        setError('No se pudo iniciar sesion con Apple');
+        setError(t('login.appleFailed'));
       }
     }
   };
@@ -85,14 +88,17 @@ export function LoginScreen({ navigation }: any) {
       style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <ScrollView contentContainerStyle={styles.container} testID="login-screen">
+        <View style={styles.languageRow}>
+          <LanguageSwitcher />
+        </View>
         <Text style={styles.logo}>🛒</Text>
-        <Text style={styles.title}>{mfaToken ? 'Verificacion en dos pasos' : 'Inicia sesion'}</Text>
-        <Text style={styles.subtitle}>Tus listas compartidas, siempre sincronizadas.</Text>
+        <Text style={styles.title}>{mfaToken ? t('login.mfaTitle') : t('login.title')}</Text>
+        <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
 
         {mfaToken ? (
           <View testID="mfa-step">
             <Field
-              label="Codigo de tu app autenticadora (o de recuperacion)"
+              label={t('login.mfaCode')}
               testID="mfa-code"
               value={code}
               onChangeText={setCode}
@@ -106,26 +112,26 @@ export function LoginScreen({ navigation }: any) {
                 {error}
               </Text>
             ) : null}
-            <Button title="Verificar" onPress={submitCode} loading={loading} testID="mfa-submit" />
+            <Button title={t('login.verify')} onPress={submitCode} loading={loading} testID="mfa-submit" />
             <Pressable onPress={() => setMfaToken(null)}>
-              <Text style={styles.link}>Volver</Text>
+              <Text style={styles.link}>{t('common.back')}</Text>
             </Pressable>
           </View>
         ) : (
           <>
             <Field
-              label="Correo electronico"
+              label={t('common.email')}
               testID="login-email"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
               textContentType="emailAddress"
-              placeholder="tu@correo.com"
+              placeholder={t('login.emailPlaceholder')}
             />
 
             <Field
-              label="Contrasena"
+              label={t('common.password')}
               testID="login-password"
               value={password}
               onChangeText={setPassword}
@@ -140,15 +146,15 @@ export function LoginScreen({ navigation }: any) {
               </Text>
             ) : null}
 
-            <Button title="Entrar" onPress={submit} loading={loading} testID="login-submit" />
+            <Button title={t('login.submit')} onPress={submit} loading={loading} testID="login-submit" />
 
             <Pressable onPress={() => navigation.navigate('ForgotPassword')} testID="go-forgot-password">
-              <Text style={styles.link}>¿Olvidaste tu contrasena?</Text>
+              <Text style={styles.link}>{t('login.forgot')}</Text>
             </Pressable>
 
             <View style={styles.dividerRow}>
               <View style={styles.divider} />
-              <Text style={styles.dividerText}>o</Text>
+              <Text style={styles.dividerText}>{t('login.or')}</Text>
               <View style={styles.divider} />
             </View>
 
@@ -166,7 +172,7 @@ export function LoginScreen({ navigation }: any) {
               <GoogleSignInButton onIdToken={googleSignIn} onError={setError} />
             ) : (
               <Button
-                title="Continuar con Google"
+                title={t('login.google')}
                 variant="ghost"
                 onPress={() => navigation.navigate('SocialHelp', { provider: 'Google' })}
                 testID="google-login"
@@ -175,7 +181,7 @@ export function LoginScreen({ navigation }: any) {
             )}
 
             <Pressable onPress={() => navigation.navigate('Register')} testID="go-register">
-              <Text style={styles.link}>¿Aun no tienes cuenta? Registrate</Text>
+              <Text style={styles.link}>{t('login.register')}</Text>
             </Pressable>
           </>
         )}
@@ -186,6 +192,7 @@ export function LoginScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { padding: spacing.xl, paddingTop: spacing.xxl * 2, flexGrow: 1, justifyContent: 'center' },
+  languageRow: { alignItems: 'flex-end', marginBottom: spacing.lg },
   logo: { fontSize: 44, textAlign: 'center' },
   title: { fontSize: 24, fontWeight: '800', textAlign: 'center', color: colors.ink, marginTop: spacing.sm },
   subtitle: {

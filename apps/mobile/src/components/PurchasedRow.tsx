@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Badge } from './ui';
 import { colors, radius, spacing } from '../theme';
 import type { Item } from '../types';
@@ -13,12 +14,13 @@ interface Props {
 
 /** Producto comprado: se muestra tachado y se quita con la "x" */
 export function PurchasedRow({ item, onRestore, onClose, disabled }: Props) {
+  const { t } = useTranslation();
   return (
     <View style={styles.row} testID="purchased-item">
       <Pressable
         style={styles.checkbox}
         onPress={() => !disabled && onRestore(item)}
-        accessibilityLabel={`Regresar ${item.name} a pendientes`}
+        accessibilityLabel={t('item.restore', { name: item.name })}
         testID="purchased-checkbox"
       >
         <Text style={styles.checkMark}>✓</Text>
@@ -34,7 +36,7 @@ export function PurchasedRow({ item, onRestore, onClose, disabled }: Props) {
             <Badge
               testID="purchased-return-badge"
               tone="info"
-              text={`vuelve en ${item.daysUntilReactivation} d`}
+              text={t('item.returnsIn', { count: item.daysUntilReactivation })}
             />
           )}
         </View>
@@ -42,7 +44,7 @@ export function PurchasedRow({ item, onRestore, onClose, disabled }: Props) {
 
       <Pressable
         onPress={() => !disabled && onClose(item)}
-        accessibilityLabel={`Quitar ${item.name} de la lista`}
+        accessibilityLabel={t('item.close', { name: item.name })}
         testID="purchased-close"
         hitSlop={10}
       >

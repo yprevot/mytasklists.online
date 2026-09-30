@@ -8,6 +8,9 @@
  * Convencion que usa `npm run contract:check` para decidir la direccion:
  * - Los tipos que terminan en `Request` y `ClientEvents` viajan del cliente al servidor.
  * - Todo lo demas viaja del servidor al cliente.
+ *
+ * Idioma: los clientes mandan el suyo en `Accept-Language` (es | en) y la API
+ * responde los errores en ese idioma.
  */
 export * from './models';
 export * from './auth';

@@ -18,6 +18,7 @@ export const toPublicUser = (user: UserEntity, extra: { hasPassword?: boolean } 
   emailVerified: user.emailVerified,
   mfaEnabled: Boolean(user.totpEnabled),
   isActive: user.isActive,
+  locale: user.locale,
   createdAt: new Date(user.createdAt).toISOString(),
   ...(extra.hasPassword === undefined ? {} : { hasPassword: extra.hasPassword }),
 });

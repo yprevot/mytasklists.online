@@ -1,7 +1,8 @@
-import type { ChangePasswordRequest, UpdateProfileRequest } from '@lista/contracts';
+import type { ChangePasswordRequest, Locale, UpdateProfileRequest } from '@lista/contracts';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
@@ -33,6 +34,11 @@ export class UpdateProfileDto implements UpdateProfileRequest {
   @IsUrl({ protocols: ['https'], require_protocol: true }, { message: 'El avatar debe ser una URL https' })
   @MaxLength(500)
   avatarUrl?: string;
+
+  @ApiPropertyOptional({ enum: ['es', 'en'], description: 'Idioma de los correos y avisos' })
+  @IsOptional()
+  @IsIn(['es', 'en'])
+  locale?: Locale;
 }
 
 export class ChangePasswordDto implements ChangePasswordRequest {

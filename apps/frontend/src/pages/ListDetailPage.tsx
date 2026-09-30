@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { itemsApi, listsApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,7 @@ export function ListDetailPage() {
   const { user } = useAuth();
   const { socket } = useSocket();
   const { show } = useToast();
+  const { t } = useTranslation();
 
   const [list, setList] = useState<ListDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +34,10 @@ export function ListDetailPage() {
       setList(detail);
       setError(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo cargar la lista');
+      setError(err instanceof ApiError ? err.message : t('detail.loadFailed'));
       setList(null);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     void load();
@@ -77,13 +79,13 @@ export function ListDetailPage() {
   useSocketEvent('list:member-removed', onListEvent);
   useSocketEvent('list:deleted', (payload) => {
     if (payload?.listId === id) {
-      show({ title: 'Lista eliminada', body: 'Ya no tienes acceso a esta lista', variant: 'warning' });
+      show({ title: t('detail.deletedTitle'), body: t('detail.deletedBody'), variant: 'warning' });
       navigate('/', { replace: true });
     }
   });
 
   const notify = (message: string, ok = true) =>
-    show({ title: ok ? 'Listo' : 'Ups', body: message, variant: ok ? 'success' : 'danger' });
+    show({ title: ok ? t('common.done') : t('common.oops'), body: message, variant: ok ? 'success' : 'danger' });
 
   const guard = async (action: () => Promise<unknown>, failure: string) => {
     setBusy(true);
@@ -103,47 +105,47 @@ export function ListDetailPage() {
       const updated = await itemsApi.purchase(item.id);
       if (updated.isRecurring && updated.nextActivationAt) {
         show({
-          title: 'Comprado',
-          body: `"${updated.name}" volvera a la lista en ${updated.recurrenceDays} dias`,
+          title: t('detail.purchasedTitle'),
+          body: t('detail.purchasedBody', { name: updated.name, count: updated.recurrenceDays ?? 0 }),
           variant: 'success',
         });
       }
-    }, 'No se pudo marcar como comprado');
+    }, t('detail.failures.purchase'));
 
   const restore = (item: Item) =>
-    guard(() => itemsApi.restore(item.id), 'No se pudo regresar el producto');
+    guard(() => itemsApi.restore(item.id), t('detail.failures.restore'));
 
   const close = (item: Item) =>
-    guard(() => itemsApi.close(item.id), 'No se pudo quitar el producto');
+    guard(() => itemsApi.close(item.id), t('detail.failures.close'));
 
   const remove = (item: Item) =>
-    guard(() => itemsApi.remove(item.id), 'No se pudo eliminar el producto');
+    guard(() => itemsApi.remove(item.id), t('detail.failures.remove'));
 
   const clearPurchased = () =>
-    guard(() => itemsApi.clearPurchased(id), 'No se pudo vaciar la lista de comprados');
+    guard(() => itemsApi.clearPurchased(id), t('detail.failures.clear'));
 
   const advanceClock = (item: Item, days: number) =>
     guard(async () => {
       const result = await itemsApi.advanceClock(item.id, days);
       show({
-        title: `Reloj adelantado ${days} dia(s)`,
-        body: `${result.reactivated} producto(s) reactivado(s), ${result.overdue} vencido(s)`,
+        title: t('detail.clockTitle', { count: days }),
+        body: t('detail.clockBody', { reactivated: result.reactivated, overdue: result.overdue }),
         variant: 'info',
       });
-    }, 'No se pudo simular el paso del tiempo');
+    }, t('detail.failures.clock'));
 
   const toggleNotifications = () =>
     guard(async () => {
       if (!list) return;
       await listsApi.setMyNotifications(id, !list.notifyOnChange);
-    }, 'No se pudo cambiar la preferencia de avisos');
+    }, t('detail.failures.notify'));
 
   const deleteList = () =>
     guard(async () => {
-      if (!window.confirm('¿Eliminar la lista completa? Esta accion no se puede deshacer.')) return;
+      if (!window.confirm(t('detail.confirmDelete'))) return;
       await listsApi.remove(id);
       navigate('/', { replace: true });
-    }, 'No se pudo eliminar la lista');
+    }, t('detail.failures.deleteList'));
 
   const overdueCount = useMemo(
     () => (list?.pending ?? []).filter((item) => item.isOverdue).length,
@@ -156,21 +158,21 @@ export function ListDetailPage() {
         {error}
         <div className="mt-2">
           <Link className="btn btn-sm btn-outline-danger" to="/">
-            Volver a mis listas
+            {t('detail.backToLists')}
           </Link>
         </div>
       </div>
     );
   }
 
-  if (!list || !user) return <Spinner label="Cargando la lista…" />;
+  if (!list || !user) return <Spinner label={t('detail.loading')} />;
 
   return (
     <div data-testid="list-detail-page" data-list-id={list.id}>
       {/* ── Encabezado ─────────────────────────────────────────────── */}
       <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
         <div className="d-flex align-items-start gap-3 min-w-0">
-          <Link to="/" className="btn btn-light btn-sm mt-1" aria-label="Volver" data-testid="back-to-lists">
+          <Link to="/" className="btn btn-light btn-sm mt-1" aria-label={t('common.back')} data-testid="back-to-lists">
             <i className="bi bi-arrow-left" aria-hidden="true" />
           </Link>
           <span style={{ fontSize: '2rem' }} aria-hidden="true">
@@ -182,17 +184,17 @@ export function ListDetailPage() {
             </h1>
             <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
               <span data-testid="list-counters">
-                {list.pending.length} por comprar · {list.purchased.length} comprados
+                {t('detail.counters', { pending: list.pending.length, purchased: list.purchased.length })}
               </span>
               {overdueCount > 0 && (
                 <span className="badge text-bg-danger" data-testid="list-overdue-summary">
-                  {overdueCount} vencido(s)
+                  {t('lists.overdue', { count: overdueCount })}
                 </span>
               )}
               {list.isShared && (
                 <span className="badge text-bg-light border" data-testid="list-members-badge">
                   <i className="bi bi-people me-1" aria-hidden="true" />
-                  {list.memberCount} integrantes
+                  {t('detail.members', { count: list.memberCount })}
                 </span>
               )}
             </div>
@@ -200,7 +202,7 @@ export function ListDetailPage() {
         </div>
 
         <div className="d-flex align-items-center gap-2">
-          <div className="form-check form-switch mb-0" title="Avisarme cuando alguien mas modifique la lista">
+          <div className="form-check form-switch mb-0" title={t('detail.notifyTitle')}>
             <input
               className="form-check-input"
               type="checkbox"
@@ -212,7 +214,7 @@ export function ListDetailPage() {
               data-testid="notify-switch"
             />
             <label className="form-check-label small" htmlFor="notify-switch">
-              Avisarme
+              {t('detail.notify')}
             </label>
           </div>
 
@@ -222,7 +224,7 @@ export function ListDetailPage() {
             data-testid="share-button"
           >
             <i className="bi bi-person-plus me-1" aria-hidden="true" />
-            Compartir
+            {t('detail.share')}
           </button>
 
           {list.ownerId === user.id && (
@@ -231,7 +233,7 @@ export function ListDetailPage() {
               onClick={deleteList}
               disabled={busy}
               data-testid="delete-list-button"
-              aria-label="Eliminar la lista"
+              aria-label={t('detail.deleteList')}
             >
               <i className="bi bi-trash" aria-hidden="true" />
             </button>
@@ -245,15 +247,15 @@ export function ListDetailPage() {
       {/* ── Pendientes ─────────────────────────────────────────────── */}
       <section className="mb-4" data-testid="pending-section">
         <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="lc-divider-label mb-0">Por comprar ({list.pending.length})</h2>
+          <h2 className="lc-divider-label mb-0">{t('detail.pendingHeading', { count: list.pending.length })}</h2>
         </div>
 
         {list.pending.length === 0 ? (
           <div className="card border-0 shadow-sm">
             <EmptyState
               icon="bi-check2-circle"
-              title="Todo comprado"
-              description="No queda nada pendiente en esta lista."
+              title={t('detail.allDoneTitle')}
+              description={t('detail.allDoneText')}
               testId="pending-empty"
             />
           </div>
@@ -277,14 +279,14 @@ export function ListDetailPage() {
       {list.purchased.length > 0 && (
         <section data-testid="purchased-section">
           <div className="d-flex justify-content-between align-items-center mb-2">
-            <h2 className="lc-divider-label mb-0">Comprados ({list.purchased.length})</h2>
+            <h2 className="lc-divider-label mb-0">{t('detail.purchasedHeading', { count: list.purchased.length })}</h2>
             <button
               className="btn btn-sm btn-link text-secondary"
               onClick={clearPurchased}
               disabled={busy}
               data-testid="clear-purchased"
             >
-              Vaciar
+              {t('detail.clear')}
             </button>
           </div>
           <ul className="list-unstyled mb-0" data-testid="purchased-list">

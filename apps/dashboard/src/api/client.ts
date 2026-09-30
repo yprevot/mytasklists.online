@@ -1,3 +1,5 @@
+import i18n, { currentLanguage } from '../i18n';
+
 const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
 /**
@@ -6,6 +8,9 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
  * app para que entrar en uno no abra sesion en el otro.
  */
 const CLIENT_HEADERS = { 'X-Auth-Client': 'dashboard' };
+
+/** La API responde los errores en el idioma del panel */
+const languageHeader = () => ({ 'Accept-Language': currentLanguage() });
 
 let accessToken: string | null = null;
 
@@ -44,7 +49,7 @@ async function callRefresh(): Promise<boolean> {
   const response = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...CLIENT_HEADERS },
+    headers: { 'Content-Type': 'application/json', ...CLIENT_HEADERS, ...languageHeader() },
     body: '{}',
   });
   if (!response.ok) return false;
@@ -80,6 +85,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   const finalHeaders: Record<string, string> = {
     Accept: 'application/json',
     ...CLIENT_HEADERS,
+    ...languageHeader(),
     ...((headers as Record<string, string>) ?? {}),
   };
   if (body !== undefined) finalHeaders['Content-Type'] = 'application/json';
@@ -95,7 +101,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   if (response.status === 401 && auth && retry) {
     if (await refreshSession()) return request<T>(path, { ...options, retry: false });
     tokenStore.clear();
-    throw new ApiError('Tu sesion expiro', 401);
+    throw new ApiError(i18n.t('common.sessionExpired'), 401);
   }
 
   const text = await response.text();
@@ -103,7 +109,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   if (!response.ok) {
     const raw = payload?.message;
     throw new ApiError(
-      Array.isArray(raw) ? raw.join('. ') : (raw ?? 'Error inesperado'),
+      Array.isArray(raw) ? raw.join('. ') : (raw ?? i18n.t('common.unexpectedError')),
       response.status,
     );
   }

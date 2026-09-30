@@ -1,4 +1,6 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { VerifyEmailBanner } from './VerifyEmailBanner';
@@ -15,6 +17,7 @@ export function Layout() {
   const { user, logout } = useAuth();
   const { connected, notifications } = useSocket();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await logout();
@@ -37,7 +40,7 @@ export function Layout() {
             data-bs-target="#mainNav"
             aria-controls="mainNav"
             aria-expanded="false"
-            aria-label="Abrir menu"
+            aria-label={t('layout.openMenu')}
           >
             <span className="navbar-toggler-icon" />
           </button>
@@ -46,12 +49,12 @@ export function Layout() {
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
                 <NavLink className="nav-link" to="/" end data-testid="nav-lists">
-                  Mis listas
+                  {t('layout.lists')}
                 </NavLink>
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" to="/settings" data-testid="nav-settings">
-                  Mi cuenta
+                  {t('layout.account')}
                 </NavLink>
               </li>
             </ul>
@@ -63,14 +66,16 @@ export function Layout() {
                 }`}
                 data-testid="connection-status"
                 data-connected={connected ? 'true' : 'false'}
-                title={connected ? 'Sincronizacion en tiempo real activa' : 'Sin conexion en vivo'}
+                title={connected ? t('layout.liveOnTitle') : t('layout.liveOffTitle')}
               >
                 <span
                   className="lc-badge-dot"
                   style={{ backgroundColor: connected ? 'var(--bs-success)' : 'var(--bs-secondary)' }}
                 />
-                {connected ? 'En vivo' : 'Sin conexion'}
+                {connected ? t('layout.liveOn') : t('layout.liveOff')}
               </span>
+
+              <LanguageSwitcher />
 
               <span className="position-relative" data-testid="notification-bell">
                 <i className="bi bi-bell fs-5 text-secondary" aria-hidden="true" />
@@ -105,7 +110,7 @@ export function Layout() {
                     </li>
                     <li>
                       <Link className="dropdown-item" to="/settings">
-                        Mi cuenta
+                        {t('layout.account')}
                       </Link>
                     </li>
                     <li>
@@ -114,7 +119,7 @@ export function Layout() {
                         onClick={handleLogout}
                         data-testid="logout-button"
                       >
-                        Cerrar sesion
+                        {t('layout.logout')}
                       </button>
                     </li>
                   </ul>
@@ -132,9 +137,9 @@ export function Layout() {
 
       <footer className="border-top bg-white py-3 mt-auto">
         <div className="container lc-shell d-flex flex-wrap justify-content-between gap-2 small text-muted">
-          <span>ListaDeCompras · listas compartidas con productos recurrentes</span>
+          <span>{t('layout.footer')}</span>
           <a className="text-muted text-decoration-none" href="/" data-testid="footer-landing">
-            Descargar la app movil
+            {t('layout.download')}
           </a>
         </div>
       </footer>

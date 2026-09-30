@@ -1,3 +1,4 @@
+import type { Locale } from '@lista/contracts';
 import {
   Column,
   CreateDateColumn,
@@ -73,6 +74,10 @@ export class User {
     select: false,
   })
   totpRecoveryCodes: string[] | null;
+
+  /** Idioma de sus correos y avisos (es | en); los clientes lo igualan al de su interfaz */
+  @Column({ type: 'varchar', length: 5, default: 'es' })
+  locale: Locale;
 
   /** Preferencia global: recibir avisos cuando alguien mas edita una lista compartida */
   @Column({ name: 'notifications_enabled', default: true })

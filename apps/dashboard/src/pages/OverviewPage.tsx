@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LOCALE_TAGS, currentLanguage } from '../i18n';
 import { adminApi } from '../api/endpoints';
 import { KpiCard } from '../components/KpiCard';
 import { BarChart } from '../components/BarChart';
 import type { AdminStats, SeriesPoint } from '../types';
 
 export function OverviewPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [series, setSeries] = useState<SeriesPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +35,10 @@ export function OverviewPage() {
     setRunning(true);
     try {
       const result = await adminApi.runRecurrence();
-      setLastRun(`${result.reactivated} reactivados · ${result.overdue} vencidos`);
+      setLastRun(t('overview.runResult', { reactivated: result.reactivated, overdue: result.overdue }));
       await load();
     } catch (err) {
-      setLastRun(`Error: ${(err as Error).message}`);
+      setLastRun(t('overview.runError', { message: (err as Error).message }));
     } finally {
       setRunning(false);
     }
@@ -61,9 +64,11 @@ export function OverviewPage() {
     <div data-testid="overview-page">
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-          <h1 className="h4 mb-1">Resumen</h1>
+          <h1 className="h4 mb-1">{t('overview.title')}</h1>
           <p className="text-muted small mb-0">
-            Actualizado {new Date(stats.generatedAt).toLocaleTimeString('es-MX')}
+            {t('overview.updated', {
+              time: new Date(stats.generatedAt).toLocaleTimeString(LOCALE_TAGS[currentLanguage()]),
+            })}
           </p>
         </div>
         <div className="d-flex align-items-center gap-2">
@@ -79,7 +84,7 @@ export function OverviewPage() {
             data-testid="run-recurrence"
           >
             <i className="bi bi-arrow-repeat me-1" aria-hidden="true" />
-            {running ? 'Ejecutando…' : 'Ejecutar motor de recurrencia'}
+            {running ? t('overview.running') : t('overview.run')}
           </button>
         </div>
       </div>
@@ -88,18 +93,18 @@ export function OverviewPage() {
         <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-users"
-            label="Usuarios"
+            label={t('overview.users')}
             value={stats.users.total}
-            hint={`${stats.users.active} activos · +${stats.users.newLast7Days} esta semana`}
+            hint={t('overview.usersHint', { active: stats.users.active, recent: stats.users.newLast7Days })}
             icon="bi-people-fill"
           />
         </div>
         <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-lists"
-            label="Listas"
+            label={t('overview.lists')}
             value={stats.lists.total}
-            hint={`${stats.lists.shared} compartidas · ${stats.lists.averageItems} productos de media`}
+            hint={t('overview.listsHint', { shared: stats.lists.shared, average: stats.lists.averageItems })}
             icon="bi-card-checklist"
             variant="success"
           />
@@ -107,9 +112,9 @@ export function OverviewPage() {
         <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-recurring"
-            label="Productos recurrentes"
+            label={t('overview.recurring')}
             value={stats.items.recurring}
-            hint={`${stats.items.pending} pendientes en total`}
+            hint={t('overview.recurringHint', { pending: stats.items.pending })}
             icon="bi-arrow-repeat"
             variant="info"
           />
@@ -117,9 +122,9 @@ export function OverviewPage() {
         <div className="col-6 col-lg-3">
           <KpiCard
             testId="kpi-overdue"
-            label="Recurrentes vencidos"
+            label={t('overview.overdue')}
             value={stats.items.overdue}
-            hint={`${stats.items.purchasedToday} comprados hoy`}
+            hint={t('overview.overdueHint', { today: stats.items.purchasedToday })}
             icon="bi-exclamation-triangle-fill"
             variant="danger"
           />
@@ -130,7 +135,7 @@ export function OverviewPage() {
         <div className="col-12 col-xl-8">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <h2 className="h6 mb-3">Actividad de los ultimos 14 dias</h2>
+              <h2 className="h6 mb-3">{t('overview.activity')}</h2>
               <BarChart data={series} />
             </div>
           </div>
@@ -139,9 +144,9 @@ export function OverviewPage() {
         <div className="col-12 col-xl-4">
           <div className="card border-0 shadow-sm h-100">
             <div className="card-body">
-              <h2 className="h6 mb-3">Distribucion</h2>
+              <h2 className="h6 mb-3">{t('overview.distribution')}</h2>
 
-              <h3 className="label small text-uppercase text-muted">Metodo de registro</h3>
+              <h3 className="label small text-uppercase text-muted">{t('overview.signupMethod')}</h3>
               <ul className="list-group list-group-flush mb-3" data-testid="provider-breakdown">
                 {Object.entries(stats.users.byProvider).map(([provider, count]) => (
                   <li
@@ -154,22 +159,22 @@ export function OverviewPage() {
                 ))}
               </ul>
 
-              <h3 className="label small text-uppercase text-muted">Productos</h3>
+              <h3 className="label small text-uppercase text-muted">{t('overview.items')}</h3>
               <ul className="list-group list-group-flush" data-testid="items-breakdown">
                 <li className="list-group-item d-flex justify-content-between px-0 py-1">
-                  <span>Pendientes</span>
+                  <span>{t('overview.pending')}</span>
                   <strong>{stats.items.pending}</strong>
                 </li>
                 <li className="list-group-item d-flex justify-content-between px-0 py-1">
-                  <span>Comprados</span>
+                  <span>{t('overview.purchased')}</span>
                   <strong>{stats.items.purchased}</strong>
                 </li>
                 <li className="list-group-item d-flex justify-content-between px-0 py-1">
-                  <span>Archivados</span>
+                  <span>{t('overview.archived')}</span>
                   <strong>{stats.items.archived}</strong>
                 </li>
                 <li className="list-group-item d-flex justify-content-between px-0 py-1">
-                  <span>Avisos sin leer</span>
+                  <span>{t('overview.unread')}</span>
                   <strong>{stats.notifications.unread}</strong>
                 </li>
               </ul>

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { localeFromHeader, translateMessage } from '../../i18n/locale';
 
 /** Normaliza todas las respuestas de error de la API */
 @Catch()
@@ -41,10 +42,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.error(exception.message, exception.stack);
     }
 
+    // Los mensajes se escriben en espanol; si la peticion llega en ingles se traducen
+    const locale = localeFromHeader(request?.headers?.['accept-language']);
+    const translated = Array.isArray(message)
+      ? message.map((entry) => translateMessage(entry, locale))
+      : translateMessage(message, locale);
+
     reply.status(status).send({
       statusCode: status,
       error,
-      message,
+      message: translated,
       ...extra,
       path: request?.url,
       timestamp: new Date().toISOString(),

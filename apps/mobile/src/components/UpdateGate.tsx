@@ -1,5 +1,6 @@
 import React, { useEffect, useState, type ReactNode } from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { APP_VERSION, onUpdateRequired, type UpdateRequired } from '../api/client';
 import { compatApi } from '../api/endpoints';
 import { Button, Card } from './ui';
@@ -11,6 +12,7 @@ import { colors, spacing } from '../theme';
  * Se pregunta al abrir, y cualquier peticion posterior tambien puede dispararlo.
  */
 export function UpdateGate({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [required, setRequired] = useState<UpdateRequired | null>(null);
 
   useEffect(() => {
@@ -25,21 +27,21 @@ export function UpdateGate({ children }: { children: ReactNode }) {
   return (
     <View style={styles.container} testID="update-required-screen">
       <Card>
-        <Text style={styles.title}>Actualiza la app</Text>
+        <Text style={styles.title}>{t('update.title')}</Text>
         <Text style={styles.body}>{required.message}</Text>
         <Text style={styles.versions} testID="update-required-versions">
-          Tienes la version {APP_VERSION}
-          {required.minVersion ? ` y se necesita la ${required.minVersion} o posterior.` : '.'}
+          {t('update.current', { version: APP_VERSION })}
+          {required.minVersion ? t('update.needed', { version: required.minVersion }) : '.'}
         </Text>
         {required.storeUrl ? (
           <Button
-            title="Ir a la tienda"
+            title={t('update.store')}
             onPress={() => Linking.openURL(required.storeUrl!)}
             testID="open-store"
             style={{ marginTop: spacing.lg }}
           />
         ) : (
-          <Text style={styles.versions}>Busca ListaDeCompras en la tienda de tu telefono.</Text>
+          <Text style={styles.versions}>{t('update.searchStore')}</Text>
         )}
       </Card>
     </View>

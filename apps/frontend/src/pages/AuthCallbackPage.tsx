@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from '../components/Spinner';
 import { MfaCodeForm } from '../components/MfaCodeForm';
 
-const ERROR_MESSAGES: Record<string, string> = {
-  google_cancelado: 'Cancelaste el inicio de sesion con Google.',
-  google_fallido: 'No pudimos validar tu cuenta de Google. Intentalo de nuevo.',
-  apple_cancelado: 'Cancelaste el inicio de sesion con Apple.',
-  apple_fallido: 'No pudimos validar tu cuenta de Apple. Intentalo de nuevo.',
-};
+const PROVIDER_ERRORS = ['google_cancelado', 'google_fallido', 'apple_cancelado', 'apple_fallido'] as const;
+type ProviderError = (typeof PROVIDER_ERRORS)[number];
+const isProviderError = (value: string): value is ProviderError =>
+  PROVIDER_ERRORS.includes(value as ProviderError);
 
 /**
  * Vuelta de Google/Apple. El backend ya dejo el refresh token en una cookie
@@ -18,6 +17,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 export function AuthCallbackPage() {
   const { restoreSession, verifyMfa } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [mfaToken, setMfaToken] = useState<string | null>(null);
   const started = useRef(false);
@@ -32,7 +32,7 @@ export function AuthCallbackPage() {
 
     const failure = params.get('error');
     if (failure) {
-      setError(ERROR_MESSAGES[failure] ?? 'No pudimos completar el inicio de sesion.');
+      setError(isProviderError(failure) ? t(`callback.errors.${failure}`) : t('callback.generic'));
       return;
     }
     const challenge = params.get('mfaToken');
@@ -41,23 +41,23 @@ export function AuthCallbackPage() {
       return;
     }
     if (params.get('status') !== 'ok') {
-      setError('La respuesta del proveedor venia incompleta.');
+      setError(t('callback.incomplete'));
       return;
     }
     restoreSession()
       .then((ok) => {
         if (ok) navigate('/', { replace: true });
-        else setError('No pudimos validar la sesion recibida.');
+        else setError(t('callback.sessionFailed'));
       })
-      .catch(() => setError('No pudimos validar la sesion recibida.'));
-  }, [restoreSession, navigate]);
+      .catch(() => setError(t('callback.sessionFailed')));
+  }, [restoreSession, navigate, t]);
 
   if (mfaToken) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
         <div className="card border-0 shadow-sm lc-auth-card">
           <div className="card-body p-4">
-            <h1 className="h5 text-center mb-3">Verificacion en dos pasos</h1>
+            <h1 className="h5 text-center mb-3">{t('login.mfaTitle')}</h1>
             <MfaCodeForm
               onSubmit={async (code) => {
                 await verifyMfa(mfaToken, code);
@@ -77,12 +77,12 @@ export function AuthCallbackPage() {
         <div className="card border-0 shadow-sm lc-auth-card">
           <div className="card-body p-4 text-center">
             <i className="bi bi-x-octagon text-danger fs-1" aria-hidden="true" />
-            <h1 className="h5 mt-3">No se pudo iniciar sesion</h1>
+            <h1 className="h5 mt-3">{t('callback.errorTitle')}</h1>
             <p className="text-muted small" data-testid="oauth-error">
               {error}
             </p>
             <button className="btn btn-primary" onClick={() => navigate('/login', { replace: true })}>
-              Volver al inicio de sesion
+              {t('callback.backToLogin')}
             </button>
           </div>
         </div>
@@ -90,5 +90,5 @@ export function AuthCallbackPage() {
     );
   }
 
-  return <Spinner label="Validando tu cuenta…" />;
+  return <Spinner label={t('callback.validating')} />;
 }

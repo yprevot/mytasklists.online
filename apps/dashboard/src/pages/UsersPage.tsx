@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { adminApi } from '../api/endpoints';
 import type { AdminUser, Paginated } from '../types';
 
 export function UsersPage() {
+  const { t } = useTranslation();
   const [result, setResult] = useState<Paginated<AdminUser> | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -27,7 +29,7 @@ export function UsersPage() {
   };
 
   const resetMfa = async (user: AdminUser) => {
-    if (!window.confirm(`¿Quitar la verificacion en dos pasos de ${user.email}? Se cerraran sus sesiones.`)) {
+    if (!window.confirm(t('users.confirmResetMfa', { email: user.email }))) {
       return;
     }
     await adminApi.resetUserMfa(user.id);
@@ -36,7 +38,7 @@ export function UsersPage() {
 
   return (
     <div data-testid="users-page">
-      <h1 className="h4 mb-3">Usuarios</h1>
+      <h1 className="h4 mb-3">{t('users.title')}</h1>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">
@@ -44,7 +46,7 @@ export function UsersPage() {
             <input
               className="form-control"
               style={{ maxWidth: 320 }}
-              placeholder="Buscar por nombre o correo…"
+              placeholder={t('users.search')}
               value={search}
               onChange={(event) => {
                 setPage(1);
@@ -53,7 +55,7 @@ export function UsersPage() {
               data-testid="users-search"
             />
             <span className="ms-auto align-self-center text-muted small" data-testid="users-total">
-              {result?.total ?? 0} usuario(s)
+              {t('users.total', { count: result?.total ?? 0 })}
             </span>
           </div>
 
@@ -63,14 +65,14 @@ export function UsersPage() {
             <table className="table table-sm align-middle" data-testid="users-table">
               <thead>
                 <tr>
-                  <th scope="col">Nombre</th>
-                  <th scope="col">Correo</th>
-                  <th scope="col">WhatsApp</th>
-                  <th scope="col">Registro</th>
-                  <th scope="col">Rol</th>
-                  <th scope="col">Estado</th>
+                  <th scope="col">{t('users.name')}</th>
+                  <th scope="col">{t('users.email')}</th>
+                  <th scope="col">{t('users.whatsapp')}</th>
+                  <th scope="col">{t('users.signup')}</th>
+                  <th scope="col">{t('users.role')}</th>
+                  <th scope="col">{t('users.status')}</th>
                   <th scope="col" className="text-end">
-                    Acciones
+                    {t('users.actions')}
                   </th>
                 </tr>
               </thead>
@@ -92,16 +94,16 @@ export function UsersPage() {
                     </td>
                     <td>
                       <span className={`badge ${user.isActive ? 'text-bg-success' : 'text-bg-secondary'}`}>
-                        {user.isActive ? 'activo' : 'inactivo'}
+                        {user.isActive ? t('users.active') : t('users.inactive')}
                       </span>
                       {user.mfaEnabled && (
-                        <span className="badge text-bg-info ms-1" title="Verificacion en dos pasos activa">
+                        <span className="badge text-bg-info ms-1" title={t('users.mfaOn')}>
                           2FA
                         </span>
                       )}
                       {!user.emailVerified && (
-                        <span className="badge text-bg-warning ms-1" title="Correo sin confirmar">
-                          sin verificar
+                        <span className="badge text-bg-warning ms-1" title={t('users.unverifiedTitle')}>
+                          {t('users.unverified')}
                         </span>
                       )}
                     </td>
@@ -112,7 +114,7 @@ export function UsersPage() {
                           onClick={() => resetMfa(user)}
                           data-testid="reset-mfa"
                         >
-                          Quitar 2FA
+                          {t('users.resetMfa')}
                         </button>
                       )}
                       <button
@@ -120,7 +122,7 @@ export function UsersPage() {
                         onClick={() => toggleActive(user)}
                         data-testid="toggle-active"
                       >
-                        {user.isActive ? 'Desactivar' : 'Activar'}
+                        {user.isActive ? t('common.deactivate') : t('common.activate')}
                       </button>
                     </td>
                   </tr>
@@ -128,7 +130,7 @@ export function UsersPage() {
                 {result?.data.length === 0 && (
                   <tr>
                     <td colSpan={7} className="text-center text-muted py-4">
-                      Sin resultados
+                      {t('common.noResults')}
                     </td>
                   </tr>
                 )}
@@ -143,17 +145,17 @@ export function UsersPage() {
                 disabled={page <= 1}
                 onClick={() => setPage((value) => value - 1)}
               >
-                Anterior
+                {t('users.previous')}
               </button>
               <span className="small text-muted">
-                Pagina {result.page} de {result.pages}
+                {t('users.page', { page: result.page, pages: result.pages })}
               </span>
               <button
                 className="btn btn-sm btn-outline-secondary"
                 disabled={page >= result.pages}
                 onClick={() => setPage((value) => value + 1)}
               >
-                Siguiente
+                {t('users.next')}
               </button>
             </nav>
           )}

@@ -1,3 +1,4 @@
+import type { Locale } from '@lista/contracts';
 import {
   BadRequestException,
   ForbiddenException,
@@ -95,8 +96,9 @@ export class AuthService {
   }
 
   // ── Registro y sesion con correo/contrasena ─────────────────────────
-  async register(dto: RegisterDto): Promise<AuthResult> {
+  async register(dto: RegisterDto, locale?: Locale): Promise<AuthResult> {
     const user = await this.users.create({
+      locale,
       fullName: dto.fullName,
       email: dto.email,
       whatsapp: dto.whatsapp,
@@ -165,6 +167,7 @@ export class AuthService {
       this.mail.sendInBackground(
         user.email,
         socialLinkedTemplate(
+          user.locale,
           user.fullName,
           profile.provider === 'google' ? 'Google' : 'Apple',
           `${this.publicUrl}/app/forgot-password`,
@@ -214,7 +217,7 @@ export class AuthService {
     const url = `${this.publicUrl}/app/verify-email#token=${token}`;
     this.mail.sendInBackground(
       user.email,
-      verifyEmailTemplate(user.fullName, url, Math.round(ttl / 3600)),
+      verifyEmailTemplate(user.locale, user.fullName, url, Math.round(ttl / 3600)),
     );
   }
 
@@ -255,7 +258,7 @@ export class AuthService {
       const url = `${this.publicUrl}/app/reset-password#token=${token}`;
       this.mail.sendInBackground(
         user.email,
-        resetPasswordTemplate(user.fullName, url, Math.round(ttl / 60)),
+        resetPasswordTemplate(user.locale, user.fullName, url, Math.round(ttl / 60)),
       );
     }
     return { ok: true, message: FORGOT_PASSWORD_MESSAGE };
@@ -278,7 +281,7 @@ export class AuthService {
     await this.endAllSessions(user.id);
     this.mail.sendInBackground(
       user.email,
-      passwordChangedTemplate(user.fullName, `${this.publicUrl}/app/login`),
+      passwordChangedTemplate(user.locale, user.fullName, `${this.publicUrl}/app/login`),
     );
     return { ok: true };
   }
@@ -294,7 +297,7 @@ export class AuthService {
     const user = await this.users.findById(userId);
     this.mail.sendInBackground(
       user.email,
-      passwordChangedTemplate(user.fullName, `${this.publicUrl}/app/login`),
+      passwordChangedTemplate(user.locale, user.fullName, `${this.publicUrl}/app/login`),
     );
     return this.issueSession(user);
   }
@@ -307,7 +310,7 @@ export class AuthService {
   async mfaEnable(userId: string, code: string) {
     const result = await this.mfa.confirmSetup(userId, code);
     const user = await this.users.findById(userId);
-    this.mail.sendInBackground(user.email, mfaChangedTemplate(user.fullName, true));
+    this.mail.sendInBackground(user.email, mfaChangedTemplate(user.locale, user.fullName, true));
     return { enabled: true, recoveryCodes: result.recoveryCodes };
   }
 
@@ -317,7 +320,7 @@ export class AuthService {
     }
     await this.mfa.disable(userId);
     const user = await this.users.findById(userId);
-    this.mail.sendInBackground(user.email, mfaChangedTemplate(user.fullName, false));
+    this.mail.sendInBackground(user.email, mfaChangedTemplate(user.locale, user.fullName, false));
     return { enabled: false };
   }
 

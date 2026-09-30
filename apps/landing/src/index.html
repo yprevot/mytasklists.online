@@ -27,10 +27,14 @@
           ListaDeCompras
         </a>
         <nav class="nav-links">
-          <a href="#funciones">Funciones</a>
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#descargar" data-testid="nav-download">Descargar</a>
-          <a class="btn btn-ghost" href="__APP_URL__" data-testid="open-web-app">Abrir app web</a>
+          <a href="#funciones" data-i18n="nav.features">Funciones</a>
+          <a href="#como-funciona" data-i18n="nav.how">Como funciona</a>
+          <a href="#descargar" data-testid="nav-download" data-i18n="nav.download">Descargar</a>
+          <a class="btn btn-ghost" href="__APP_URL__" data-testid="open-web-app" data-i18n="nav.openApp">Abrir app web</a>
+          <div class="lang" role="group" aria-label="Idioma / Language" data-testid="language-switcher">
+            <button type="button" data-lang="es" data-testid="language-es" lang="es" title="Español">ES</button>
+            <button type="button" data-lang="en" data-testid="language-en" lang="en" title="English">EN</button>
+          </div>
         </nav>
       </div>
     </header>
@@ -42,15 +46,15 @@
           <div>
             <span class="eyebrow">
               <span aria-hidden="true">🔄</span>
-              Productos que se vuelven a agregar solos
+              <span data-i18n="hero.eyebrow">Productos que se vuelven a agregar solos</span>
             </span>
 
-            <h1>
+            <h1 data-i18n="hero.title">
               Tu despensa, siempre al dia.
               <span class="grad">Sin volver a olvidar el pan.</span>
             </h1>
 
-            <p class="lede">
+            <p class="lede" data-i18n="hero.lede">
               Crea listas de compras, compartelas con tu familia y marca lo que ya compraste. Los
               productos recurrentes vuelven solos a la lista cuando toca, y si alguien mas la edita
               lo ves al instante.
@@ -62,7 +66,7 @@
                   <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.3-2.4 1.3-2.5 0 0-2.5-1-2.5-3.4zM14.2 5.9c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z" />
                 </svg>
                 <span>
-                  <small>Descargar en el</small>
+                  <small data-i18n="store.iosSmall">Descargar en el</small>
                   <strong>App Store</strong>
                 </span>
               </a>
@@ -72,13 +76,13 @@
                   <path d="M3.6 2.2 13.1 12 3.6 21.8c-.3-.2-.5-.6-.5-1.1V3.3c0-.5.2-.9.5-1.1zm11 10.6 2.6 2.6-9.6 5.4 7-8zm3.9-1.9 2.5 1.4c.7.4.7 1.4 0 1.8l-2.5 1.4-2.8-2.3 2.8-2.3zM7.6 2.9l9.6 5.4-2.6 2.6-7-8z" />
                 </svg>
                 <span>
-                  <small>Disponible en</small>
+                  <small data-i18n="store.androidSmall">Disponible en</small>
                   <strong>Google Play</strong>
                 </span>
               </a>
             </div>
 
-            <p class="hero-note">
+            <p class="hero-note" data-i18n="hero.note">
               Tambien puedes usarla desde el navegador ·
               <a href="__APP_URL__">abrir la version web</a>
             </p>
@@ -88,34 +92,34 @@
           <div class="phone" aria-hidden="true">
             <div class="phone-screen">
               <div class="phone-top">
-                <div class="title">🛒 Despensa quincenal</div>
-                <div class="sub">Ana y Carlos · en vivo</div>
+                <div class="title" data-i18n="mock.list">🛒 Despensa quincenal</div>
+                <div class="sub" data-i18n="mock.live">Ana y Carlos · en vivo</div>
               </div>
               <div class="phone-body">
-                <p class="section-label">Por comprar</p>
+                <p class="section-label" data-i18n="mock.pending">Por comprar</p>
 
                 <div class="row-item rec">
                   <span class="box"></span>
-                  <span class="name">Pan de caja</span>
-                  <span class="pill">cada 14 d</span>
+                  <span class="name" data-i18n="mock.bread">Pan de caja</span>
+                  <span class="pill" data-i18n="mock.every">cada 14 d</span>
                 </div>
 
                 <div class="row-item late">
                   <span class="box"></span>
-                  <span class="name">Leche entera</span>
-                  <span class="pill danger">vencido</span>
+                  <span class="name" data-i18n="mock.milk">Leche entera</span>
+                  <span class="pill danger" data-i18n="mock.overdue">vencido</span>
                 </div>
 
                 <div class="row-item">
                   <span class="box"></span>
-                  <span class="name">Pilas AA</span>
+                  <span class="name" data-i18n="mock.batteries">Pilas AA</span>
                 </div>
 
-                <p class="section-label">Comprados</p>
+                <p class="section-label" data-i18n="mock.bought">Comprados</p>
 
                 <div class="row-item done">
                   <span class="box"></span>
-                  <span class="name">Cafe molido</span>
+                  <span class="name" data-i18n="mock.coffee">Cafe molido</span>
                   <span class="x">×</span>
                 </div>
               </div>
@@ -128,8 +132,8 @@
       <section id="funciones">
         <div class="wrap">
           <div class="section-head">
-            <h2>Pensada para lo que de verdad se compra cada semana</h2>
-            <p>
+            <h2 data-i18n="features.title">Pensada para lo que de verdad se compra cada semana</h2>
+            <p data-i18n="features.text">
               No es otra lista de tareas: sabe que hay cosas que compras una vez y otras que compras
               siempre.
             </p>
@@ -138,8 +142,8 @@
           <div class="grid">
             <article class="card">
               <div class="icon" aria-hidden="true">🔄</div>
-              <h3>Productos recurrentes</h3>
-              <p>
+              <h3 data-i18n="features.recurring.title">Productos recurrentes</h3>
+              <p data-i18n="features.recurring.text">
                 Agrega "Pan de caja" con recurrencia de 14 dias. Al marcarlo como comprado, el reloj
                 arranca desde ese momento y el producto vuelve solo a la lista.
               </p>
@@ -147,8 +151,8 @@
 
             <article class="card">
               <div class="icon" aria-hidden="true">🎨</div>
-              <h3>Avisos por color</h3>
-              <p>
+              <h3 data-i18n="features.color.title">Avisos por color</h3>
+              <p data-i18n="features.color.text">
                 Si un producto recurrente se queda sin comprar y se pasa su plazo, cambia de color
                 para que salte a la vista sin tener que buscarlo.
               </p>
@@ -156,8 +160,8 @@
 
             <article class="card">
               <div class="icon" aria-hidden="true">✅</div>
-              <h3>Estilo check</h3>
-              <p>
+              <h3 data-i18n="features.check.title">Estilo check</h3>
+              <p data-i18n="features.check.text">
                 Lo comprado baja a una segunda lista, tachado. Se queda ahi hasta que tu lo cierras
                 con la "x", como en las listas de Google.
               </p>
@@ -165,8 +169,8 @@
 
             <article class="card">
               <div class="icon" aria-hidden="true">👥</div>
-              <h3>Listas compartidas</h3>
-              <p>
+              <h3 data-i18n="features.shared.title">Listas compartidas</h3>
+              <p data-i18n="features.shared.text">
                 Invita a quien quieras por correo. Todos pueden agregar productos y marcar lo que ya
                 compraron.
               </p>
@@ -174,8 +178,8 @@
 
             <article class="card">
               <div class="icon" aria-hidden="true">⚡</div>
-              <h3>Tiempo real</h3>
-              <p>
+              <h3 data-i18n="features.realtime.title">Tiempo real</h3>
+              <p data-i18n="features.realtime.text">
                 Si tu pareja marca la leche en el super, tu lista se actualiza al instante. Nada de
                 comprar dos veces lo mismo.
               </p>
@@ -183,8 +187,8 @@
 
             <article class="card">
               <div class="icon" aria-hidden="true">🔔</div>
-              <h3>Avisos a tu gusto</h3>
-              <p>
+              <h3 data-i18n="features.alerts.title">Avisos a tu gusto</h3>
+              <p data-i18n="features.alerts.text">
                 Cada persona decide si quiere enterarse: pop-up en la web y notificacion push en iOS
                 y Android.
               </p>
@@ -197,24 +201,24 @@
       <section id="como-funciona" style="background: #fff; border-block: 1px solid var(--line)">
         <div class="wrap">
           <div class="section-head">
-            <h2>Un ejemplo: el pan de caja</h2>
-            <p>Asi funciona la recurrencia, contada con un caso real.</p>
+            <h2 data-i18n="how.title">Un ejemplo: el pan de caja</h2>
+            <p data-i18n="how.text">Asi funciona la recurrencia, contada con un caso real.</p>
           </div>
 
           <div class="steps">
             <div class="step">
               <span class="num"></span>
               <div>
-                <h3>El lunes agregas "Pan de caja" con recurrencia de 14 dias</h3>
-                <p>Entra a la lista de pendientes y empieza a correr su plazo.</p>
+                <h3 data-i18n="how.step1.title">El lunes agregas "Pan de caja" con recurrencia de 14 dias</h3>
+                <p data-i18n="how.step1.text">Entra a la lista de pendientes y empieza a correr su plazo.</p>
               </div>
             </div>
 
             <div class="step">
               <span class="num"></span>
               <div>
-                <h3>El viernes vas al super y lo marcas como comprado</h3>
-                <p>
+                <h3 data-i18n="how.step2.title">El viernes vas al super y lo marcas como comprado</h3>
+                <p data-i18n="how.step2.text">
                   Baja tachado a la lista de comprados. La cuenta de 14 dias arranca desde ese
                   viernes, no desde el lunes.
                 </p>
@@ -224,16 +228,16 @@
             <div class="step">
               <span class="num"></span>
               <div>
-                <h3>Catorce dias despues vuelve solo a "Por comprar"</h3>
-                <p>Y con el, un aviso para que no te agarre por sorpresa. Asi, ciclo tras ciclo.</p>
+                <h3 data-i18n="how.step3.title">Catorce dias despues vuelve solo a "Por comprar"</h3>
+                <p data-i18n="how.step3.text">Y con el, un aviso para que no te agarre por sorpresa. Asi, ciclo tras ciclo.</p>
               </div>
             </div>
 
             <div class="step">
               <span class="num"></span>
               <div>
-                <h3>¿Se te paso comprarlo?</h3>
-                <p>
+                <h3 data-i18n="how.step4.title">¿Se te paso comprarlo?</h3>
+                <p data-i18n="how.step4.text">
                   El producto se queda en la lista pero cambia de color para avisarte de que ya
                   vencio su plazo.
                 </p>
@@ -247,8 +251,8 @@
       <section id="descargar">
         <div class="wrap">
           <div class="cta">
-            <h2>Descarga la app</h2>
-            <p>
+            <h2 data-i18n="cta.title">Descarga la app</h2>
+            <p data-i18n="cta.text">
               Disponible para iPhone y Android. Crea tu cuenta con correo, Google o Apple y empieza
               a compartir tus listas en menos de un minuto.
             </p>
@@ -259,8 +263,8 @@
                   <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.3-2.4 1.3-2.5 0 0-2.5-1-2.5-3.4zM14.2 5.9c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z" />
                 </svg>
                 <span>
-                  <small>Descargar para</small>
-                  <strong>iPhone y iPad</strong>
+                  <small data-i18n="store.for">Descargar para</small>
+                  <strong data-i18n="store.iphone">iPhone y iPad</strong>
                 </span>
               </a>
 
@@ -269,7 +273,7 @@
                   <path d="M3.6 2.2 13.1 12 3.6 21.8c-.3-.2-.5-.6-.5-1.1V3.3c0-.5.2-.9.5-1.1zm11 10.6 2.6 2.6-9.6 5.4 7-8zm3.9-1.9 2.5 1.4c.7.4.7 1.4 0 1.8l-2.5 1.4-2.8-2.3 2.8-2.3zM7.6 2.9l9.6 5.4-2.6 2.6-7-8z" />
                 </svg>
                 <span>
-                  <small>Descargar para</small>
+                  <small data-i18n="store.for">Descargar para</small>
                   <strong>Android</strong>
                 </span>
               </a>
@@ -281,13 +285,14 @@
 
     <footer>
       <div class="wrap">
-        <span>© __YEAR__ ListaDeCompras · Hecho para no volver a olvidar la leche.</span>
+        <span data-i18n="footer.tagline">© __YEAR__ ListaDeCompras · Hecho para no volver a olvidar la leche.</span>
         <span>
-          <a href="__APP_URL__">App web</a> ·
-          <a href="/dashboard/">Panel</a> ·
+          <a href="__APP_URL__" data-i18n="footer.app">App web</a> ·
+          <a href="/dashboard/" data-i18n="footer.panel">Panel</a> ·
           <a href="/api/docs">API</a>
         </span>
       </div>
     </footer>
+    <script src="./i18n.js"></script>
   </body>
 </html>

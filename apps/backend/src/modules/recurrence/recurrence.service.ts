@@ -121,8 +121,7 @@ export class RecurrenceService implements OnModuleInit {
         listName: list.name,
         itemId: item.id,
         type: NotificationType.ITEM_REACTIVATED,
-        title: list.name,
-        body: `"${item.name}" volvio a tu lista (se repite cada ${days} dias)`,
+        render: (texts) => ({ title: list.name, body: texts.itemReactivated(item.name, days) }),
         payload: { itemName: item.name, cycle: item.cycleCount },
       });
 
@@ -176,8 +175,7 @@ export class RecurrenceService implements OnModuleInit {
         listName: list.name,
         itemId: item.id,
         type: NotificationType.ITEM_OVERDUE,
-        title: list.name,
-        body: `"${item.name}" lleva ${daysLate} dia(s) sin comprarse y ya vencio su ciclo`,
+        render: (texts) => ({ title: list.name, body: texts.itemOverdue(item.name, daysLate) }),
         payload: { itemName: item.name, daysLate },
       });
     }

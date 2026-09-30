@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Badge } from './ui';
 import { colors, radius, spacing } from '../theme';
 import type { Item } from '../types';
@@ -16,6 +17,7 @@ interface Props {
  * gris (una sola vez), azul (recurrente al dia) y rojo (recurrente vencido).
  */
 export function ItemRow({ item, onPurchase, onLongPress, disabled }: Props) {
+  const { t } = useTranslation();
   const borderColor = item.isOverdue
     ? colors.danger
     : item.isRecurring
@@ -25,7 +27,7 @@ export function ItemRow({ item, onPurchase, onLongPress, disabled }: Props) {
   return (
     <Pressable
       testID="pending-item"
-      accessibilityLabel={`Marcar ${item.name} como comprado`}
+      accessibilityLabel={t('item.markPurchased', { name: item.name })}
       onPress={() => !disabled && onPurchase(item)}
       onLongPress={() => onLongPress?.(item)}
       style={[
@@ -48,13 +50,13 @@ export function ItemRow({ item, onPurchase, onLongPress, disabled }: Props) {
             <Badge
               testID="item-recurrence-badge"
               tone={item.isOverdue ? 'danger' : 'info'}
-              text={`cada ${item.recurrenceDays} d`}
+              text={t('item.every', { count: item.recurrenceDays ?? 0 })}
             />
           )}
           {item.isOverdue ? (
-            <Badge testID="item-overdue-badge" tone="danger" text={`vencido ${item.daysOverdue} d`} />
+            <Badge testID="item-overdue-badge" tone="danger" text={t('item.overdue', { count: item.daysOverdue })} />
           ) : item.isRecurring && item.daysUntilDue !== null ? (
-            <Text style={styles.meta}>vence en {item.daysUntilDue} d</Text>
+            <Text style={styles.meta}>{t('item.dueIn', { count: item.daysUntilDue })}</Text>
           ) : null}
         </View>
       </View>

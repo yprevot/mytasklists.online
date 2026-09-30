@@ -32,6 +32,8 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { AuthThrottle, SensitiveThrottle } from '../../common/throttle/throttle-profiles';
+import { RequestLocale } from '../../common/decorators/request-locale.decorator';
+import { type Locale, translateMessage } from '../../i18n/locale';
 
 /**
  * Los clientes web (app y panel) mandan `X-Auth-Client: web|dashboard`: su
@@ -83,10 +85,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Registro con nombre, correo, WhatsApp y contrasena' })
   async register(
     @Body() dto: RegisterDto,
+    @RequestLocale() locale: Locale,
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
   ) {
-    return this.respond(request, reply, await this.auth.register(dto));
+    return this.respond(request, reply, await this.auth.register(dto, locale));
   }
 
   @Public()
@@ -195,8 +198,9 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Envia un enlace para restablecer la contrasena (respuesta generica)' })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.auth.forgotPassword(dto.email);
+  async forgotPassword(@Body() dto: ForgotPasswordDto, @RequestLocale() locale: Locale) {
+    const result = await this.auth.forgotPassword(dto.email);
+    return { ...result, message: translateMessage(result.message, locale) };
   }
 
   @Public()

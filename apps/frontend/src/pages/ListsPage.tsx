@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { listsApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useSocketEvent } from '../context/SocketContext';
@@ -20,16 +21,17 @@ export function ListsPage() {
   const [color, setColor] = useState(COLORS[0]);
   const [icon, setIcon] = useState(ICONS[0]);
   const { show } = useToast();
+  const { t } = useTranslation();
 
   const load = useCallback(async () => {
     try {
       setLists(await listsApi.all());
       setError(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudieron cargar tus listas');
+      setError(err instanceof ApiError ? err.message : t('lists.loadFailed'));
       setLists([]);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -52,12 +54,12 @@ export function ListsPage() {
       await listsApi.create({ name: name.trim(), color, icon });
       setName('');
       setShowForm(false);
-      show({ title: 'Lista creada', body: `"${name.trim()}" esta lista para usarse`, variant: 'success' });
+      show({ title: t('lists.created'), body: t('lists.createdBody', { name: name.trim() }), variant: 'success' });
       await load();
     } catch (err) {
       show({
-        title: 'No se pudo crear',
-        body: err instanceof ApiError ? err.message : 'Intentalo de nuevo',
+        title: t('lists.createFailed'),
+        body: err instanceof ApiError ? err.message : t('common.tryAgain'),
         variant: 'danger',
       });
     } finally {
@@ -65,17 +67,19 @@ export function ListsPage() {
     }
   };
 
-  if (lists === null) return <Spinner label="Cargando tus listas…" />;
+  if (lists === null) return <Spinner label={t('lists.loading')} />;
 
   return (
     <div data-testid="lists-page">
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-          <h1 className="h3 mb-1">Mis listas</h1>
+          <h1 className="h3 mb-1">{t('lists.title')}</h1>
           <p className="text-muted small mb-0">
             {lists.length === 0
-              ? 'Aun no tienes listas'
-              : `${lists.length} lista(s) · ${lists.filter((list) => list.isShared).length} compartida(s)`}
+              ? t('lists.none')
+              : `${t('lists.count', { count: lists.length })} · ${t('lists.shared', {
+                  count: lists.filter((list) => list.isShared).length,
+                })}`}
           </p>
         </div>
         <button
@@ -84,7 +88,7 @@ export function ListsPage() {
           data-testid="new-list-button"
         >
           <i className="bi bi-plus-lg me-1" aria-hidden="true" />
-          Nueva lista
+          {t('lists.newList')}
         </button>
       </div>
 
@@ -94,21 +98,21 @@ export function ListsPage() {
             <div className="row g-3 align-items-end">
               <div className="col-12 col-md-6">
                 <label className="form-label small" htmlFor="list-name">
-                  Nombre de la lista
+                  {t('lists.name')}
                 </label>
                 <input
                   id="list-name"
                   className="form-control"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  placeholder="Despensa quincenal"
+                  placeholder={t('lists.namePlaceholder')}
                   data-testid="new-list-name"
                   autoFocus
                 />
               </div>
               <div className="col-6 col-md-3">
-                <label className="form-label small">Icono</label>
-                <div className="btn-group w-100" role="group" aria-label="Icono de la lista">
+                <label className="form-label small">{t('lists.icon')}</label>
+                <div className="btn-group w-100" role="group" aria-label={t('lists.iconGroup')}>
                   {ICONS.map((option) => (
                     <button
                       key={option}
@@ -123,7 +127,7 @@ export function ListsPage() {
                 </div>
               </div>
               <div className="col-6 col-md-3">
-                <label className="form-label small">Color</label>
+                <label className="form-label small">{t('lists.color')}</label>
                 <div className="d-flex gap-1">
                   {COLORS.map((option) => (
                     <button
@@ -137,7 +141,7 @@ export function ListsPage() {
                         outline: color === option ? '2px solid #212529' : 'none',
                       }}
                       onClick={() => setColor(option)}
-                      aria-label={`Color ${option}`}
+                      aria-label={t('lists.colorOption', { color: option })}
                     />
                   ))}
                 </div>
@@ -150,10 +154,10 @@ export function ListsPage() {
                 disabled={creating || !name.trim()}
                 data-testid="new-list-submit"
               >
-                {creating ? 'Creando…' : 'Crear lista'}
+                {creating ? t('lists.creating') : t('lists.create')}
               </button>
               <button className="btn btn-link" type="button" onClick={() => setShowForm(false)}>
-                Cancelar
+                {t('common.cancel')}
               </button>
             </div>
           </div>
@@ -170,12 +174,12 @@ export function ListsPage() {
         <div className="card border-0 shadow-sm">
           <EmptyState
             icon="bi-card-checklist"
-            title="Crea tu primera lista"
-            description="Agrega productos puntuales o recurrentes y compartelos con quien quieras."
+            title={t('lists.emptyTitle')}
+            description={t('lists.emptyText')}
             testId="lists-empty"
             action={
               <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-                Nueva lista
+                {t('lists.newList')}
               </button>
             }
           />
@@ -214,10 +218,12 @@ export function ListsPage() {
 
                     <div className="d-flex flex-wrap gap-2">
                       <span className="badge text-bg-primary" data-testid="list-pending-count">
-                        {list.pendingCount} por comprar
+                        {t('lists.pending', { count: list.pendingCount })}
                       </span>
                       {list.purchasedCount > 0 && (
-                        <span className="badge text-bg-success">{list.purchasedCount} comprados</span>
+                        <span className="badge text-bg-success">
+                          {t('lists.purchased', { count: list.purchasedCount })}
+                        </span>
                       )}
                       {list.recurringCount > 0 && (
                         <span className="badge text-bg-info">
@@ -227,7 +233,7 @@ export function ListsPage() {
                       )}
                       {list.overdueCount > 0 && (
                         <span className="badge text-bg-danger" data-testid="list-overdue-count">
-                          {list.overdueCount} vencido(s)
+                          {t('lists.overdue', { count: list.overdueCount })}
                         </span>
                       )}
                     </div>

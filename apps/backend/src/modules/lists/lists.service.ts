@@ -264,8 +264,10 @@ export class ListsService {
       actorId,
       actorName: actor?.fullName,
       type: NotificationType.LIST_SHARED,
-      title: 'Nueva lista compartida contigo',
-      body: `${actor?.fullName ?? 'Alguien'} compartio contigo la lista "${list.name}"`,
+      render: (texts) => ({
+        title: texts.listSharedTitle,
+        body: texts.listShared(actor?.fullName, list.name),
+      }),
       onlyUserIds: [target.id],
     });
 

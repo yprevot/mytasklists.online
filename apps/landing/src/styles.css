@@ -89,6 +89,26 @@ a { color: var(--brand); }
 .btn-primary:hover { background: var(--brand-dark); }
 .btn-ghost { border-color: var(--line); color: var(--ink); background: #fff; }
 
+/* Selector de idioma ES / EN */
+.lang {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+.lang button {
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.lang button[aria-pressed='true'] { background: var(--brand); color: #fff; }
+
 /* ── Hero ───────────────────────────────────────────────────────────── */
 .hero {
   padding: 4.5rem 0 3.5rem;

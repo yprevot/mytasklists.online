@@ -122,10 +122,10 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_ADDED,
-      title: list.name,
-      body: `${actorName} agrego "${item.name}"${
-        isRecurring ? ` (se repite cada ${item.recurrenceDays} dias)` : ''
-      }`,
+      render: (texts) => ({
+        title: list.name,
+        body: texts.itemAdded(actorName, item.name, isRecurring ? item.recurrenceDays : null),
+      }),
       payload: { itemName: item.name, isRecurring },
     });
 
@@ -189,8 +189,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_UPDATED,
-      title: list.name,
-      body: `${actorName} edito "${item.name}"`,
+      render: (texts) => ({ title: list.name, body: texts.itemUpdated(actorName, item.name) }),
     });
 
     await this.log({ listId: item.listId, userId, itemId, action: 'item.updated', summary: item.name });
@@ -235,8 +234,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_PURCHASED,
-      title: list.name,
-      body: `${actorName} ya compro "${item.name}"`,
+      render: (texts) => ({ title: list.name, body: texts.itemPurchased(actorName, item.name) }),
       payload: {
         itemName: item.name,
         nextActivationAt: item.nextActivationAt?.toISOString() ?? null,
@@ -283,8 +281,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_RESTORED,
-      title: list.name,
-      body: `${actorName} regreso "${item.name}" a la lista de pendientes`,
+      render: (texts) => ({ title: list.name, body: texts.itemRestored(actorName, item.name) }),
     });
 
     await this.log({ listId: item.listId, userId, itemId, action: 'item.restored', summary: item.name });
@@ -331,8 +328,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_REMOVED,
-      title: list.name,
-      body: `${actorName} elimino "${name}"`,
+      render: (texts) => ({ title: list.name, body: texts.itemRemoved(actorName, name) }),
     });
 
     await this.log({ listId, userId, itemId, action: 'item.removed', summary: name });

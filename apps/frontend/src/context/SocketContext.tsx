@@ -107,8 +107,10 @@ export function useSocket(): SocketContextValue {
   return useContext(SocketContext);
 }
 
-/** Suscripcion tipada a un evento del socket con limpieza automatica */
-/** El nombre del evento y la forma de su payload salen del contrato compartido */
+/**
+ * Suscripcion tipada a un evento del socket con limpieza automatica. El nombre del
+ * evento y la forma de su payload salen del contrato compartido.
+ */
 export function useSocketEvent<E extends ServerEventName>(
   event: E,
   handler: (payload: ServerEvents[E]) => void,

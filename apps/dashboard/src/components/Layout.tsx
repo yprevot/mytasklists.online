@@ -1,16 +1,28 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
-const NAV = [
-  { to: '/', label: 'Resumen', icon: 'bi-speedometer2', end: true },
-  { to: '/users', label: 'Usuarios', icon: 'bi-people' },
-  { to: '/lists', label: 'Listas', icon: 'bi-card-checklist' },
-  { to: '/activity', label: 'Bitacora', icon: 'bi-clock-history' },
-  { to: '/security', label: 'Seguridad', icon: 'bi-shield-lock' },
+interface NavEntry {
+  to: string;
+  key: 'overview' | 'users' | 'lists' | 'activity' | 'security';
+  /** No depende del idioma: las pruebas e2e lo usan en los dos */
+  testId: string;
+  icon: string;
+  end?: boolean;
+}
+
+const NAV: NavEntry[] = [
+  { to: '/', key: 'overview', testId: 'resumen', icon: 'bi-speedometer2', end: true },
+  { to: '/users', key: 'users', testId: 'usuarios', icon: 'bi-people' },
+  { to: '/lists', key: 'lists', testId: 'listas', icon: 'bi-card-checklist' },
+  { to: '/activity', key: 'activity', testId: 'bitacora', icon: 'bi-clock-history' },
+  { to: '/security', key: 'security', testId: 'seguridad', icon: 'bi-shield-lock' },
 ];
 
 export function Layout() {
   const { user, logout } = useAdminAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="d-flex flex-column flex-md-row min-vh-100">
@@ -21,7 +33,7 @@ export function Layout() {
           </span>
           <div>
             <div className="fw-bold">ListaDeCompras</div>
-            <div className="small text-white-50">Panel de administracion</div>
+            <div className="small text-white-50">{t('auth.title')}</div>
           </div>
         </div>
 
@@ -32,10 +44,10 @@ export function Layout() {
               to={entry.to}
               end={entry.end}
               className="px-3 py-2 d-flex align-items-center gap-2"
-              data-testid={`nav-${entry.label.toLowerCase()}`}
+              data-testid={`nav-${entry.testId}`}
             >
               <i className={`bi ${entry.icon}`} aria-hidden="true" />
-              {entry.label}
+              {t(`nav.${entry.key}`)}
             </NavLink>
           ))}
         </nav>
@@ -50,8 +62,9 @@ export function Layout() {
           onClick={logout}
           data-testid="logout-button"
         >
-          Cerrar sesion
+          {t('nav.logout')}
         </button>
+        <LanguageSwitcher className="w-100 mt-2" />
       </aside>
 
       <main className="flex-grow-1 p-3 p-lg-4" style={{ minWidth: 0 }}>

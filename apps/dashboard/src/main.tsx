@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './styles/dashboard.css';
+import './i18n';
 
 import App from './App';
 import { AdminAuthProvider } from './context/AdminAuthContext';

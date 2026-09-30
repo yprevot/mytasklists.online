@@ -1,3 +1,4 @@
+import type { UpdateProfileRequest } from '@lista/contracts';
 import { api } from './client';
 import type {
   AppNotification,
@@ -34,7 +35,7 @@ export const authApi = {
 };
 
 export const usersApi = {
-  updateProfile: (payload: Partial<Pick<User, 'fullName' | 'whatsapp' | 'notificationsEnabled'>>) =>
+  updateProfile: (payload: UpdateProfileRequest) =>
     api.patch<User>('/users/me', payload),
   changePassword: (currentPassword: string, newPassword: string) =>
     api.patch<AuthResponse & { ok: boolean }>('/users/me/password', {

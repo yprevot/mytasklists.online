@@ -2,7 +2,7 @@
  * Cuerpos que envian los clientes (cliente → servidor). Los DTO del backend los
  * implementan, asi que no pueden separarse sin que falle la compilacion.
  */
-import type { DevicePlatform, MemberRole } from './models';
+import type { DevicePlatform, Locale, MemberRole } from './models';
 
 // ── Autenticacion ──────────────────────────────────────────────────────
 export interface RegisterRequest {
@@ -61,6 +61,7 @@ export interface UpdateProfileRequest {
   whatsapp?: string;
   notificationsEnabled?: boolean;
   avatarUrl?: string;
+  locale?: Locale;
 }
 
 export interface ChangePasswordRequest {

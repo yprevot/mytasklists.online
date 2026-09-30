@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { ApiError } from '../api/client';
 
 export function LoginPage() {
   const { login, verifyMfa, user, loading } = useAdminAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -20,9 +23,9 @@ export function LoginPage() {
     try {
       await action();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo iniciar sesion');
+      setError(err instanceof ApiError ? err.message : t('auth.failed'));
       // Reto caducado o agotado: vuelta al primer paso
-      if (err instanceof ApiError && err.status === 401 && /vuelve/i.test(err.message)) {
+      if (err instanceof ApiError && err.status === 401 && /vuelve|again/i.test(err.message)) {
         setMfaToken(null);
       }
     } finally {
@@ -45,22 +48,23 @@ export function LoginPage() {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100 p-3">
+    <div className="d-flex align-items-center justify-content-center min-vh-100 p-3 position-relative">
+      <LanguageSwitcher className="position-absolute top-0 end-0 m-3" />
       <div className="card border-0 shadow-sm" style={{ maxWidth: 420, width: '100%' }} data-testid="login-card">
         <div className="card-body p-4 p-md-5">
           <div className="text-center mb-4">
             <div style={{ fontSize: '2.2rem' }} aria-hidden="true">
               📊
             </div>
-            <h1 className="h5 mt-2 mb-1">Panel de administracion</h1>
-            <p className="text-muted small mb-0">Acceso exclusivo para cuentas con rol admin.</p>
+            <h1 className="h5 mt-2 mb-1">{t('auth.title')}</h1>
+            <p className="text-muted small mb-0">{t('auth.subtitle')}</p>
           </div>
 
           {mfaToken ? (
             <form onSubmit={submitCode} data-testid="mfa-form">
               <div className="mb-3">
                 <label className="form-label" htmlFor="mfa-code">
-                  Codigo de verificacion
+                  {t('auth.code')}
                 </label>
                 <input
                   id="mfa-code"
@@ -73,7 +77,7 @@ export function LoginPage() {
                   data-testid="mfa-code"
                 />
                 <div className="form-text">
-                  Codigo de tu app autenticadora o uno de recuperacion.
+                  {t('auth.codeHint')}
                 </div>
               </div>
               {error && (
@@ -82,17 +86,17 @@ export function LoginPage() {
                 </div>
               )}
               <button className="btn btn-primary w-100" disabled={submitting} data-testid="mfa-submit">
-                {submitting ? 'Verificando…' : 'Verificar'}
+                {submitting ? t('common.verifying') : t('common.verify')}
               </button>
               <button type="button" className="btn btn-link w-100 mt-2" onClick={() => setMfaToken(null)}>
-                Volver
+                {t('common.back')}
               </button>
             </form>
           ) : (
             <form onSubmit={submitCredentials} data-testid="login-form">
               <div className="mb-3">
                 <label className="form-label" htmlFor="email">
-                  Correo electronico
+                  {t('common.email')}
                 </label>
                 <input
                   id="email"
@@ -106,7 +110,7 @@ export function LoginPage() {
               </div>
               <div className="mb-3">
                 <label className="form-label" htmlFor="password">
-                  Contrasena
+                  {t('common.password')}
                 </label>
                 <input
                   id="password"
@@ -126,7 +130,7 @@ export function LoginPage() {
               )}
 
               <button className="btn btn-primary w-100" disabled={submitting} data-testid="login-submit">
-                {submitting ? 'Entrando…' : 'Entrar'}
+                {submitting ? t('auth.submitting') : t('auth.submit')}
               </button>
             </form>
           )}

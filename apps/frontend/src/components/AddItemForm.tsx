@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { itemsApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 
@@ -15,9 +16,10 @@ const PRESET_DAYS = [3, 7, 14, 21, 30];
  * convierte el producto en recurrente: al comprarlo se reprogramara solo.
  */
 export function AddItemForm({ listId, disabled, onError }: Props) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
-  const [unit, setUnit] = useState('pza');
+  const [unit, setUnit] = useState<string>(t('addItem.defaultUnit'));
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceDays, setRecurrenceDays] = useState('14');
   const [saving, setSaving] = useState(false);
@@ -33,14 +35,14 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
       await itemsApi.create(listId, {
         name: trimmed,
         quantity: Number(quantity) || 1,
-        unit: unit.trim() || 'pza',
+        unit: unit.trim() || t('addItem.defaultUnit'),
         isRecurring,
         ...(isRecurring ? { recurrenceDays: Number(recurrenceDays) || 14 } : {}),
       });
       setName('');
       setQuantity('1');
     } catch (error) {
-      onError(error instanceof ApiError ? error.message : 'No se pudo agregar el producto');
+      onError(error instanceof ApiError ? error.message : t('addItem.failed'));
     } finally {
       setSaving(false);
     }
@@ -52,12 +54,12 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
         <div className="row g-2 align-items-center">
           <div className="col-12 col-md">
             <label className="visually-hidden" htmlFor="item-name">
-              Producto
+              {t('addItem.label')}
             </label>
             <input
               id="item-name"
               className="form-control form-control-lg"
-              placeholder="Agregar producto…  p. ej. Pan de caja"
+              placeholder={t('addItem.placeholder')}
               value={name}
               onChange={(event) => setName(event.target.value)}
               disabled={disabled || saving}
@@ -74,7 +76,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
               aria-expanded={expanded}
             >
               <i className="bi bi-sliders me-1" aria-hidden="true" />
-              Opciones
+              {t('addItem.options')}
             </button>
           </div>
           <div className="col-6 col-md-auto">
@@ -84,7 +86,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
               disabled={disabled || saving || !name.trim()}
               data-testid="add-item-button"
             >
-              {saving ? 'Agregando…' : 'Agregar'}
+              {saving ? t('addItem.adding') : t('addItem.add')}
             </button>
           </div>
         </div>
@@ -93,7 +95,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
           <div className="row g-3 mt-1 pt-3 border-top" data-testid="item-options">
             <div className="col-6 col-md-3">
               <label className="form-label small" htmlFor="item-quantity">
-                Cantidad
+                {t('addItem.quantity')}
               </label>
               <input
                 id="item-quantity"
@@ -108,7 +110,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
             </div>
             <div className="col-6 col-md-3">
               <label className="form-label small" htmlFor="item-unit">
-                Unidad
+                {t('addItem.unit')}
               </label>
               <input
                 id="item-unit"
@@ -130,7 +132,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
                   data-testid="item-recurring-switch"
                 />
                 <label className="form-check-label" htmlFor="item-recurring">
-                  Repetir automaticamente
+                  {t('addItem.repeat')}
                 </label>
               </div>
             </div>
@@ -138,7 +140,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
             {isRecurring && (
               <div className="col-12" data-testid="recurrence-options">
                 <label className="form-label small" htmlFor="item-recurrence-days">
-                  Volver a agregarlo cada
+                  {t('addItem.every')}
                 </label>
                 <div className="d-flex flex-wrap align-items-center gap-2">
                   <input
@@ -152,7 +154,7 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
                     onChange={(event) => setRecurrenceDays(event.target.value)}
                     data-testid="item-recurrence-input"
                   />
-                  <span className="text-muted small">dias desde que se marque como comprado</span>
+                  <span className="text-muted small">{t('addItem.everyHint')}</span>
                   <div className="ms-auto btn-group btn-group-sm" role="group">
                     {PRESET_DAYS.map((days) => (
                       <button

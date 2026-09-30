@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Badge, Button, SectionLabel } from '../components/ui';
 import { ItemRow } from '../components/ItemRow';
 import { PurchasedRow } from '../components/PurchasedRow';
@@ -24,6 +25,7 @@ const PRESETS = [3, 7, 14, 30];
 export function ListDetailScreen({ route, navigation }: any) {
   const listId: string = route.params.id;
   const { socket } = useSocket();
+  const { t } = useTranslation();
 
   const [list, setList] = useState<ListDetail | null>(null);
   const [busy, setBusy] = useState(false);
@@ -41,9 +43,9 @@ export function ListDetailScreen({ route, navigation }: any) {
       setList(detail);
       navigation.setOptions({ title: detail.name });
     } catch {
-      Alert.alert('No se pudo cargar la lista');
+      Alert.alert(t('detail.loadFailed'));
     }
-  }, [listId, navigation]);
+  }, [listId, navigation, t]);
 
   useEffect(() => {
     void load();
@@ -79,7 +81,7 @@ export function ListDetailScreen({ route, navigation }: any) {
       await action();
       await load();
     } catch (error) {
-      Alert.alert('Ups', (error as Error).message);
+      Alert.alert(t('common.oops'), (error as Error).message);
     } finally {
       setBusy(false);
     }
@@ -125,7 +127,7 @@ export function ListDetailScreen({ route, navigation }: any) {
         <TextInput
           testID="item-name-input"
           style={styles.addInput}
-          placeholder="Agregar producto…"
+          placeholder={t('detail.addPlaceholder')}
           placeholderTextColor={colors.muted}
           value={name}
           onChangeText={setName}
@@ -134,7 +136,7 @@ export function ListDetailScreen({ route, navigation }: any) {
         />
 
         <View style={styles.recurRow}>
-          <Text style={styles.recurLabel}>Repetir automaticamente</Text>
+          <Text style={styles.recurLabel}>{t('detail.repeat')}</Text>
           <Switch
             testID="item-recurring-switch"
             value={isRecurring}
@@ -155,7 +157,7 @@ export function ListDetailScreen({ route, navigation }: any) {
                 <Text
                   style={[styles.presetText, recurrenceDays === days && styles.presetTextActive]}
                 >
-                  {days} d
+                  {t('detail.days', { count: days })}
                 </Text>
               </Pressable>
             ))}
@@ -163,7 +165,7 @@ export function ListDetailScreen({ route, navigation }: any) {
         )}
 
         <Button
-          title="Agregar"
+          title={t('detail.add')}
           onPress={addItem}
           disabled={!name.trim() || busy}
           testID="add-item-button"
@@ -174,18 +176,18 @@ export function ListDetailScreen({ route, navigation }: any) {
       {/* ── Cabecera de la lista ─────────────────────────────────────── */}
       <View style={styles.headerRow}>
         <View style={{ flex: 1, flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' }}>
-          <Badge tone="muted" text={`${list.pending.length} por comprar`} />
+          <Badge tone="muted" text={t('lists.pending', { count: list.pending.length })} />
           {list.pending.filter((item) => item.isOverdue).length > 0 && (
             <Badge
               tone="danger"
               testID="overdue-summary"
-              text={`${list.pending.filter((item) => item.isOverdue).length} vencidos`}
+              text={t('lists.overdue', { count: list.pending.filter((item) => item.isOverdue).length })}
             />
           )}
-          {list.isShared && <Badge tone="success" text={`${list.memberCount} personas`} />}
+          {list.isShared && <Badge tone="success" text={t('lists.people', { count: list.memberCount })} />}
         </View>
         <Pressable onPress={() => setShowShare((value) => !value)} testID="share-button">
-          <Text style={styles.linkAction}>Compartir</Text>
+          <Text style={styles.linkAction}>{t('detail.share')}</Text>
         </Pressable>
       </View>
 
@@ -194,7 +196,7 @@ export function ListDetailScreen({ route, navigation }: any) {
           <TextInput
             testID="share-email-input"
             style={styles.addInput}
-            placeholder="correo@ejemplo.com"
+            placeholder={t('detail.shareEmail')}
             placeholderTextColor={colors.muted}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -202,7 +204,7 @@ export function ListDetailScreen({ route, navigation }: any) {
             onChangeText={setShareEmail}
           />
           <Button
-            title="Compartir lista"
+            title={t('detail.shareSubmit')}
             testID="share-submit"
             onPress={() =>
               guard(async () => {
@@ -214,7 +216,7 @@ export function ListDetailScreen({ route, navigation }: any) {
             style={{ marginTop: spacing.sm }}
           />
           <View style={styles.notifyRow}>
-            <Text style={styles.recurLabel}>Avisarme de los cambios</Text>
+            <Text style={styles.recurLabel}>{t('detail.notify')}</Text>
             <Switch
               testID="notify-switch"
               value={list.notifyOnChange}
@@ -226,7 +228,7 @@ export function ListDetailScreen({ route, navigation }: any) {
       )}
 
       {/* ── Pendientes ───────────────────────────────────────────────── */}
-      <SectionLabel>Por comprar ({list.pending.length})</SectionLabel>
+      <SectionLabel>{t('detail.pendingHeading', { count: list.pending.length })}</SectionLabel>
       <View testID="pending-list">
         {list.pending.map((item) => (
           <ItemRow
@@ -235,17 +237,17 @@ export function ListDetailScreen({ route, navigation }: any) {
             disabled={busy}
             onPurchase={(target: Item) => guard(() => itemsApi.purchase(target.id))}
             onLongPress={(target: Item) =>
-              Alert.alert(target.name, '¿Que quieres hacer?', [
-                { text: 'Cancelar', style: 'cancel' },
+              Alert.alert(target.name, t('detail.whatToDo'), [
+                { text: t('common.cancel'), style: 'cancel' },
                 {
-                  text: 'Eliminar',
+                  text: t('detail.delete'),
                   style: 'destructive',
                   onPress: () => guard(() => itemsApi.remove(target.id)),
                 },
                 ...(target.isRecurring
                   ? [
                       {
-                        text: 'Adelantar 14 dias',
+                        text: t('detail.advance'),
                         onPress: () => guard(() => itemsApi.advanceClock(target.id, 14)),
                       },
                     ]
@@ -256,7 +258,7 @@ export function ListDetailScreen({ route, navigation }: any) {
         ))}
         {list.pending.length === 0 && (
           <Text style={styles.emptyText} testID="pending-empty">
-            No queda nada pendiente en esta lista.
+            {t('detail.allDone')}
           </Text>
         )}
       </View>
@@ -264,7 +266,7 @@ export function ListDetailScreen({ route, navigation }: any) {
       {/* ── Comprados ────────────────────────────────────────────────── */}
       {list.purchased.length > 0 && (
         <>
-          <SectionLabel>Comprados ({list.purchased.length})</SectionLabel>
+          <SectionLabel>{t('detail.purchasedHeading', { count: list.purchased.length })}</SectionLabel>
           <View testID="purchased-list">
             {list.purchased.map((item) => (
               <PurchasedRow

@@ -1,6 +1,6 @@
 # Catalogo de casos de prueba
 
-150 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app movil).
+159 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app movil).
 
 Ejecucion completa:
 
@@ -17,7 +17,7 @@ con un indice en `e2e/evidence/INDICE.md`.
 
 ## Servicio `backend` (API REST + WebSocket)
 
-**76 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
+**80 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
 
 ### Servicio backend · salud e infraestructura
 
@@ -172,11 +172,22 @@ Archivo: `e2e/tests/backend/11-compatibilidad.spec.ts`
 | `CP-COMPAT-003` | El corte ocurre antes que la sesion: una app vieja no se manda al login |
 | `CP-COMPAT-004` | La version minima, las posteriores y la web sin cabecera se atienden |
 
+### Servicio backend · idiomas
+
+Archivo: `e2e/tests/backend/12-idiomas.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-I18N-001` | La API responde los errores en el idioma pedido |
+| `CP-I18N-002` | El registro guarda el idioma y el perfil lo puede cambiar |
+| `CP-I18N-003` | Cada integrante recibe los avisos en su idioma |
+| `CP-I18N-004` | Los correos salen en el idioma de la persona |
+
 ---
 
 ## Servicio `frontend` (aplicacion web de usuarios)
 
-**37 casos.** Cada caso graba un video en `e2e/evidence/frontend/`.
+**39 casos.** Cada caso graba un video en `e2e/evidence/frontend/`.
 
 ### Frontend web · registro de usuarios
 
@@ -271,11 +282,20 @@ Archivo: `e2e/tests/frontend/08-seguridad.spec.ts`
 | `CP-WEB-036` | La sesion no queda en localStorage sino en una cookie httpOnly |
 | `CP-WEB-037` | Con verificacion en dos pasos el login pide el codigo |
 
+### Frontend web · idiomas
+
+Archivo: `e2e/tests/frontend/09-idiomas.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-WEB-038` | La app se abre en el idioma del navegador |
+| `CP-WEB-039` | El selector cambia el idioma, lo recuerda y lo guarda en la cuenta |
+
 ---
 
 ## Servicio `dashboard` (panel de administracion)
 
-**14 casos.** Cada caso graba un video en `e2e/evidence/dashboard/`.
+**15 casos.** Cada caso graba un video en `e2e/evidence/dashboard/`.
 
 ### Dashboard · acceso restringido
 
@@ -326,11 +346,19 @@ Archivo: `e2e/tests/dashboard/05-seguridad.spec.ts`
 | --- | --- |
 | `CP-DASH-014` | La pagina de seguridad muestra el estado de 2FA y genera el QR |
 
+### Dashboard · idiomas
+
+Archivo: `e2e/tests/dashboard/06-idiomas.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-DASH-015` | El panel cambia de idioma y la eleccion se comparte con la app web |
+
 ---
 
 ## Servicio `landing` (pagina publica de descargas)
 
-**6 casos.** Cada caso graba un video en `e2e/evidence/landing/`.
+**7 casos.** Cada caso graba un video en `e2e/evidence/landing/`.
 
 ### Landing · pagina publica de descargas
 
@@ -345,11 +373,19 @@ Archivo: `e2e/tests/landing/01-landing.spec.ts`
 | `CP-LAND-005` | La pagina se adapta al movil |
 | `CP-LAND-006` | El pie enlaza la app, el panel y la API |
 
+### Landing · idiomas
+
+Archivo: `e2e/tests/landing/02-idiomas.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-LAND-007` | Con el navegador en ingles se muestra en ingles y se puede cambiar |
+
 ---
 
 ## App movil React Native (iOS / Android)
 
-**17 casos.** Cada caso graba un video en `e2e/evidence/mobile-app/`. Se ejecuta sobre el build `react-native-web` de la misma base de codigo.
+**18 casos.** Cada caso graba un video en `e2e/evidence/mobile-app/`. Se ejecuta sobre el build `react-native-web` de la misma base de codigo.
 
 ### App movil · acceso
 
@@ -395,5 +431,13 @@ Archivo: `e2e/tests/mobile/04-compatibilidad.spec.ts`
 | --- | --- |
 | `CP-MOV-016` | La app se identifica con su version en cada peticion |
 | `CP-MOV-017` | Una version que ya no es compatible pide actualizar la app |
+
+### App movil · idiomas
+
+Archivo: `e2e/tests/mobile/05-idiomas.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-MOV-018` | Con el telefono en ingles la app se abre en ingles y se puede cambiar |
 
 ---

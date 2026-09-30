@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
@@ -5,11 +6,12 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 /** Botones de "Continuar con Google / Apple" que arrancan el flujo OAuth del backend */
 export function SocialButtons({ disabled = false }: { disabled?: boolean }) {
   const { providers } = useAuth();
+  const { t } = useTranslation();
 
   if (!providers.google && !providers.apple) {
     return (
       <p className="text-muted small text-center mb-0" data-testid="social-disabled">
-        El inicio de sesion con Google y Apple no esta configurado en esta instalacion.
+        {t('social.disabled')}
       </p>
     );
   }
@@ -25,7 +27,7 @@ export function SocialButtons({ disabled = false }: { disabled?: boolean }) {
           data-testid="google-login"
         >
           <i className="bi bi-google" aria-hidden="true" />
-          Continuar con Google
+          {t('social.google')}
         </a>
       )}
       {providers.apple && (
@@ -37,7 +39,7 @@ export function SocialButtons({ disabled = false }: { disabled?: boolean }) {
           data-testid="apple-login"
         >
           <i className="bi bi-apple" aria-hidden="true" />
-          Continuar con Apple
+          {t('social.apple')}
         </a>
       )}
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
@@ -16,6 +17,7 @@ const Stack = createNativeStackNavigator();
 
 export function RootNavigator() {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -43,7 +45,7 @@ export function RootNavigator() {
               name="Lists"
               component={ListsScreen}
               options={({ navigation }) => ({
-                title: 'Mis listas',
+                title: t('nav.lists'),
                 headerRight: () => (
                   <Pressable
                     onPress={() => navigation.navigate('Settings')}
@@ -58,9 +60,9 @@ export function RootNavigator() {
             <Stack.Screen
               name="ListDetail"
               component={ListDetailScreen}
-              options={({ route }: any) => ({ title: route.params?.name ?? 'Lista' })}
+              options={({ route }: any) => ({ title: route.params?.name ?? t('nav.list') })}
             />
-            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Mi cuenta' }} />
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.account') }} />
           </>
         ) : (
           <>
@@ -68,17 +70,17 @@ export function RootNavigator() {
             <Stack.Screen
               name="Register"
               component={RegisterScreen}
-              options={{ title: 'Crear cuenta' }}
+              options={{ title: t('nav.register') }}
             />
             <Stack.Screen
               name="SocialHelp"
               component={SocialHelpScreen}
-              options={{ title: 'Iniciar sesion' }}
+              options={{ title: t('nav.signIn') }}
             />
             <Stack.Screen
               name="ForgotPassword"
               component={ForgotPasswordScreen}
-              options={{ title: 'Recuperar contrasena' }}
+              options={{ title: t('nav.forgot') }}
             />
           </>
         )}

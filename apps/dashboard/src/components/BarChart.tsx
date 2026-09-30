@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { SeriesPoint } from '../types';
 
 interface Props {
@@ -5,13 +6,14 @@ interface Props {
 }
 
 const SERIES = [
-  { key: 'created' as const, label: 'Productos agregados', color: '#0d6efd' },
-  { key: 'purchased' as const, label: 'Productos comprados', color: '#198754' },
-  { key: 'signups' as const, label: 'Registros', color: '#fd7e14' },
+  { key: 'created' as const, color: '#0d6efd' },
+  { key: 'purchased' as const, color: '#198754' },
+  { key: 'signups' as const, color: '#fd7e14' },
 ];
 
 /** Grafica de barras agrupadas sin dependencias externas */
 export function BarChart({ data }: Props) {
+  const { t } = useTranslation();
   const max = Math.max(1, ...data.flatMap((point) => [point.created, point.purchased, point.signups]));
 
   return (
@@ -27,7 +29,7 @@ export function BarChart({ data }: Props) {
                   height: `${(point[series.key] / max) * 100}%`,
                   backgroundColor: series.color,
                 }}
-                aria-label={`${series.label} el ${point.day}: ${point[series.key]}`}
+                aria-label={t('chart.bar', { series: t(`chart.${series.key}`), day: point.day, value: point[series.key] })}
               />
             ))}
           </div>
@@ -51,7 +53,7 @@ export function BarChart({ data }: Props) {
                 display: 'inline-block',
               }}
             />
-            {series.label}
+            {t(`chart.${series.key}`)}
           </span>
         ))}
       </div>
