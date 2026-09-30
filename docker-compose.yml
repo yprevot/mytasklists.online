@@ -76,7 +76,7 @@ services:
   # ───────────────────── Correo de desarrollo (Mailpit) ───────────────
   # Captura todos los correos que envia el backend. Bandeja: http://localhost:8025
   mailpit:
-    image: axllent/mailpit:v1.30.5
+    image: axllent/mailpit:v1.31.3
     container_name: lc-mailpit
     restart: unless-stopped
     environment:
