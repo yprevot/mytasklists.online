@@ -37,7 +37,7 @@ interface Props {
 }
 
 /**
- * Inicio de sesion nativo con Google: el SDK devuelve un id_token que el
+ * Inicio de sesión nativo con Google: el SDK devuelve un id_token que el
  * backend verifica en POST /auth/google/token. Requiere un development build
  * (no funciona en Expo Go) y los client id de iOS/Android en app.json.
  * Solo se monta cuando `googleConfigured` es true: el hook exige el client id.

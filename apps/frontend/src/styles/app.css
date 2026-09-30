@@ -1,14 +1,14 @@
 /*
  * ListaDeCompras · sistema visual de la app web.
  *
- * Mundo: la etiqueta de gondola de un supermercado. Superficies blancas sobre
- * un fondo verde grisaceo muy claro, tinta verde casi negra, verde "pino" como
+ * Mundo: la etiqueta de góndola de un supermercado. Superficies blancas sobre
+ * un fondo verde grisáceo muy claro, tinta verde casi negra, verde "pino" como
  * color de marca y el amarillo de las etiquetas de precio para lo recurrente.
- * Bootstrap se queda como base de comportamiento (dropdowns, modales) y aqui se
+ * Bootstrap se queda como base de comportamiento (dropdowns, modales) y aquí se
  * le cambia la piel con sus propias variables.
  *
- * Los tokens de la seccion 1 se repiten en apps/dashboard/src/styles/theme.css:
- * si cambias uno, cambialo en los dos.
+ * Los tokens de la sección 1 se repiten en apps/dashboard/src/styles/theme.css:
+ * si cambias uno, cámbialo en los dos.
  */
 
 /* ── 1. Tokens ─────────────────────────────────────────────────────────── */
@@ -125,7 +125,7 @@ h6,
   min-width: 0;
 }
 
-/* Lo que el navegador dibuja por su cuenta tambien lleva la paleta */
+/* Lo que el navegador dibuja por su cuenta también lleva la paleta */
 ::selection {
   background: var(--lc-tag);
   color: var(--lc-ink);
@@ -273,7 +273,7 @@ html {
   text-underline-offset: 0.2em;
 }
 
-/* Boton de solo icono (papelera, cerrar, reloj) */
+/* Botón de solo icono (papelera, cerrar, reloj) */
 .lc-icon-btn {
   width: 2.5rem;
   min-height: 2.5rem;
@@ -632,7 +632,7 @@ html {
   padding: 0.25em 0.45em;
 }
 
-/* Pantallas chicas: la navegacion pasa a una barra inferior, al alcance del pulgar */
+/* Pantallas chicas: la navegación pasa a una barra inferior, al alcance del pulgar */
 @media (max-width: 767.98px) {
   .lc-nav {
     position: fixed;
@@ -691,7 +691,7 @@ html {
   }
 }
 
-/* ── 7. Cabeceras de pagina ────────────────────────────────────────────── */
+/* ── 7. Cabeceras de página ────────────────────────────────────────────── */
 .lc-page-title {
   font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.15rem);
   line-height: 1.1;

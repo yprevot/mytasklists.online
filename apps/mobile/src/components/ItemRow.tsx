@@ -16,7 +16,7 @@ interface Props {
 
 /**
  * Producto pendiente. El estado se lee en el aro del check y en la etiqueta:
- * gris (una sola vez), etiqueta amarilla (recurrente al dia) y rojo (vencido).
+ * gris (una sola vez), etiqueta amarilla (recurrente al día) y rojo (vencido).
  */
 export function ItemRow({ item, onPurchase, onLongPress, disabled, first }: Props) {
   const { t } = useTranslation();

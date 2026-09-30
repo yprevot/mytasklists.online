@@ -12,8 +12,8 @@ interface Props {
 const PRESET_DAYS = [3, 7, 14, 21, 30];
 
 /**
- * Alta de producto. El interruptor "Repetir automaticamente" es lo que
- * convierte el producto en recurrente: al comprarlo se reprogramara solo.
+ * Alta de producto. El interruptor "Repetir automáticamente" es lo que
+ * convierte el producto en recurrente: al comprarlo se reprogramará solo.
  */
 export function AddItemForm({ listId, disabled, onError }: Props) {
   const { t } = useTranslation();

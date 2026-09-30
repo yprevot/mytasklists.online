@@ -11,7 +11,7 @@ const SERIES = [
   { key: 'signups' as const, color: '#b8791a' },
 ];
 
-/** Grafica de barras agrupadas sin dependencias externas */
+/** Gráfica de barras agrupadas sin dependencias externas */
 export function BarChart({ data }: Props) {
   const { t } = useTranslation();
   const max = Math.max(1, ...data.flatMap((point) => [point.created, point.purchased, point.signups]));

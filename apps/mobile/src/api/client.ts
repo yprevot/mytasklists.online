@@ -19,7 +19,7 @@ export const SOCKET_URL = (
 ).replace(/\/$/, '');
 
 /**
- * Version de la app (la `version` de app.json). Viaja en cada peticion para que la
+ * Versión de la app (la `version` de app.json). Viaja en cada petición para que la
  * API corte a las que ya no son compatibles (docs/COMPATIBILIDAD.md).
  */
 export const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';

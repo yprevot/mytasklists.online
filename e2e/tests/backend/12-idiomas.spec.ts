@@ -13,7 +13,7 @@ import {
 import { waitForEmail } from '../../utils/mailpit';
 
 /**
- * La interfaz esta en espanol e ingles. La API responde los errores en el idioma
+ * La interfaz está en español e inglés. La API responde los errores en el idioma
  * de `Accept-Language` y escribe correos y avisos en el idioma de cada persona
  * (`user.locale`), que los clientes igualan al de su interfaz.
  */
@@ -36,13 +36,13 @@ test.describe('Servicio backend · idiomas', () => {
     expect((await english.json()).message).toBe('Incorrect email or password');
 
     const spanish = await request.post(`${API_URL}/auth/login`, { headers: ES, data: wrong });
-    expect((await spanish.json()).message).toBe('Correo o contrasena incorrectos');
+    expect((await spanish.json()).message).toBe('Correo o contraseña incorrectos');
 
-    // Sin cabecera se mantiene el espanol de siempre
+    // Sin cabecera se mantiene el español de siempre
     const noHeader = await request.post(`${API_URL}/auth/login`, { data: wrong });
-    expect((await noHeader.json()).message).toBe('Correo o contrasena incorrectos');
+    expect((await noHeader.json()).message).toBe('Correo o contraseña incorrectos');
 
-    // Los errores de validacion tambien se traducen
+    // Los errores de validación también se traducen
     const invalid = await request.post(`${API_URL}/auth/register`, {
       headers: EN,
       data: { fullName: 'Ab', email: 'no-es-correo', whatsapp: '12', password: 'corta' },
@@ -77,11 +77,11 @@ test.describe('Servicio backend · idiomas', () => {
   });
 
   test('CP-I18N-003 · cada integrante recibe los avisos en su idioma', async ({ request }) => {
-    const owner = await registerUser(request, { fullName: 'Duena Hispana' });
+    const owner = await registerUser(request, { fullName: 'Dueña Hispana' });
     const guest = await registerUser(request, { fullName: 'English Guest' });
     await setLocale(request, guest.accessToken, 'en');
 
-    const list = await createList(request, owner.accessToken, 'Despensa bilingue');
+    const list = await createList(request, owner.accessToken, 'Despensa bilingüe');
     await shareList(request, owner.accessToken, list.id, guest.email);
     await createItem(request, owner.accessToken, list.id, { name: 'Leche' });
     await createItem(request, guest.accessToken, list.id, { name: 'Bread' });
@@ -97,12 +97,12 @@ test.describe('Servicio backend · idiomas', () => {
       .toEqual(
         expect.arrayContaining([
           expect.stringContaining('A list was shared with you'),
-          expect.stringContaining('Duena Hispana added "Leche"'),
+          expect.stringContaining('Dueña Hispana added "Leche"'),
         ]),
       );
     await expect
       .poll(async () => (await inbox(owner.accessToken)).map((n) => n.body))
-      .toEqual(expect.arrayContaining(['English Guest agrego "Bread"']));
+      .toEqual(expect.arrayContaining(['English Guest agregó "Bread"']));
   });
 
   test('CP-I18N-004 · los correos salen en el idioma de la persona', async ({ request }) => {

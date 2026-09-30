@@ -13,7 +13,7 @@ import { authApi, usersApi } from '../api/endpoints';
 import { currentLanguage } from '../i18n';
 import { isMfaChallenge, type AuthProviders, type AuthResponse, type User } from '../types';
 
-/** Resultado del primer paso del login: sesion iniciada o reto de 2FA pendiente */
+/** Resultado del primer paso del login: sesión iniciada o reto de 2FA pendiente */
 export type LoginStep = { status: 'done' } | { status: 'mfa'; mfaToken: string };
 
 interface AuthContextValue {
@@ -30,9 +30,9 @@ interface AuthContextValue {
     password: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
-  /** Recupera la sesion desde la cookie (vuelta de Google/Apple o recarga) */
+  /** Recupera la sesión desde la cookie (vuelta de Google/Apple o recarga) */
   restoreSession: () => Promise<boolean>;
-  /** Adopta un par nuevo emitido por el backend (p. ej. tras cambiar la contrasena) */
+  /** Adopta un par nuevo emitido por el backend (p. ej. tras cambiar la contraseña) */
   adoptSession: (result: AuthResponse) => void;
   refreshUser: () => Promise<void>;
   setUser: (user: User) => void;
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } catch {
-      /* la sesion se limpia igual aunque el backend no responda */
+      /* la sesión se limpia igual aunque el backend no responda */
     }
     clearSession();
   }, [clearSession]);

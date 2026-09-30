@@ -10,10 +10,10 @@ import {
   uniqueWhatsapp,
 } from '../../utils/api-helpers';
 
-test.describe('Servicio backend · registro e inicio de sesion', () => {
-  test('CP-AUTH-001 · registro con nombre completo, correo, WhatsApp y contrasena', async ({ request }) => {
+test.describe('Servicio backend · registro e inicio de sesión', () => {
+  test('CP-AUTH-001 · registro con nombre completo, correo, WhatsApp y contraseña', async ({ request }) => {
     const payload = {
-      fullName: 'Maria Fernanda Solis',
+      fullName: 'María Fernanda Solis',
       email: uniqueEmail('registro'),
       whatsapp: uniqueWhatsapp(),
       password: DEFAULT_PASSWORD,
@@ -48,10 +48,10 @@ test.describe('Servicio backend · registro e inicio de sesion', () => {
     expect(JSON.stringify(await response.json())).toContain('correo');
   });
 
-  test('CP-AUTH-003 · el registro valida el WhatsApp y la longitud de la contrasena', async ({ request }) => {
+  test('CP-AUTH-003 · el registro valida el WhatsApp y la longitud de la contraseña', async ({ request }) => {
     const whatsappInvalido = await request.post(`${API_URL}/auth/register`, {
       data: {
-        fullName: 'Numero Invalido',
+        fullName: 'Número Inválido',
         email: uniqueEmail(),
         whatsapp: 'no-es-un-numero',
         password: DEFAULT_PASSWORD,
@@ -72,7 +72,7 @@ test.describe('Servicio backend · registro e inicio de sesion', () => {
     expect(JSON.stringify(await passwordCorta.json())).toContain('8 caracteres');
   });
 
-  test('CP-AUTH-004 · inicio de sesion correcto y credenciales invalidas', async ({ request }) => {
+  test('CP-AUTH-004 · inicio de sesión correcto y credenciales inválidas', async ({ request }) => {
     const user = await registerUser(request);
 
     const ok = await request.post(`${API_URL}/auth/login`, {
@@ -102,7 +102,7 @@ test.describe('Servicio backend · registro e inicio de sesion', () => {
     const renovado = await primero.json();
     expect(renovado.refreshToken).not.toBe(user.refreshToken);
 
-    // El token viejo ya no sirve (rotacion)
+    // El token viejo ya no sirve (rotación)
     const reutilizado = await request.post(`${API_URL}/auth/refresh`, {
       data: { refreshToken: user.refreshToken },
     });
@@ -116,7 +116,7 @@ test.describe('Servicio backend · registro e inicio de sesion', () => {
     expect((await meResponse.json()).email).toBe(user.email);
   });
 
-  test('CP-AUTH-006 · cerrar sesion invalida el refresh token', async ({ request }) => {
+  test('CP-AUTH-006 · cerrar sesión invalida el refresh token', async ({ request }) => {
     const user = await registerUser(request);
 
     const logout = await request.post(`${API_URL}/auth/logout`, {
@@ -134,7 +134,7 @@ test.describe('Servicio backend · registro e inicio de sesion', () => {
   test('CP-AUTH-007 · los endpoints protegidos exigen token', async ({ request }) => {
     for (const path of ['/lists', '/auth/me', '/notifications', '/users/me']) {
       const response = await request.get(`${API_URL}${path}`);
-      expect(response.status(), `${path} deberia exigir token`).toBe(401);
+      expect(response.status(), `${path} debería exigir token`).toBe(401);
     }
 
     const tokenBasura = await request.get(`${API_URL}/lists`, {
@@ -143,7 +143,7 @@ test.describe('Servicio backend · registro e inicio de sesion', () => {
     expect(tokenBasura.status()).toBe(401);
   });
 
-  test('CP-AUTH-008 · la cuenta sembrada de administracion tiene rol admin', async ({ request }) => {
+  test('CP-AUTH-008 · la cuenta sembrada de administración tiene rol admin', async ({ request }) => {
     const session = await loginUser(request, SEED.admin.email, SEED.admin.password);
     expect(session.user.role).toBe('admin');
   });

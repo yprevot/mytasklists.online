@@ -33,7 +33,7 @@ export interface AuthResult extends TokenPair {
   user: PublicUser;
 }
 
-/** Respuesta del login cuando la cuenta tiene activa la verificacion en dos pasos */
+/** Respuesta del login cuando la cuenta tiene activa la verificación en dos pasos */
 export interface MfaChallenge {
   mfaRequired: true;
   mfaToken: string;
@@ -44,9 +44,9 @@ export type LoginOutcome = AuthResult | MfaChallenge;
 export const isMfaChallenge = (outcome: LoginOutcome): outcome is MfaChallenge =>
   'mfaRequired' in outcome;
 
-const INVALID_CREDENTIALS = 'Correo o contrasena incorrectos';
+const INVALID_CREDENTIALS = 'Correo o contraseña incorrectos';
 const FORGOT_PASSWORD_MESSAGE =
-  'Si el correo esta registrado te enviamos un enlace para restablecer la contrasena.';
+  'Si el correo está registrado te enviamos un enlace para restablecer la contraseña.';
 
 const hashToken = (token: string): string => createHash('sha256').update(token).digest('hex');
 const newToken = (): string => randomBytes(32).toString('base64url');
@@ -72,17 +72,17 @@ export class AuthService {
     return this.config.get<string>('publicUrl', 'http://localhost:8080');
   }
 
-  // ── Emision de sesiones ──────────────────────────────────────────────
+  // ── Emisión de sesiones ──────────────────────────────────────────────
   private async issueSession(user: User): Promise<AuthResult> {
-    if (!user.isActive) throw new ForbiddenException('La cuenta esta desactivada');
+    if (!user.isActive) throw new ForbiddenException('La cuenta está desactivada');
     await this.users.touchLogin(user.id);
     const pair = await this.tokens.issue(user);
     return { ...pair, user: toPublicUser(user) };
   }
 
-  /** Emite la sesion o, si la cuenta tiene 2FA, un reto que hay que resolver antes */
+  /** Emite la sesión o, si la cuenta tiene 2FA, un reto que hay que resolver antes */
   private async completeLogin(user: User): Promise<LoginOutcome> {
-    if (!user.isActive) throw new ForbiddenException('La cuenta esta desactivada');
+    if (!user.isActive) throw new ForbiddenException('La cuenta está desactivada');
     if (user.totpEnabled) {
       return { mfaRequired: true, mfaToken: await this.mfa.createChallenge(user.id) };
     }
@@ -95,7 +95,7 @@ export class AuthService {
     await this.realtime.disconnectUser(userId);
   }
 
-  // ── Registro y sesion con correo/contrasena ─────────────────────────
+  // ── Registro y sesión con correo/contraseña ─────────────────────────
   async register(dto: RegisterDto, locale?: Locale): Promise<AuthResult> {
     const user = await this.users.create({
       locale,
@@ -117,7 +117,7 @@ export class AuthService {
     const failures = (await this.cache.get<number>(failuresKey)) ?? 0;
     if (failures >= maxFailures) {
       throw new HttpException(
-        'Demasiados intentos fallidos con este correo. Espera unos minutos o restablece tu contrasena.',
+        'Demasiados intentos fallidos con este correo. Espera unos minutos o restablece tu contraseña.',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
@@ -160,9 +160,9 @@ export class AuthService {
     });
 
     if (droppedUnverifiedPassword) {
-      // Alguien pudo registrar este correo con una contrasena antes que su dueno:
-      // se cierran sus sesiones y se avisa para que elija una contrasena nueva.
-      this.logger.warn(`Se descarto una contrasena sin verificar al vincular ${profile.provider}`);
+      // Alguien pudo registrar este correo con una contraseña antes que su dueño:
+      // se cierran sus sesiones y se avisa para que elija una contraseña nueva.
+      this.logger.warn(`Se descartó una contraseña sin verificar al vincular ${profile.provider}`);
       await this.endAllSessions(user.id);
       this.mail.sendInBackground(
         user.email,
@@ -179,7 +179,7 @@ export class AuthService {
 
   async refresh(refreshToken: string): Promise<AuthResult> {
     const payload = await this.tokens.verifyRefresh(refreshToken);
-    await this.tokens.revoke(payload.sub, payload.jti!); // rotacion de refresh token
+    await this.tokens.revoke(payload.sub, payload.jti!); // rotación de refresh token
     const user = await this.users.findById(payload.sub);
     return this.issueSession(user);
   }
@@ -191,7 +191,7 @@ export class AuthService {
         await this.tokens.revoke(payload.sub, payload.jti!);
         return;
       } catch {
-        /* token ya invalido: no hay nada que revocar */
+        /* token ya inválido: no hay nada que revocar */
       }
     }
     if (userId) await this.tokens.revokeAll(userId);
@@ -205,7 +205,7 @@ export class AuthService {
     return toPublicUser(user, { hasPassword });
   }
 
-  // ── Verificacion de correo ───────────────────────────────────────────
+  // ── Verificación de correo ───────────────────────────────────────────
   private async sendVerificationEmail(user: User): Promise<void> {
     const ttl = this.config.get<number>('auth.emailVerificationTtlSeconds', 24 * 3600);
     const token = newToken();
@@ -223,7 +223,7 @@ export class AuthService {
 
   async resendVerification(userId: string): Promise<{ ok: true }> {
     const user = await this.users.findById(userId);
-    if (user.emailVerified) throw new BadRequestException('Tu correo ya esta verificado');
+    if (user.emailVerified) throw new BadRequestException('Tu correo ya está verificado');
     await this.sendVerificationEmail(user);
     return { ok: true };
   }
@@ -232,14 +232,14 @@ export class AuthService {
     const data = await this.cache.take<{ userId: string; email: string }>(
       CacheService.emailVerificationKey(hashToken(token)),
     );
-    if (!data) throw new BadRequestException('El enlace no es valido o ya expiro');
+    if (!data) throw new BadRequestException('El enlace no es válido o ya expiró');
     const user = await this.users.findById(data.userId);
-    if (user.email !== data.email) throw new BadRequestException('El enlace no es valido o ya expiro');
+    if (user.email !== data.email) throw new BadRequestException('El enlace no es válido o ya expiró');
     await this.users.markEmailVerified(user.id);
     return { ok: true, email: user.email };
   }
 
-  // ── Recuperacion de contrasena ───────────────────────────────────────
+  // ── Recuperación de contraseña ───────────────────────────────────────
   /** Siempre responde lo mismo, exista o no el correo, para no revelar cuentas */
   async forgotPassword(email: string): Promise<{ ok: true; message: string }> {
     const user = await this.users.findByEmail(email);
@@ -268,7 +268,7 @@ export class AuthService {
     const data = await this.cache.take<{ userId: string }>(
       CacheService.passwordResetKey(hashToken(token)),
     );
-    if (!data) throw new BadRequestException('El enlace no es valido o ya expiro');
+    if (!data) throw new BadRequestException('El enlace no es válido o ya expiró');
 
     const user = await this.users.findById(data.userId);
     await this.users.setPassword(user.id, newPassword);
@@ -286,7 +286,7 @@ export class AuthService {
     return { ok: true };
   }
 
-  /** Cambio desde "Mi cuenta": cierra las demas sesiones y devuelve un par nuevo */
+  /** Cambio desde "Mi cuenta": cierra las demás sesiones y devuelve un par nuevo */
   async changePassword(
     userId: string,
     currentPassword: string | undefined,
@@ -302,7 +302,7 @@ export class AuthService {
     return this.issueSession(user);
   }
 
-  // ── Verificacion en dos pasos ────────────────────────────────────────
+  // ── Verificación en dos pasos ────────────────────────────────────────
   async mfaSetup(userId: string) {
     return this.mfa.startSetup(await this.users.findById(userId));
   }
@@ -316,7 +316,7 @@ export class AuthService {
 
   async mfaDisable(userId: string, code: string) {
     if (!(await this.mfa.verifyCode(userId, code))) {
-      throw new UnauthorizedException('El codigo no es correcto');
+      throw new UnauthorizedException('El código no es correcto');
     }
     await this.mfa.disable(userId);
     const user = await this.users.findById(userId);

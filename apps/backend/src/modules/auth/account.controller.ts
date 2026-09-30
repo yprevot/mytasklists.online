@@ -11,7 +11,7 @@ import { AuthThrottle } from '../../common/throttle/throttle-profiles';
 
 /**
  * Operaciones de la cuenta que afectan a las sesiones. Conserva la ruta
- * historica `/users/me/password`, pero vive aqui porque necesita revocar
+ * histórica `/users/me/password`, pero vive aquí porque necesita revocar
  * tokens y emitir un par nuevo.
  */
 @ApiTags('usuarios')
@@ -27,7 +27,7 @@ export class AccountController {
   @AuthThrottle()
   @Patch('me/password')
   @ApiOperation({
-    summary: 'Cambia la contrasena, cierra las demas sesiones y devuelve un par de tokens nuevo',
+    summary: 'Cambia la contraseña, cierra las demás sesiones y devuelve un par de tokens nuevo',
   })
   async changePassword(
     @CurrentUser() current: AuthenticatedUser,

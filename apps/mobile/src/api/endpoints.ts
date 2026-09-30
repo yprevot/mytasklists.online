@@ -10,7 +10,7 @@ import type {
   User,
 } from '../types';
 
-/** Si esta version ya no es compatible la API responde 426 y client.ts avisa a UpdateGate */
+/** Si esta versión ya no es compatible la API responde 426 y client.ts avisa a UpdateGate */
 export const compatApi = {
   check: () => api.get<AppCompatibility>('/app/compatibility'),
 };

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/** Idioma de cada persona para sus correos y avisos. Las cuentas existentes quedan en espanol. */
+/** Idioma de cada persona para sus correos y avisos. Las cuentas existentes quedan en español. */
 export class UserLocale1730000000000 implements MigrationInterface {
   name = 'UserLocale1730000000000';
 

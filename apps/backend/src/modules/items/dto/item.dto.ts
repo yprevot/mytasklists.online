@@ -49,7 +49,7 @@ export class CreateItemDto implements CreateItemRequest {
 
   @ApiPropertyOptional({
     default: false,
-    description: 'Si es true el producto se vuelve a activar solo cada `recurrenceDays` dias',
+    description: 'Si es true el producto se vuelve a activar solo cada `recurrenceDays` días',
   })
   @IsOptional()
   @IsBoolean()
@@ -58,9 +58,9 @@ export class CreateItemDto implements CreateItemRequest {
   @ApiPropertyOptional({ example: 14, minimum: 1, maximum: 365 })
   @ValidateIf((dto: CreateItemDto) => dto.isRecurring === true)
   @Type(() => Number)
-  @IsInt({ message: 'Los dias de recurrencia deben ser un numero entero' })
-  @Min(1, { message: 'La recurrencia minima es de 1 dia' })
-  @Max(365, { message: 'La recurrencia maxima es de 365 dias' })
+  @IsInt({ message: 'Los días de recurrencia deben ser un número entero' })
+  @Min(1, { message: 'La recurrencia mínima es de 1 día' })
+  @Max(365, { message: 'La recurrencia máxima es de 365 días' })
   recurrenceDays?: number;
 }
 

@@ -4,8 +4,8 @@ const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:8080';
 const API_URL = process.env.E2E_API_URL ?? `${BASE_URL}/api`;
 
 /**
- * Comprueba que la pila de Docker esta arriba antes de lanzar nada.
- * Si no lo esta, falla con un mensaje claro en vez de con 40 timeouts.
+ * Comprueba que la pila de Docker está arriba antes de lanzar nada.
+ * Si no lo está, falla con un mensaje claro en vez de con 40 timeouts.
  */
 export default async function globalSetup(): Promise<void> {
   const context = await request.newContext({ ignoreHTTPSErrors: true });

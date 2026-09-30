@@ -2,12 +2,12 @@
  * Contrato de la API de ListaDeCompras.
  *
  * Todo lo que viaja por la red entre el backend y sus clientes (web, panel y app
- * movil) se declara aqui una sola vez. El backend lo implementa y los clientes lo
- * consumen, asi que un cambio incompatible falla al compilar en todos a la vez.
+ * móvil) se declara aquí una sola vez. El backend lo implementa y los clientes lo
+ * consumen, así que un cambio incompatible falla al compilar en todos a la vez.
  *
- * Convencion que usa `npm run contract:check` para decidir la direccion:
+ * Convención que usa `npm run contract:check` para decidir la dirección:
  * - Los tipos que terminan en `Request` y `ClientEvents` viajan del cliente al servidor.
- * - Todo lo demas viaja del servidor al cliente.
+ * - Todo lo demás viaja del servidor al cliente.
  *
  * Idioma: los clientes mandan el suyo en `Accept-Language` (es | en) y la API
  * responde los errores en ese idioma.

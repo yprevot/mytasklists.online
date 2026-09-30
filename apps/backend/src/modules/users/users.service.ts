@@ -27,7 +27,7 @@ export interface SocialLoginInput {
   provider: AuthProvider.GOOGLE | AuthProvider.APPLE;
   subject: string;
   email: string;
-  /** El proveedor confirmo que el correo pertenece a esta cuenta */
+  /** El proveedor confirmó que el correo pertenece a esta cuenta */
   emailVerified: boolean;
   /** El correo es un marcador generado por nosotros (Apple sin correo) */
   syntheticEmail?: boolean;
@@ -38,7 +38,7 @@ export interface SocialLoginInput {
 
 export interface SocialLoginResult {
   user: User;
-  /** Se borro una contrasena nunca verificada al vincular (posible pre-secuestro) */
+  /** Se borró una contraseña nunca verificada al vincular (posible pre-secuestro) */
   droppedUnverifiedPassword: boolean;
 }
 
@@ -95,7 +95,7 @@ export class UsersService {
   async create(input: CreateUserInput): Promise<User> {
     const email = this.normalizeEmail(input.email);
     const existing = await this.findByEmail(email);
-    if (existing) throw new BadRequestException('Ya existe una cuenta con este correo electronico');
+    if (existing) throw new BadRequestException('Ya existe una cuenta con este correo electrónico');
 
     const user = this.repo.create({
       fullName: input.fullName.trim(),
@@ -112,13 +112,13 @@ export class UsersService {
   }
 
   /**
-   * Resuelve el usuario de un inicio de sesion con Google o Apple.
+   * Resuelve el usuario de un inicio de sesión con Google o Apple.
    *
-   * 1. Si esa cuenta del proveedor (`sub`) ya esta vinculada, entra ese usuario.
+   * 1. Si esa cuenta del proveedor (`sub`) ya está vinculada, entra ese usuario.
    * 2. Si hay un usuario con el mismo correo, solo se vincula cuando el
-   *    proveedor garantiza que el correo es suyo. Si la cuenta local tenia una
-   *    contrasena que nadie verifico, se elimina: pudo ponerla un atacante que
-   *    registro el correo de la victima antes que ella (pre-secuestro).
+   *    proveedor garantiza que el correo es suyo. Si la cuenta local tenía una
+   *    contraseña que nadie verificó, se elimina: pudo ponerla un atacante que
+   *    registró el correo de la víctima antes que ella (pre-secuestro).
    * 3. Si no existe, se crea con el correo ya verificado.
    */
   async resolveSocialLogin(input: SocialLoginInput): Promise<SocialLoginResult> {
@@ -144,8 +144,8 @@ export class UsersService {
     if (existing) {
       if (!input.emailVerified) {
         throw new ConflictException(
-          'Ya existe una cuenta con este correo y el proveedor no confirmo que te pertenece. ' +
-            'Inicia sesion con tu contrasena.',
+          'Ya existe una cuenta con este correo y el proveedor no confirmó que te pertenece. ' +
+            'Inicia sesión con tu contraseña.',
         );
       }
       const droppedUnverifiedPassword = Boolean(existing.passwordHash) && !existing.emailVerified;
@@ -213,13 +213,13 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  /** Cambia la contrasena comprobando la actual si la cuenta ya tenia una */
+  /** Cambia la contraseña comprobando la actual si la cuenta ya tenía una */
   async changePassword(userId: string, currentPassword: string | undefined, newPassword: string) {
     const user = await this.findByIdWithSecrets(userId);
     if (user.passwordHash) {
-      if (!currentPassword) throw new BadRequestException('Debes indicar tu contrasena actual');
+      if (!currentPassword) throw new BadRequestException('Debes indicar tu contraseña actual');
       const ok = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!ok) throw new BadRequestException('La contrasena actual no es correcta');
+      if (!ok) throw new BadRequestException('La contraseña actual no es correcta');
     }
     await this.setPassword(userId, newPassword);
     return user;
@@ -247,7 +247,7 @@ export class UsersService {
   }
 
   /**
-   * Busqueda usada al compartir una lista. Solo acepta el correo exacto: asi no
+   * Búsqueda usada al compartir una lista. Solo acepta el correo exacto: así no
    * sirve para listar a otras personas por nombre ni por fragmentos de correo.
    */
   async searchByExactEmail(term: string, excludeUserId?: string): Promise<User[]> {

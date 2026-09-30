@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('App movil · idiomas', () => {
+test.describe('App móvil · idiomas', () => {
   test.use({ locale: 'en-US' });
 
-  test('CP-MOV-018 · con el telefono en ingles la app se abre en ingles y se puede cambiar', async ({ page }) => {
+  test('CP-MOV-018 · con el teléfono en inglés la app se abre en inglés y se puede cambiar', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByTestId('login-screen')).toBeVisible();
     await expect(page.getByTestId('login-screen')).toContainText('Your shared lists, always in sync.');

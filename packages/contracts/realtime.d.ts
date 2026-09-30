@@ -26,7 +26,7 @@ export interface ItemRemovedEvent {
   listId: string;
   itemId: string;
   actorId: string;
-  /** false: la tarjeta se cerro pero el producto recurrente volvera */
+  /** false: la tarjeta se cerró pero el producto recurrente volverá */
   permanent: boolean;
   willReturnAt?: string | null;
 }

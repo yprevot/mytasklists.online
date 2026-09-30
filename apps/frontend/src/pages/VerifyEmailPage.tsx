@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Spinner } from '../components/Spinner';
 import { AuthShell } from '../components/AuthShell';
 
-/** Destino del enlace del correo de verificacion (#token=…) */
+/** Destino del enlace del correo de verificación (#token=…) */
 export function VerifyEmailPage() {
   const { user, refreshUser } = useAuth();
   const { t } = useTranslation();

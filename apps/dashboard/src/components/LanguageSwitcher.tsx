@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, setLanguage } from '../i18n';
 
-/** Selector ES / EN. La eleccion se guarda y gana sobre el idioma del navegador */
+/** Selector ES / EN. La elección se guarda y gana sobre el idioma del navegador */
 export function LanguageSwitcher({ className = '' }: { className?: string }) {
   const { t, i18n } = useTranslation();
 

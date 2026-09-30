@@ -6,7 +6,7 @@ export interface JwtPayload {
   role: UserRole;
   jti?: string;
   type?: 'access' | 'refresh';
-  /** Version de sesion al emitirse (ver AuthStateService) */
+  /** Versión de sesión al emitirse (ver AuthStateService) */
   sv?: number;
   iat?: number;
   exp?: number;

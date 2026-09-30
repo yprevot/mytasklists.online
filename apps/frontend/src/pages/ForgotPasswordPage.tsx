@@ -5,7 +5,7 @@ import { AuthShell } from '../components/AuthShell';
 import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 
-/** Pide el enlace para restablecer la contrasena. La respuesta es siempre la misma */
+/** Pide el enlace para restablecer la contraseña. La respuesta es siempre la misma */
 export function ForgotPasswordPage() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');

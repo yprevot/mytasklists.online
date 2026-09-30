@@ -9,8 +9,8 @@ import { REDIS_CLIENT } from './redis.constants';
  *  - cachear el detalle de una lista (`list:<id>:detail`)
  *  - guardar los refresh tokens vigentes (`refresh:<userId>:<jti>`)
  *  - guardar el `state` de los flujos OAuth (`oauth:state:<state>`)
- *  - guardar los tokens de un solo uso de verificacion de correo y recuperacion
- *    de contrasena (solo su hash SHA-256) y los retos de 2FA
+ *  - guardar los tokens de un solo uso de verificación de correo y recuperación
+ *    de contraseña (solo su hash SHA-256) y los retos de 2FA
  */
 @Injectable()
 export class CacheService {
@@ -45,7 +45,7 @@ export class CacheService {
     }
   }
 
-  /** Borra por patron usando SCAN para no bloquear Redis */
+  /** Borra por patrón usando SCAN para no bloquear Redis */
   async delByPattern(pattern: string): Promise<void> {
     let cursor = '0';
     do {
@@ -135,7 +135,7 @@ export class CacheService {
     return count;
   }
 
-  /** Lee y borra una clave de forma atomica (tokens de un solo uso) */
+  /** Lee y borra una clave de forma atómica (tokens de un solo uso) */
   async take<T>(key: string): Promise<T | null> {
     const raw = await this.client.getdel(key);
     return raw ? (JSON.parse(raw) as T) : null;

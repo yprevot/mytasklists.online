@@ -11,7 +11,7 @@ import {
 } from '../../utils/api-helpers';
 import { useSession } from '../../utils/ui-helpers';
 
-test.describe('Dashboard · bitacora de actividad', () => {
+test.describe('Dashboard · bitácora de actividad', () => {
   test('CP-DASH-012 · las acciones sobre las listas quedan registradas', async ({
     page,
     request,
@@ -19,10 +19,10 @@ test.describe('Dashboard · bitacora de actividad', () => {
     const ana = await registerUser(request, { fullName: 'Ana Bitacora' });
     const carlos = await registerUser(request, { fullName: 'Carlos Bitacora' });
 
-    const list = await createList(request, ana.accessToken, 'Lista de la bitacora');
+    const list = await createList(request, ana.accessToken, 'Lista de la bitácora');
     await shareList(request, ana.accessToken, list.id, carlos.email);
     const item = await createItem(request, ana.accessToken, list.id, {
-      name: 'Producto de la bitacora',
+      name: 'Producto de la bitácora',
     });
     await request.post(`${API_URL}/items/${item.id}/purchase`, {
       headers: auth(carlos.accessToken),
@@ -37,11 +37,11 @@ test.describe('Dashboard · bitacora de actividad', () => {
       .toBeVisible();
     await expect(page.locator('[data-testid="activity-row"][data-action="item.purchased"]').first())
       .toBeVisible();
-    await expect(page.getByTestId('activity-list')).toContainText('Producto de la bitacora');
-    await expect(page.getByTestId('activity-list')).toContainText('Lista de la bitacora');
+    await expect(page.getByTestId('activity-list')).toContainText('Producto de la bitácora');
+    await expect(page.getByTestId('activity-list')).toContainText('Lista de la bitácora');
   });
 
-  test('CP-DASH-013 · la navegacion lateral recorre las cuatro secciones', async ({
+  test('CP-DASH-013 · la navegación lateral recorre las cuatro secciones', async ({
     page,
     request,
   }) => {

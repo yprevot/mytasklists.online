@@ -5,17 +5,17 @@ export const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const addDays = (from: Date, days: number): Date => new Date(from.getTime() + days * DAY_MS);
 
-/** Dias completos entre dos fechas (positivo si `b` es posterior a `a`) */
+/** Días completos entre dos fechas (positivo si `b` es posterior a `a`) */
 export const daysBetween = (a: Date, b: Date): number =>
   Math.floor((b.getTime() - a.getTime()) / DAY_MS);
 
-/** Dias que faltan, redondeando hacia arriba: hoy mismo + 14 dias muestra "14" */
+/** Días que faltan, redondeando hacia arriba: hoy mismo + 14 días muestra "14" */
 const daysAhead = (from: Date, to: Date): number =>
   Math.max(0, Math.ceil((to.getTime() - from.getTime()) / DAY_MS));
 
 /**
- * Un producto recurrente esta "vencido" cuando sigue pendiente y ya se paso la
- * fecha limite de su ciclo. La interfaz lo pinta con otro color.
+ * Un producto recurrente está "vencido" cuando sigue pendiente y ya se pasó la
+ * fecha límite de su ciclo. La interfaz lo pinta con otro color.
  */
 export const isItemOverdue = (item: ListItem, now: Date = new Date()): boolean =>
   item.status === ItemStatus.PENDING &&
@@ -23,7 +23,7 @@ export const isItemOverdue = (item: ListItem, now: Date = new Date()): boolean =
   item.dueAt !== null &&
   now.getTime() > new Date(item.dueAt).getTime();
 
-/** La forma publica del producto vive en el contrato compartido con los clientes */
+/** La forma pública del producto vive en el contrato compartido con los clientes */
 export type ItemView = Item;
 
 export const toItemView = (item: ListItem, now: Date = new Date()): ItemView => {

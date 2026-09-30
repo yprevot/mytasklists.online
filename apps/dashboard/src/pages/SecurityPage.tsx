@@ -7,7 +7,7 @@ import { useAdminAuth } from '../context/AdminAuthContext';
 
 type Setup = { secret: string; otpauthUrl: string; qr: string };
 
-/** Verificacion en dos pasos (TOTP) de la cuenta de administracion */
+/** Verificación en dos pasos (TOTP) de la cuenta de administración */
 export function SecurityPage() {
   const { user, reloadUser } = useAdminAuth();
   const { t } = useTranslation();

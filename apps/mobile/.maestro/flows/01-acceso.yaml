@@ -1,12 +1,12 @@
 appId: com.listadecompras.app
-name: Acceso · credenciales invalidas e inicio de sesion
+name: Acceso · credenciales inválidas e inicio de sesión
 env:
   API_URL: http://localhost:8080/api
 ---
 - runScript: ../scripts/crear-cuenta.js
 - runFlow: ../subflows/abrir-sin-sesion.yaml
 
-# Con la contrasena equivocada se queda en el login y lo explica
+# Con la contraseña equivocada se queda en el login y lo explica
 - tapOn:
     id: login-email
 - inputText: ${output.cuenta.email}

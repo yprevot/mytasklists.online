@@ -34,7 +34,7 @@ export function Layout() {
         <div className="container lc-shell lc-topbar-inner">
           <Brand to="/" />
 
-          {/* Escritorio: pestañas en la barra. Telefono: barra inferior (ver app.css) */}
+          {/* Escritorio: pestañas en la barra. Teléfono: barra inferior (ver app.css) */}
           <nav className="lc-nav" aria-label={t('layout.mainNav')}>
             <ul>
               <li>

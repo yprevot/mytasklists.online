@@ -57,7 +57,7 @@ export default class EvidenceReporter implements Reporter {
     const description = test.title.replace(/^CP-[A-Z]+-\d+\s*·?\s*/, '');
 
     videos.forEach((video, position) => {
-      // Un caso puede grabar mas de una ventana (pruebas con dos personas a la vez)
+      // Un caso puede grabar más de una ventana (pruebas con dos personas a la vez)
       const suffix = videos.length > 1 ? `-ventana${position + 1}` : '';
       const name = `${id}-${slug(description)}${suffix}.webm`;
       const target = join(targetDir, name);
@@ -83,20 +83,20 @@ export default class EvidenceReporter implements Reporter {
     const lines = [
       '# Evidencia en video de las pruebas end-to-end',
       '',
-      `Ejecucion: **${result.status}** · ${new Date().toLocaleString('es-MX')} · ` +
+      `Ejecución: **${result.status}** · ${new Date().toLocaleString('es-MX')} · ` +
         `${Math.round((Date.now() - this.startedAt) / 1000)} s`,
       '',
-      'Cada caso con interfaz grabo un video. Los archivos estan junto a este indice.',
+      'Cada caso con interfaz grabó un video. Los archivos están junto a este índice.',
       '',
     ];
 
     if (this.entries.size === 0) {
-      lines.push('_No se grabo ningun video en esta ejecucion._');
+      lines.push('_No se grabó ningún video en esta ejecución._');
     }
 
     for (const [project, entries] of [...this.entries.entries()].sort()) {
       lines.push(`## ${project} · ${entries.length} video(s)`, '');
-      lines.push('| Caso | Descripcion | Resultado | Video |');
+      lines.push('| Caso | Descripción | Resultado | Video |');
       lines.push('| --- | --- | --- | --- |');
       entries
         .sort((a, b) => a.file.localeCompare(b.file))

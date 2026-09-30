@@ -51,7 +51,7 @@ test.describe('Servicio backend · productos de la lista', () => {
     expect(item.nextActivationAt).toBeNull();
   });
 
-  test('CP-ITEM-003 · marcar recurrencia sin indicar los dias es un error', async ({ request }) => {
+  test('CP-ITEM-003 · marcar recurrencia sin indicar los días es un error', async ({ request }) => {
     const response = await request.post(`${API_URL}/lists/${listId}/items`, {
       headers: auth(user.accessToken),
       data: { name: 'Sin periodo', isRecurring: true },
@@ -59,7 +59,7 @@ test.describe('Servicio backend · productos de la lista', () => {
     expect(response.status()).toBe(400);
   });
 
-  test('CP-ITEM-004 · la recurrencia acepta entre 1 y 365 dias', async ({ request }) => {
+  test('CP-ITEM-004 · la recurrencia acepta entre 1 y 365 días', async ({ request }) => {
     for (const recurrenceDays of [0, 366, -3]) {
       const response = await request.post(`${API_URL}/lists/${listId}/items`, {
         headers: auth(user.accessToken),
@@ -70,7 +70,7 @@ test.describe('Servicio backend · productos de la lista', () => {
   });
 
   test('CP-ITEM-005 · al comprar, el producto pasa a la lista de comprados', async ({ request }) => {
-    const item = await createItem(request, user.accessToken, listId, { name: 'Cafe molido' });
+    const item = await createItem(request, user.accessToken, listId, { name: 'Café molido' });
 
     const response = await request.post(`${API_URL}/items/${item.id}/purchase`, {
       headers: auth(user.accessToken),
@@ -85,7 +85,7 @@ test.describe('Servicio backend · productos de la lista', () => {
     const detalle = await getList(request, user.accessToken, listId);
     expect(detalle.pendingCount).toBe(0);
     expect(detalle.purchasedCount).toBe(1);
-    expect(detalle.purchased[0].name).toBe('Cafe molido');
+    expect(detalle.purchased[0].name).toBe('Café molido');
   });
 
   test('CP-ITEM-006 · deshacer la compra regresa el producto a pendientes', async ({ request }) => {
@@ -118,7 +118,7 @@ test.describe('Servicio backend · productos de la lista', () => {
   });
 
   test('CP-ITEM-008 · vaciar de golpe la lista de comprados', async ({ request }) => {
-    for (const name of ['Arroz', 'Frijol', 'Azucar']) {
+    for (const name of ['Arroz', 'Frijol', 'Azúcar']) {
       const item = await createItem(request, user.accessToken, listId, { name });
       await request.post(`${API_URL}/items/${item.id}/purchase`, {
         headers: auth(user.accessToken),
@@ -134,17 +134,17 @@ test.describe('Servicio backend · productos de la lista', () => {
     expect(detalle.purchasedCount).toBe(0);
   });
 
-  test('CP-ITEM-009 · editar un producto y activarle la recurrencia despues', async ({ request }) => {
+  test('CP-ITEM-009 · editar un producto y activarle la recurrencia después', async ({ request }) => {
     const item = await createItem(request, user.accessToken, listId, { name: 'Detergente' });
 
     const response = await request.patch(`${API_URL}/items/${item.id}`, {
       headers: auth(user.accessToken),
-      data: { name: 'Detergente liquido', quantity: 2, isRecurring: true, recurrenceDays: 30 },
+      data: { name: 'Detergente líquido', quantity: 2, isRecurring: true, recurrenceDays: 30 },
     });
     expect(response.ok()).toBeTruthy();
 
     const editado = await response.json();
-    expect(editado.name).toBe('Detergente liquido');
+    expect(editado.name).toBe('Detergente líquido');
     expect(editado.quantity).toBe(2);
     expect(editado.isRecurring).toBe(true);
     expect(editado.recurrenceDays).toBe(30);
@@ -152,7 +152,7 @@ test.describe('Servicio backend · productos de la lista', () => {
   });
 
   test('CP-ITEM-010 · eliminar un producto lo borra de la lista', async ({ request }) => {
-    const item = await createItem(request, user.accessToken, listId, { name: 'Producto de mas' });
+    const item = await createItem(request, user.accessToken, listId, { name: 'Producto de más' });
 
     const response = await request.delete(`${API_URL}/items/${item.id}`, {
       headers: auth(user.accessToken),

@@ -25,7 +25,7 @@ import { AuthStateService } from '../../redis/auth-state.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
 
-@ApiTags('administracion')
+@ApiTags('administración')
 @ApiBearerAuth()
 @Roles(UserRole.ADMIN)
 @UseGuards(RolesGuard)
@@ -53,7 +53,7 @@ export class AdminController {
   }
 
   @Get('activity')
-  @ApiOperation({ summary: 'Bitacora reciente' })
+  @ApiOperation({ summary: 'Bitácora reciente' })
   activity(@Query('limit') limit?: string) {
     return this.admin.recentActivity(Math.min(200, Math.max(1, parseInt(limit ?? '40', 10) || 40)));
   }
@@ -67,7 +67,7 @@ export class AdminController {
 
   @Patch('users/:id')
   @ApiOperation({
-    summary: 'Activa o desactiva una cuenta, o restablece su verificacion en dos pasos',
+    summary: 'Activa o desactiva una cuenta, o restablece su verificación en dos pasos',
   })
   async updateUser(
     @CurrentUser() admin: AuthenticatedUser,

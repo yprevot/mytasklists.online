@@ -4,18 +4,18 @@ import { DEFAULT_PASSWORD, registerUser, uniqueEmail, uniqueWhatsapp } from '../
 /**
  * La app de iOS/Android es la misma base de React Native.
  * Para poder automatizarla con Playwright se ejecuta su build web
- * (react-native-web) en un viewport de telefono.
+ * (react-native-web) en un viewport de teléfono.
  */
-test.describe('App movil · acceso', () => {
-  test('CP-MOV-001 · registro desde el telefono con los cuatro datos', async ({ page }) => {
+test.describe('App móvil · acceso', () => {
+  test('CP-MOV-001 · registro desde el teléfono con los cuatro datos', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByTestId('login-screen')).toBeVisible();
 
     await page.getByTestId('go-register').click();
     await expect(page.getByTestId('register-screen')).toBeVisible();
 
-    await page.getByTestId('register-fullname').fill('Movil De Prueba');
-    await page.getByTestId('register-email').fill(uniqueEmail('movil'));
+    await page.getByTestId('register-fullname').fill('Móvil De Prueba');
+    await page.getByTestId('register-email').fill(uniqueEmail('móvil'));
     await page.getByTestId('register-whatsapp').fill(uniqueWhatsapp());
     await page.getByTestId('register-password').fill(DEFAULT_PASSWORD);
     await page.getByTestId('register-submit').click();
@@ -40,8 +40,8 @@ test.describe('App movil · acceso', () => {
     await expect(page.getByTestId('register-password-error')).toBeVisible();
   });
 
-  test('CP-MOV-003 · inicio de sesion con una cuenta existente', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Persona Movil' });
+  test('CP-MOV-003 · inicio de sesión con una cuenta existente', async ({ page, request }) => {
+    const user = await registerUser(request, { fullName: 'Persona Móvil' });
 
     await page.goto('/');
     await page.getByTestId('login-email').fill(user.email);
@@ -51,7 +51,7 @@ test.describe('App movil · acceso', () => {
     await expect(page.getByTestId('lists-screen')).toBeVisible({ timeout: 20_000 });
   });
 
-  test('CP-MOV-004 · credenciales invalidas muestran el error', async ({ page, request }) => {
+  test('CP-MOV-004 · credenciales inválidas muestran el error', async ({ page, request }) => {
     const user = await registerUser(request);
 
     await page.goto('/');
@@ -62,9 +62,9 @@ test.describe('App movil · acceso', () => {
     await expect(page.getByTestId('login-error')).toBeVisible();
   });
 
-  test('CP-MOV-005 · se ofrece inicio de sesion con Google y Apple', async ({ page }) => {
+  test('CP-MOV-005 · se ofrece inicio de sesión con Google y Apple', async ({ page }) => {
     await page.goto('/');
-    // En Android/web se muestra el boton de Google; el de Apple es nativo de iOS
+    // En Android/web se muestra el botón de Google; el de Apple es nativo de iOS
     await expect(page.getByTestId('google-login')).toBeVisible();
 
     await page.getByTestId('google-login').click();
@@ -72,7 +72,7 @@ test.describe('App movil · acceso', () => {
     await expect(page.getByTestId('open-provider')).toBeVisible();
   });
 
-  test('CP-MOV-006 · cerrar sesion desde mi cuenta', async ({ page, request }) => {
+  test('CP-MOV-006 · cerrar sesión desde mi cuenta', async ({ page, request }) => {
     const user = await registerUser(request, { fullName: 'Persona Que Sale' });
 
     await page.goto('/');
@@ -89,8 +89,8 @@ test.describe('App movil · acceso', () => {
     await expect(page.getByTestId('login-screen')).toBeVisible();
   });
 
-  test('CP-MOV-015 · recuperar la contrasena desde el telefono', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Persona Movil Olvidadiza' });
+  test('CP-MOV-015 · recuperar la contraseña desde el teléfono', async ({ page, request }) => {
+    const user = await registerUser(request, { fullName: 'Persona Móvil Olvidadiza' });
 
     await page.goto('/');
     await page.getByTestId('go-forgot-password').click();

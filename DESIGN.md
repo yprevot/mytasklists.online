@@ -45,4 +45,3 @@ Radios: 10 px controles, 14 px hojas. Sombras con desplazamiento y desenfoque su
 ## Pendiente
 
 - El splash y el color de las notificaciones push de la app móvil siguen en `#2563eb` en `apps/mobile/app.json`. Cambiarlos a `#1d5b45` modifica el *fingerprint* de Expo (requiere una compilación nativa nueva, no llega por OTA).
-- Los textos en español del catálogo no llevan tildes ni eñes (`sesion`, `Contrasena`). Corregirlos exige actualizar las pruebas e2e que comparan texto.

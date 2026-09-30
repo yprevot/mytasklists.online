@@ -4,8 +4,8 @@ import { Brand } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 /**
- * Marco de las pantallas sin sesion: panel de marca a la izquierda (solo en
- * pantallas anchas) y el formulario a la derecha. En el telefono queda solo el
+ * Marco de las pantallas sin sesión: panel de marca a la izquierda (solo en
+ * pantallas anchas) y el formulario a la derecha. En el teléfono queda solo el
  * formulario, con la marca arriba.
  */
 export function AuthShell({ children, switcher = true }: { children: ReactNode; switcher?: boolean }) {

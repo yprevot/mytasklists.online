@@ -3,7 +3,7 @@ import { ERRORS_EN } from './errors.en';
 
 export type { Locale };
 
-/** Sin cabecera se responde en espanol, como antes de agregar el ingles */
+/** Sin cabecera se responde en español, como antes de agregar el inglés */
 export const DEFAULT_LOCALE: Locale = 'es';
 
 export const isLocale = (value: unknown): value is Locale => value === 'es' || value === 'en';
@@ -26,6 +26,6 @@ export function localeFromHeader(header: string | string[] | undefined): Locale 
   return ranked.map((entry) => entry.lang).find(isLocale) ?? DEFAULT_LOCALE;
 }
 
-/** Mensaje para el cliente en su idioma; el espanol es el texto original */
+/** Mensaje para el cliente en su idioma; el español es el texto original */
 export const translateMessage = (message: string, locale: Locale): string =>
   locale === 'en' ? (ERRORS_EN[message] ?? message) : message;

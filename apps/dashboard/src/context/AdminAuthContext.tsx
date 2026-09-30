@@ -62,7 +62,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const adopt = useCallback(async (session: AdminSession) => {
     if (session.user.role !== 'admin') {
-      // La cookie ya se emitio: se revoca para no dejar una sesion abierta
+      // La cookie ya se emitió: se revoca para no dejar una sesión abierta
       tokenStore.save(session.accessToken);
       await adminApi.logout().catch(() => undefined);
       tokenStore.clear();

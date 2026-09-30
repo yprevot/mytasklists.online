@@ -11,7 +11,7 @@ export interface ToastPayload {
 
 /**
  * Aviso emergente dentro de la app cuando llega un cambio en tiempo real y la
- * app esta en primer plano (en segundo plano llega como notificacion push).
+ * app está en primer plano (en segundo plano llega como notificación push).
  */
 export function InAppToast({ toast, onHide }: { toast: ToastPayload | null; onHide: () => void }) {
   const translateY = useRef(new Animated.Value(-120)).current;

@@ -36,10 +36,10 @@ interface AuthedSocket extends Socket {
  * sala `list:<id>` por cada lista de la que forma parte. Cuando alguien marca un
  * producto como comprado, el resto de integrantes lo ve al instante.
  *
- * El adaptador de Redis permite escalar el backend a varias replicas sin perder
+ * El adaptador de Redis permite escalar el backend a varias réplicas sin perder
  * eventos entre ellas.
  */
-/** Mismos origenes que la API REST (CORS_ORIGINS); sin cabecera Origin = app nativa */
+/** Mismos orígenes que la API REST (CORS_ORIGINS); sin cabecera Origin = app nativa */
 const allowOrigin = (origin: string | undefined, callback: (err: Error | null, ok?: boolean) => void) => {
   const origins = configuration().corsOrigins;
   callback(null, !origin || origins.includes(origin) || origins.includes('*'));
@@ -72,8 +72,8 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       this.logger.warn(`No se pudo enlazar el adaptador de Redis: ${(error as Error).message}`);
     }
 
-    // La autenticacion se resuelve ANTES de aceptar la conexion, para que el
-    // cliente reciba un `connect_error` claro en vez de una desconexion seca.
+    // La autenticación se resuelve ANTES de aceptar la conexión, para que el
+    // cliente reciba un `connect_error` claro en vez de una desconexión seca.
     server.use(async (socket, next) => {
       const token = this.extractToken(socket as Socket);
       if (!token) return next(new Error('Falta el token de acceso'));
@@ -81,16 +81,16 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
           secret: this.config.get<string>('jwt.accessSecret'),
         });
-        if (payload.type !== 'access') return next(new Error('Tipo de token invalido'));
+        if (payload.type !== 'access') return next(new Error('Tipo de token inválido'));
         if (!(await this.authState.isTokenAllowed(payload.sub, payload.sv))) {
-          return next(new Error('La sesion ya no es valida'));
+          return next(new Error('La sesión ya no es válida'));
         }
         const authed = socket as AuthedSocket;
         authed.userId = payload.sub;
         authed.email = payload.email;
         return next();
       } catch {
-        return next(new Error('Token invalido o expirado'));
+        return next(new Error('Token inválido o expirado'));
       }
     });
   }
@@ -106,7 +106,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   }
 
   async handleConnection(client: AuthedSocket): Promise<void> {
-    // El middleware de `afterInit` ya valido el token y dejo el userId puesto
+    // El middleware de `afterInit` ya validó el token y dejó el userId puesto
     if (!client.userId) {
       client.disconnect(true);
       return;
@@ -137,7 +137,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     @ConnectedSocket() client: AuthedSocket,
     @MessageBody() body: ClientEvents['list:join'],
   ): Promise<{ ok: boolean; listId?: string; error?: string }> {
-    if (!client.userId || !body?.listId) return { ok: false, error: 'Peticion invalida' };
+    if (!client.userId || !body?.listId) return { ok: false, error: 'Petición inválida' };
     const member = await this.members.findOne({
       where: { listId: body.listId, userId: client.userId },
     });
@@ -169,7 +169,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     this.server?.to(userRoom(userId)).emit(event, payload);
   }
 
-  /** Mete a un usuario ya conectado en la sala de una lista recien compartida */
+  /** Mete a un usuario ya conectado en la sala de una lista recién compartida */
   async addUserToListRoom(userId: string, listId: string): Promise<void> {
     const sockets = await this.server?.in(userRoom(userId)).fetchSockets();
     await Promise.all((sockets ?? []).map((socket) => socket.join(listRoom(listId))));

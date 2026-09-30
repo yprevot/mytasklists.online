@@ -7,7 +7,7 @@ export class UpdateAdminUserDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiPropertyOptional({ description: 'Quita la verificacion en dos pasos (dispositivo perdido)' })
+  @ApiPropertyOptional({ description: 'Quita la verificación en dos pasos (dispositivo perdido)' })
   @IsOptional()
   @IsBoolean()
   resetMfa?: boolean;

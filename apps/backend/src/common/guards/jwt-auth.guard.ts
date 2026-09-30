@@ -42,15 +42,15 @@ export class JwtAuthGuard implements CanActivate {
         secret: this.config.get<string>('jwt.accessSecret'),
       });
     } catch {
-      throw new UnauthorizedException('Token invalido o expirado');
+      throw new UnauthorizedException('Token inválido o expirado');
     }
     if (payload.type !== 'access') {
-      throw new UnauthorizedException('Tipo de token invalido');
+      throw new UnauthorizedException('Tipo de token inválido');
     }
 
-    // Cuenta desactivada o sesiones revocadas (cambio de contrasena, logout global)
+    // Cuenta desactivada o sesiones revocadas (cambio de contraseña, logout global)
     if (!(await this.authState.isTokenAllowed(payload.sub, payload.sv))) {
-      throw new UnauthorizedException('La sesion ya no es valida. Vuelve a iniciar sesion.');
+      throw new UnauthorizedException('La sesión ya no es válida. Vuelve a iniciar sesión.');
     }
 
     request.user = { id: payload.sub, email: payload.email, role: payload.role };

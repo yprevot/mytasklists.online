@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// La aplicacion se publica detras del proxy nginx en la ruta /app/
+// La aplicación se publica detrás del proxy nginx en la ruta /app/
 export default defineConfig({
   base: '/app/',
   plugins: [react()],

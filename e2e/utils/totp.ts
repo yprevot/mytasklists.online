@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto';
 
-/** Generador TOTP (RFC 6238, SHA-1, 6 digitos) para las pruebas de 2FA */
+/** Generador TOTP (RFC 6238, SHA-1, 6 dígitos) para las pruebas de 2FA */
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
 function base32Decode(input: string): Buffer {

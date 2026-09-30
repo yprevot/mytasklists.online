@@ -1,4 +1,4 @@
-/* Ejecuta el seed desde la linea de comandos: `node dist/database/seeds/seed.js` */
+/* Ejecuta el seed desde la línea de comandos: `node dist/database/seeds/seed.js` */
 import 'reflect-metadata';
 import dataSource from '../data-source';
 import { runSeed } from './seed-data';

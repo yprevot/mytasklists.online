@@ -12,7 +12,7 @@ const isProviderError = (value: string): value is ProviderError =>
   PROVIDER_ERRORS.includes(value as ProviderError);
 
 /**
- * Vuelta de Google/Apple. El backend ya dejo el refresh token en una cookie
+ * Vuelta de Google/Apple. El backend ya dejó el refresh token en una cookie
  * httpOnly; en el fragmento (#) solo llega el estado o el reto de 2FA.
  */
 export function AuthCallbackPage() {

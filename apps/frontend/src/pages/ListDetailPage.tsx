@@ -52,7 +52,7 @@ export function ListDetailPage() {
     };
   }, [socket, id]);
 
-  /** Recarga agrupada: varios eventos seguidos provocan una sola peticion */
+  /** Recarga agrupada: varios eventos seguidos provocan una sola petición */
   const scheduleReload = useCallback(() => {
     if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
     reloadTimer.current = window.setTimeout(() => {

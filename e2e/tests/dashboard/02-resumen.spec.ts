@@ -15,7 +15,7 @@ test.describe('Dashboard · resumen de indicadores', () => {
     await useSession(page, session, 'lc.dash');
   });
 
-  test('CP-DASH-005 · los cuatro indicadores principales estan visibles', async ({ page }) => {
+  test('CP-DASH-005 · los cuatro indicadores principales están visibles', async ({ page }) => {
     await page.goto('/dashboard/');
     await expect(page.getByTestId('overview-page')).toBeVisible();
 
@@ -29,7 +29,7 @@ test.describe('Dashboard · resumen de indicadores', () => {
     await expect(page.getByTestId('items-breakdown')).toContainText('Pendientes');
   });
 
-  test('CP-DASH-006 · el numero de usuarios crece al registrarse alguien', async ({
+  test('CP-DASH-006 · el número de usuarios crece al registrarse alguien', async ({
     page,
     request,
   }) => {

@@ -8,7 +8,7 @@ test.describe('Frontend web · lista estilo check', () => {
 
   test.beforeEach(async ({ page, request }) => {
     user = await registerUser(request, { fullName: 'Diego Fuentes' });
-    listId = (await createList(request, user.accessToken, 'Super del sabado')).id;
+    listId = (await createList(request, user.accessToken, 'Super del sábado')).id;
     await useSession(page, user);
     await page.goto(`/app/lists/${listId}`);
     await expect(page.getByTestId('list-detail-page')).toBeVisible();
@@ -26,17 +26,17 @@ test.describe('Frontend web · lista estilo check', () => {
   });
 
   test('CP-WEB-014 · marcar como comprado lo baja tachado a la lista de abajo', async ({ page }) => {
-    await page.getByTestId('item-name-input').fill('Cafe molido');
+    await page.getByTestId('item-name-input').fill('Café molido');
     await page.getByTestId('add-item-button').click();
-    await expect(pendingItem(page, 'Cafe molido')).toBeVisible();
+    await expect(pendingItem(page, 'Café molido')).toBeVisible();
 
-    await pendingItem(page, 'Cafe molido').getByTestId('item-checkbox').click();
+    await pendingItem(page, 'Café molido').getByTestId('item-checkbox').click();
 
-    // Desaparece de arriba y aparece en la seccion de comprados
-    await expect(pendingItem(page, 'Cafe molido')).toHaveCount(0);
+    // Desaparece de arriba y aparece en la sección de comprados
+    await expect(pendingItem(page, 'Café molido')).toHaveCount(0);
     await expect(page.getByTestId('purchased-section')).toBeVisible();
 
-    const comprado = purchasedItem(page, 'Cafe molido');
+    const comprado = purchasedItem(page, 'Café molido');
     await expect(comprado).toBeVisible();
 
     // Tachado: la interfaz aplica line-through al nombre
@@ -72,7 +72,7 @@ test.describe('Frontend web · lista estilo check', () => {
   });
 
   test('CP-WEB-017 · vaciar de golpe la lista de comprados', async ({ page }) => {
-    for (const name of ['Arroz', 'Frijol', 'Azucar']) {
+    for (const name of ['Arroz', 'Frijol', 'Azúcar']) {
       await page.getByTestId('item-name-input').fill(name);
       await page.getByTestId('add-item-button').click();
       await expect(pendingItem(page, name)).toBeVisible();
@@ -85,12 +85,12 @@ test.describe('Frontend web · lista estilo check', () => {
   });
 
   test('CP-WEB-018 · eliminar un producto pendiente con el bote de basura', async ({ page }) => {
-    await page.getByTestId('item-name-input').fill('Producto de mas');
+    await page.getByTestId('item-name-input').fill('Producto de más');
     await page.getByTestId('add-item-button').click();
-    await expect(pendingItem(page, 'Producto de mas')).toBeVisible();
+    await expect(pendingItem(page, 'Producto de más')).toBeVisible();
 
-    await pendingItem(page, 'Producto de mas').getByTestId('item-delete').click();
-    await expect(pendingItem(page, 'Producto de mas')).toHaveCount(0);
+    await pendingItem(page, 'Producto de más').getByTestId('item-delete').click();
+    await expect(pendingItem(page, 'Producto de más')).toHaveCount(0);
   });
 
   test('CP-WEB-019 · se puede indicar cantidad y unidad', async ({ page }) => {

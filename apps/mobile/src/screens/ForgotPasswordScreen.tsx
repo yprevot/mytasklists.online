@@ -7,8 +7,8 @@ import { ApiError } from '../api/client';
 import { colors, spacing } from '../theme';
 
 /**
- * Pide el enlace de recuperacion. El enlace del correo abre la app web, donde se
- * elige la contrasena nueva; despues se entra con ella desde aqui.
+ * Pide el enlace de recuperación. El enlace del correo abre la app web, donde se
+ * elige la contraseña nueva; después se entra con ella desde aquí.
  */
 export function ForgotPasswordScreen({ navigation }: any) {
   const { t } = useTranslation();

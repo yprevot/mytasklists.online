@@ -18,7 +18,7 @@ test.describe('Frontend web · productos recurrentes', () => {
     await useSession(page, user);
   });
 
-  test('CP-WEB-020 · agregar "Pan de caja" con recurrencia de 14 dias', async ({ page }) => {
+  test('CP-WEB-020 · agregar "Pan de caja" con recurrencia de 14 días', async ({ page }) => {
     await page.goto(`/app/lists/${listId}`);
 
     await page.getByTestId('item-name-input').fill('Pan de caja');
@@ -36,7 +36,7 @@ test.describe('Frontend web · productos recurrentes', () => {
     await expect(item.getByTestId('item-due-hint')).toContainText('vence en 14 d');
   });
 
-  test('CP-WEB-021 · al comprarlo se anuncia cuando volvera a la lista', async ({ page, request }) => {
+  test('CP-WEB-021 · al comprarlo se anuncia cuándo volverá a la lista', async ({ page, request }) => {
     await createItem(request, user.accessToken, listId, {
       name: 'Pan de caja',
       isRecurring: true,
@@ -49,10 +49,10 @@ test.describe('Frontend web · productos recurrentes', () => {
     const comprado = purchasedItem(page, 'Pan de caja');
     await expect(comprado).toBeVisible();
     await expect(comprado.getByTestId('purchased-return-badge')).toContainText('vuelve en 14 d');
-    await expect(page.getByTestId('toast-body')).toContainText('14 dias');
+    await expect(page.getByTestId('toast-body')).toContainText('14 días');
   });
 
-  test('CP-WEB-022 · pasados los 14 dias el producto reaparece en pendientes', async ({
+  test('CP-WEB-022 · pasados los 14 días el producto reaparece en pendientes', async ({
     page,
     request,
   }) => {
@@ -63,12 +63,12 @@ test.describe('Frontend web · productos recurrentes', () => {
     });
     await page.goto(`/app/lists/${listId}`);
 
-    // Se compra el viernes (5 dias despues de agregarlo)
+    // Se compra el viernes (5 días después de agregarlo)
     await advanceClock(request, user.accessToken, item.id, 5);
     await pendingItem(page, 'Pan de caja').getByTestId('item-checkbox').click();
     await expect(purchasedItem(page, 'Pan de caja')).toBeVisible();
 
-    // El reloj avanza 14 dias desde la compra usando el menu de la interfaz
+    // El reloj avanza 14 días desde la compra usando el menú de la interfaz
     await purchasedItem(page, 'Pan de caja').scrollIntoViewIfNeeded();
     await advanceClock(request, user.accessToken, item.id, 14);
     await page.reload();
@@ -89,7 +89,7 @@ test.describe('Frontend web · productos recurrentes', () => {
     await page.goto(`/app/lists/${listId}`);
     const fila = pendingItem(page, 'Leche entera');
     await expect(fila).toHaveAttribute('data-overdue', 'false');
-    const colorInicial = await fila.evaluate((node) => getComputedStyle(node).borderLeftColor);
+    const colorInicial = await fila.evaluate((node) => getComputedStyle(node).backgroundColor);
 
     // Pasa el plazo sin comprarlo
     await advanceClock(request, user.accessToken, item.id, 9);
@@ -100,8 +100,8 @@ test.describe('Frontend web · productos recurrentes', () => {
     await expect(vencida.getByTestId('item-overdue-badge')).toContainText('vencido');
     await expect(page.getByTestId('list-overdue-summary')).toContainText('1 vencido');
 
-    // El color del indicador cambia respecto al estado normal
-    const colorVencido = await vencida.evaluate((node) => getComputedStyle(node).borderLeftColor);
+    // El fondo de la fila cambia respecto al estado normal
+    const colorVencido = await vencida.evaluate((node) => getComputedStyle(node).backgroundColor);
     expect(colorVencido).not.toBe(colorInicial);
 
     // Y sigue estando en la lista, no desaparece
@@ -128,23 +128,23 @@ test.describe('Frontend web · productos recurrentes', () => {
     );
   });
 
-  test('CP-WEB-025 · el menu de recurrencia permite simular el paso del tiempo', async ({
+  test('CP-WEB-025 · el menú de recurrencia permite simular el paso del tiempo', async ({
     page,
     request,
   }) => {
     await createItem(request, user.accessToken, listId, {
-      name: 'Cafe molido',
+      name: 'Café molido',
       isRecurring: true,
       recurrenceDays: 14,
     });
     await page.goto(`/app/lists/${listId}`);
 
-    await pendingItem(page, 'Cafe molido').getByTestId('item-clock-menu').click();
+    await pendingItem(page, 'Café molido').getByTestId('item-clock-menu').click();
     await page.getByTestId('advance-14').click();
 
     await expect(
       page.getByTestId('toast').filter({ hasText: 'Reloj adelantado' }),
     ).toBeVisible();
-    await expect(pendingItem(page, 'Cafe molido')).toHaveAttribute('data-overdue', 'true');
+    await expect(pendingItem(page, 'Café molido')).toHaveAttribute('data-overdue', 'true');
   });
 });

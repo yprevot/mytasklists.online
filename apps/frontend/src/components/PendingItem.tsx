@@ -19,7 +19,7 @@ const formatQuantity = (item: Item): string =>
  * El color del borde indica su estado:
  *  · gris  → producto de una sola vez
  *  · azul  → recurrente dentro de su plazo
- *  · rojo  → recurrente vencido (paso su plazo sin comprarse)
+ *  · rojo  → recurrente vencido (pasó su plazo sin comprarse)
  */
 export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClock }: Props) {
   const { t } = useTranslation();

@@ -31,21 +31,21 @@ const connect = (token: string): Promise<Socket> =>
 
 const waitFor = <T,>(socket: Socket, event: string, timeoutMs = 15_000): Promise<T> =>
   new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`no llego el evento "${event}"`)), timeoutMs);
+    const timer = setTimeout(() => reject(new Error(`no llegó el evento "${event}"`)), timeoutMs);
     socket.once(event, (payload: T) => {
       clearTimeout(timer);
       resolve(payload);
     });
   });
 
-test.describe('Servicio backend · sincronizacion en tiempo real', () => {
+test.describe('Servicio backend · sincronización en tiempo real', () => {
   const sockets: Socket[] = [];
 
   test.afterEach(() => {
     sockets.splice(0).forEach((socket) => socket.disconnect());
   });
 
-  test('CP-RT-001 · el WebSocket rechaza conexiones sin token valido', async () => {
+  test('CP-RT-001 · el WebSocket rechaza conexiones sin token válido', async () => {
     await expect(connect('token-invalido')).rejects.toThrow();
   });
 
@@ -65,7 +65,7 @@ test.describe('Servicio backend · sincronizacion en tiempo real', () => {
     const ana = await registerUser(request, { fullName: 'Ana Compradora' });
     const carlos = await registerUser(request, { fullName: 'Carlos Compartido' });
 
-    const list = await createList(request, ana.accessToken, 'Super del sabado');
+    const list = await createList(request, ana.accessToken, 'Super del sábado');
     await shareList(request, ana.accessToken, list.id, carlos.email);
 
     const item = await createItem(request, ana.accessToken, list.id, { name: 'Leche entera' });
@@ -83,7 +83,7 @@ test.describe('Servicio backend · sincronizacion en tiempo real', () => {
     expect(evento.item.status).toBe('purchased');
   });
 
-  test('CP-RT-004 · quien tiene los avisos activos recibe la notificacion', async ({ request }) => {
+  test('CP-RT-004 · quien tiene los avisos activos recibe la notificación', async ({ request }) => {
     const ana = await registerUser(request, { fullName: 'Ana Avisos' });
     const carlos = await registerUser(request, { fullName: 'Carlos Avisos' });
 
@@ -107,7 +107,7 @@ test.describe('Servicio backend · sincronizacion en tiempo real', () => {
     expect(aviso.body).toContain('Manzanas');
   });
 
-  test('CP-RT-005 · quien desactiva los avisos no recibe notificacion pero si el cambio', async ({
+  test('CP-RT-005 · quien desactiva los avisos no recibe notificación pero sí el cambio', async ({
     request,
   }) => {
     const ana = await registerUser(request, { fullName: 'Ana Silencio' });
@@ -134,9 +134,9 @@ test.describe('Servicio backend · sincronizacion en tiempo real', () => {
     await createItem(request, ana.accessToken, list.id, { name: 'Peras' });
 
     const evento = await created;
-    expect(evento.item.name).toBe('Peras'); // la lista si se sincroniza
+    expect(evento.item.name).toBe('Peras'); // la lista sí se sincroniza
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    expect(recibioAviso, 'no deberia recibir pop-up').toBe(false);
+    expect(recibioAviso, 'no debería recibir pop-up').toBe(false);
   });
 
   test('CP-RT-006 · quien hace el cambio no se auto-notifica', async ({ request }) => {
@@ -160,7 +160,7 @@ test.describe('Servicio backend · sincronizacion en tiempo real', () => {
     expect(autoAviso).toBe(false);
   });
 
-  test('CP-RT-007 · el aviso queda guardado para consultarlo despues', async ({ request }) => {
+  test('CP-RT-007 · el aviso queda guardado para consultarlo después', async ({ request }) => {
     const ana = await registerUser(request, { fullName: 'Ana Historial' });
     const carlos = await registerUser(request, { fullName: 'Carlos Historial' });
 

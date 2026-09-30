@@ -28,27 +28,27 @@ export class NotificationsController {
   }
 
   @Get('unread-count')
-  @ApiOperation({ summary: 'Numero de avisos sin leer' })
+  @ApiOperation({ summary: 'Número de avisos sin leer' })
   async unread(@CurrentUser() user: AuthenticatedUser) {
     return { count: await this.notifications.unreadCount(user.id) };
   }
 
   @Patch(':id/read')
-  @ApiOperation({ summary: 'Marca un aviso como leido' })
+  @ApiOperation({ summary: 'Marca un aviso como leído' })
   async markRead(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     await this.notifications.markRead(user.id, id);
     return { ok: true };
   }
 
   @Patch('read-all')
-  @ApiOperation({ summary: 'Marca todos los avisos como leidos' })
+  @ApiOperation({ summary: 'Marca todos los avisos como leídos' })
   async markAll(@CurrentUser() user: AuthenticatedUser) {
     await this.notifications.markAllRead(user.id);
     return { ok: true };
   }
 
   @Post('devices')
-  @ApiOperation({ summary: 'Registra el token push del dispositivo movil' })
+  @ApiOperation({ summary: 'Registra el token push del dispositivo móvil' })
   async registerDevice(@CurrentUser() user: AuthenticatedUser, @Body() dto: RegisterDeviceDto) {
     const device = await this.push.registerDevice(
       user.id,

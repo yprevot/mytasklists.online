@@ -49,7 +49,7 @@ export class ListsService {
   ) {}
 
   // ── Permisos ────────────────────────────────────────────────────────
-  /** Comprueba que el usuario pertenece a la lista y devuelve su membresia */
+  /** Comprueba que el usuario pertenece a la lista y devuelve su membresía */
   async assertMember(listId: string, userId: string, writeAccess = false): Promise<ListMember> {
     const member = await this.members.findOne({ where: { listId, userId } });
     if (!member) throw new NotFoundException('La lista no existe o no tienes acceso a ella');
@@ -81,7 +81,7 @@ export class ListsService {
     try {
       await this.activity.save(this.activity.create(entry));
     } catch (error) {
-      this.logger.warn(`No se pudo escribir la bitacora: ${(error as Error).message}`);
+      this.logger.warn(`No se pudo escribir la bitácora: ${(error as Error).message}`);
     }
   }
 
@@ -301,7 +301,7 @@ export class ListsService {
     const member = await this.members.findOne({ where: { listId, userId: memberUserId } });
     if (!member) throw new NotFoundException('Esa persona no forma parte de la lista');
     if (member.role === MemberRole.OWNER && dto.role && dto.role !== MemberRole.OWNER) {
-      throw new BadRequestException('No puedes quitarle la propiedad a quien creo la lista');
+      throw new BadRequestException('No puedes quitarle la propiedad a quien creó la lista');
     }
 
     if (dto.notifyOnChange !== undefined) member.notifyOnChange = dto.notifyOnChange;
@@ -328,7 +328,7 @@ export class ListsService {
     if (!member) throw new NotFoundException('Esa persona no forma parte de la lista');
     if (member.role === MemberRole.OWNER) {
       throw new BadRequestException(
-        'La persona propietaria no puede salirse de la lista; primero eliminala o transfierela',
+        'La persona propietaria no puede salirse de la lista; primero elimínala o transfiérela',
       );
     }
 
@@ -349,7 +349,7 @@ export class ListsService {
     });
   }
 
-  // ── Utilidades para otros modulos ───────────────────────────────────
+  // ── Utilidades para otros módulos ───────────────────────────────────
   async getListOrFail(listId: string): Promise<ShoppingList> {
     const list = await this.lists.findOne({ where: { id: listId } });
     if (!list) throw new NotFoundException('La lista no existe');

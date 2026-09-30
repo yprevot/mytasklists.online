@@ -25,7 +25,7 @@ test.describe('Servicio backend · perfil y cache', () => {
     expect(perfil.notificationsEnabled).toBe(false);
   });
 
-  test('CP-PERF-002 · cambiar la contrasena exige la actual', async ({ request }) => {
+  test('CP-PERF-002 · cambiar la contraseña exige la actual', async ({ request }) => {
     const user = await registerUser(request);
 
     const sinActual = await request.patch(`${API_URL}/users/me/password`, {
@@ -46,7 +46,7 @@ test.describe('Servicio backend · perfil y cache', () => {
     expect(login.ok()).toBeTruthy();
   });
 
-  test('CP-PERF-003 · la busqueda de personas ayuda a compartir listas', async ({ request }) => {
+  test('CP-PERF-003 · la búsqueda de personas ayuda a compartir listas', async ({ request }) => {
     const user = await registerUser(request, { fullName: 'Persona Buscadora' });
     const objetivo = await registerUser(request, { fullName: 'Objetivo Encontrable' });
 
@@ -73,7 +73,7 @@ test.describe('Servicio backend · perfil y cache', () => {
 
     await createItem(request, user.accessToken, list.id, { name: 'Producto nuevo' });
 
-    // Segunda lectura inmediata: debe reflejar el alta, no la version cacheada
+    // Segunda lectura inmediata: debe reflejar el alta, no la versión cacheada
     detalle = await (
       await request.get(`${API_URL}/lists/${list.id}`, { headers: auth(user.accessToken) })
     ).json();

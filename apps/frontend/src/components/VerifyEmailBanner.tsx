@@ -4,7 +4,7 @@ import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
-/** Recordatorio para confirmar el correo, con reenvio del enlace */
+/** Recordatorio para confirmar el correo, con reenvío del enlace */
 export function VerifyEmailBanner() {
   const { user } = useAuth();
   const { t } = useTranslation();

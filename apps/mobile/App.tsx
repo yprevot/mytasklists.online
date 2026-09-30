@@ -11,7 +11,7 @@ import { UpdateGate } from './src/components/UpdateGate';
 import type { AppNotification } from './src/types';
 
 /**
- * Muestra los avisos en vivo mientras la app esta abierta.
+ * Muestra los avisos en vivo mientras la app está abierta.
  * Con la app cerrada o en segundo plano el mismo aviso llega como push de
  * iOS/Android desde el backend.
  */

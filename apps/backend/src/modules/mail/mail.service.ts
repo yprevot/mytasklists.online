@@ -4,12 +4,12 @@ import { createTransport, type Transporter } from 'nodemailer';
 import type { MailContent } from './mail.templates';
 
 /**
- * Envio de correo transaccional por SMTP.
+ * Envío de correo transaccional por SMTP.
  *
  * - En desarrollo el docker-compose apunta a Mailpit (http://localhost:8025).
- * - En produccion sirve cualquier SMTP: Amazon SES, Resend, Postmark, SendGrid…
+ * - En producción sirve cualquier SMTP: Amazon SES, Resend, Postmark, SendGrid…
  * - Si no hay SMTP configurado el correo se escribe en el log, para no bloquear
- *   el registro en una instalacion local sin correo.
+ *   el registro en una instalación local sin correo.
  */
 @Injectable()
 export class MailService implements OnModuleDestroy {
@@ -21,7 +21,7 @@ export class MailService implements OnModuleDestroy {
     this.from = config.get<string>('mail.from', 'ListaDeCompras <no-responder@localhost>');
     if (!config.get<boolean>('mail.enabled', false)) {
       this.transporter = null;
-      this.logger.warn('SMTP_HOST no esta definido: los correos solo se escribiran en el log');
+      this.logger.warn('SMTP_HOST no está definido: los correos solo se escribirán en el log');
       return;
     }
     const user = config.get<string>('mail.user');
@@ -47,7 +47,7 @@ export class MailService implements OnModuleDestroy {
     });
   }
 
-  /** Envio en segundo plano: un fallo del SMTP nunca debe tumbar la peticion */
+  /** Envío en segundo plano: un fallo del SMTP nunca debe tumbar la petición */
   sendInBackground(to: string, content: MailContent): void {
     this.send(to, content).catch((error) =>
       this.logger.error(`No se pudo enviar "${content.subject}": ${(error as Error).message}`),

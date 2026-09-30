@@ -22,7 +22,7 @@ export enum ItemStatus {
   PENDING = 'pending',
   /** Comprado: se muestra tachado en la lista de abajo */
   PURCHASED = 'purchased',
-  /** El usuario lo quito de la lista de abajo con la "x" */
+  /** El usuario lo quitó de la lista de abajo con la "x" */
   ARCHIVED = 'archived',
 }
 
@@ -59,14 +59,14 @@ export class ListItem {
   status: ItemStatus;
 
   // ── Recurrencia ────────────────────────────────────────────────────
-  /** true = el producto vuelve a activarse solo cada `recurrenceDays` dias */
+  /** true = el producto vuelve a activarse solo cada `recurrenceDays` días */
   @Column({ name: 'is_recurring', default: false })
   isRecurring: boolean;
 
   @Column({ name: 'recurrence_days', type: 'int', nullable: true })
   recurrenceDays: number | null;
 
-  /** Momento en el que el producto entro (o volvio a entrar) a la lista de pendientes */
+  /** Momento en el que el producto entró (o volvió a entrar) a la lista de pendientes */
   @Column({ name: 'activated_at', type: 'timestamptz', default: () => 'now()' })
   activatedAt: Date;
 
@@ -91,11 +91,11 @@ export class ListItem {
   @Column({ name: 'last_purchased_at', type: 'timestamptz', nullable: true })
   lastPurchasedAt: Date | null;
 
-  /** Cuantas veces se ha completado el ciclo de recurrencia */
+  /** Cuántas veces se ha completado el ciclo de recurrencia */
   @Column({ name: 'cycle_count', type: 'int', default: 0 })
   cycleCount: number;
 
-  /** Marca de la ultima vez que se aviso del vencimiento, para no repetir el aviso */
+  /** Marca de la última vez que se avisó del vencimiento, para no repetir el aviso */
   @Column({ name: 'overdue_notified_at', type: 'timestamptz', nullable: true })
   overdueNotifiedAt: Date | null;
 

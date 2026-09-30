@@ -1,9 +1,9 @@
 /*
- * ListaDeCompras · panel de administracion.
+ * ListaDeCompras · panel de administración.
  *
  * Los tokens y el reskin de Bootstrap (secciones 1 a 5) son los mismos de la app
- * web: apps/frontend/src/styles/app.css. Si cambias un token, cambialo en los dos.
- * Lo propio del panel esta en dashboard.css.
+ * web: apps/frontend/src/styles/app.css. Si cambias un token, cámbialo en los dos.
+ * Lo propio del panel está en dashboard.css.
  */
 
 /* ── 1. Tokens ─────────────────────────────────────────────────────────── */
@@ -120,7 +120,7 @@ h6,
   min-width: 0;
 }
 
-/* Lo que el navegador dibuja por su cuenta tambien lleva la paleta */
+/* Lo que el navegador dibuja por su cuenta también lleva la paleta */
 ::selection {
   background: var(--lc-tag);
   color: var(--lc-ink);
@@ -268,7 +268,7 @@ html {
   text-underline-offset: 0.2em;
 }
 
-/* Boton de solo icono (papelera, cerrar, reloj) */
+/* Botón de solo icono (papelera, cerrar, reloj) */
 .lc-icon-btn {
   width: 2.5rem;
   min-height: 2.5rem;

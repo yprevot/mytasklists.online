@@ -23,13 +23,13 @@ export class UsersController {
   }
 
   @Patch('me')
-  @ApiOperation({ summary: 'Actualiza nombre, WhatsApp y preferencias de notificacion' })
+  @ApiOperation({ summary: 'Actualiza nombre, WhatsApp y preferencias de notificación' })
   async updateMe(@CurrentUser() current: AuthenticatedUser, @Body() dto: UpdateProfileDto) {
     return toPublicUser(await this.users.updateProfile(current.id, dto));
   }
 
-  // El cambio de contrasena vive en AuthModule (AccountController) porque
-  // tambien revoca las sesiones y emite un par de tokens nuevo.
+  // El cambio de contraseña vive en AuthModule (AccountController) porque
+  // también revoca las sesiones y emite un par de tokens nuevo.
 
   @Get('search')
   @ApiOperation({

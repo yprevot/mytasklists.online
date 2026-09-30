@@ -12,7 +12,7 @@ const STORAGE_KEY = 'lc.mobile.lang';
 
 const isLanguage = (value: unknown): value is Language => LANGUAGES.includes(value as Language);
 
-/** Primer idioma del telefono que soportamos; en otro idioma la app se ve en ingles */
+/** Primer idioma del teléfono que soportamos; en otro idioma la app se ve en inglés */
 function deviceLanguage(): Language {
   for (const locale of getLocales()) {
     if (isLanguage(locale.languageCode)) return locale.languageCode;
@@ -34,7 +34,7 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-// La eleccion guardada gana sobre el idioma del telefono
+// La elección guardada gana sobre el idioma del teléfono
 AsyncStorage.getItem(STORAGE_KEY)
   .then((stored) => {
     if (isLanguage(stored) && stored !== i18n.language) void i18n.changeLanguage(stored);

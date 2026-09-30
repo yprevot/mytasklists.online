@@ -1,4 +1,4 @@
-# Se ejecuta en cada PR y en cada push a main. No despliega nada: dice que impacto
+# Se ejecuta en cada PR y en cada push a main. No despliega nada: dice qué impacto
 # tiene el cambio, bloquea lo que rompe a las apps publicadas y corre las pruebas.
 name: CI
 
@@ -49,7 +49,7 @@ jobs:
             apps/mobile/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm ci --prefix apps/mobile --no-audit --no-fund
-      # Backend, web, panel y app movil contra el mismo contrato
+      # Backend, web, panel y app móvil contra el mismo contrato
       - run: npm run typecheck
       - run: npm run build --workspaces --if-present
 

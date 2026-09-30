@@ -1,6 +1,6 @@
 /**
- * Demostracion del telefono del hero: el pan de caja se marca como comprado y
- * su etiqueta pasa de "cada 14 d" a "vuelve en 14 d"; despues vuelve a empezar.
+ * Demostración del teléfono del hero: el pan de caja se marca como comprado y
+ * su etiqueta pasa de "cada 14 d" a "vuelve en 14 d"; después vuelve a empezar.
  * Con "reducir movimiento" la escena se queda quieta.
  */
 (() => {

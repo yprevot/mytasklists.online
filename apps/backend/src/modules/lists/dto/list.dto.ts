@@ -74,7 +74,7 @@ export class UpdateListDto implements UpdateListRequest {
 export class ShareListDto implements ShareListRequest {
   @ApiPropertyOptional({ description: 'Correo de la persona con la que se comparte' })
   @IsOptional()
-  @IsEmail({}, { message: 'El correo electronico no es valido' })
+  @IsEmail({}, { message: 'El correo electrónico no es válido' })
   email?: string;
 
   @ApiPropertyOptional({ description: 'Alternativa: id del usuario' })

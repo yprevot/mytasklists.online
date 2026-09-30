@@ -23,9 +23,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message: string | string[] = 'Ocurrio un error inesperado';
+    let message: string | string[] = 'Ocurrió un error inesperado';
     let error = 'InternalServerError';
-    // Codigo estable y datos extra para que el cliente reaccione sin leer el texto
+    // Código estable y datos extra para que el cliente reaccione sin leer el texto
     let extra: { code?: unknown; details?: unknown } = {};
 
     if (exception instanceof HttpException) {
@@ -42,7 +42,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.error(exception.message, exception.stack);
     }
 
-    // Los mensajes se escriben en espanol; si la peticion llega en ingles se traducen
+    // Los mensajes se escriben en español; si la petición llega en inglés se traducen
     const locale = localeFromHeader(request?.headers?.['accept-language']);
     const translated = Array.isArray(message)
       ? message.map((entry) => translateMessage(entry, locale))

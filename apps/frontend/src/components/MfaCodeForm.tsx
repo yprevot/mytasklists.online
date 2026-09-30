@@ -7,7 +7,7 @@ interface Props {
   onCancel: () => void;
 }
 
-/** Segundo paso del login cuando la cuenta tiene verificacion en dos pasos */
+/** Segundo paso del login cuando la cuenta tiene verificación en dos pasos */
 export function MfaCodeForm({ onSubmit, onCancel }: Props) {
   const { t } = useTranslation();
   const [code, setCode] = useState('');

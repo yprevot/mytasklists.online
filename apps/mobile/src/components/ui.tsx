@@ -101,7 +101,7 @@ export function Field({
   );
 }
 
-/** Etiqueta pequena: el amarillo es para lo recurrente, el rojo para lo vencido */
+/** Etiqueta pequeña: el amarillo es para lo recurrente, el rojo para lo vencido */
 export function Badge({
   text,
   tone = 'info',
@@ -133,7 +133,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
   return <Text style={styles.sectionLabel}>{children}</Text>;
 }
 
-/** Palomita dibujada con bordes: sin fuentes de iconos ni imagenes */
+/** Palomita dibujada con bordes: sin fuentes de iconos ni imágenes */
 export function CheckGlyph({ size = 14, color = '#fff' }: { size?: number; color?: string }) {
   const thickness = Math.max(2, Math.round(size * 0.17));
   return (

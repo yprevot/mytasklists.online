@@ -12,8 +12,8 @@ const STORAGE_KEY = 'lc.lang';
 const isLanguage = (value: unknown): value is Language => LANGUAGES.includes(value as Language);
 
 /**
- * La eleccion guardada gana; si no hay, se usa el primer idioma del navegador que
- * soportamos. Un navegador en otro idioma (frances, aleman…) ve la app en ingles.
+ * La elección guardada gana; si no hay, se usa el primer idioma del navegador que
+ * soportamos. Un navegador en otro idioma (francés, alemán…) ve la app en inglés.
  */
 export function detectLanguage(): Language {
   try {
@@ -41,7 +41,7 @@ export function setLanguage(language: Language): void {
 
 export const currentLanguage = (): Language => (isLanguage(i18n.language) ? i18n.language : 'es');
 
-/** Formato de fechas y numeros de cada idioma */
+/** Formato de fechas y números de cada idioma */
 export const LOCALE_TAGS: Record<Language, string> = { es: 'es-MX', en: 'en-US' };
 
 i18n.on('languageChanged', (language) => {

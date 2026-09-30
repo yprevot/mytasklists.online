@@ -2,7 +2,7 @@ import type { APIRequestContext } from '@playwright/test';
 
 /**
  * Lectura de la bandeja de Mailpit (SMTP de desarrollo del docker-compose),
- * para probar de punta a punta los correos de verificacion y recuperacion.
+ * para probar de punta a punta los correos de verificación y recuperación.
  */
 export const MAILPIT_URL = (process.env.E2E_MAILPIT_URL ?? 'http://localhost:8025').replace(/\/$/, '');
 
@@ -18,7 +18,7 @@ export interface ReceivedEmail {
   html: string;
 }
 
-/** Espera el ultimo correo para `to` cuyo asunto contenga `subject` */
+/** Espera el último correo para `to` cuyo asunto contenga `subject` */
 export async function waitForEmail(
   request: APIRequestContext,
   to: string,
@@ -40,7 +40,7 @@ export async function waitForEmail(
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error(`No llego el correo "${subject}" para ${to} (¿esta arriba Mailpit en ${MAILPIT_URL}?)`);
+  throw new Error(`No llegó el correo "${subject}" para ${to} (¿está arriba Mailpit en ${MAILPIT_URL}?)`);
 }
 
 /** Extrae el token del enlace `<ruta>#token=…` del cuerpo del correo */

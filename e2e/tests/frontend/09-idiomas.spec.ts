@@ -3,7 +3,7 @@ import { API_URL, auth, registerUser } from '../../utils/api-helpers';
 import { loginThroughUI } from '../../utils/ui-helpers';
 
 test.describe('Frontend web · idiomas', () => {
-  test.describe('con el navegador en ingles', () => {
+  test.describe('con el navegador en inglés', () => {
     test.use({ locale: 'en-US' });
 
     test('CP-WEB-038 · la app se abre en el idioma del navegador', async ({ page, request }) => {
@@ -14,7 +14,7 @@ test.describe('Frontend web · idiomas', () => {
       await expect(page.getByTestId('login-card').getByRole('heading')).toHaveText('Sign in');
       await expect(page.getByTestId('language-en')).toHaveAttribute('aria-pressed', 'true');
 
-      // Los errores de la API tambien llegan en ingles
+      // Los errores de la API también llegan en inglés
       await page.getByTestId('login-email').fill(user.email);
       await page.getByTestId('login-password').fill('ClaveEquivocada99');
       await page.getByTestId('login-submit').click();
@@ -34,7 +34,7 @@ test.describe('Frontend web · idiomas', () => {
     await expect(page.getByTestId('nav-lists')).toHaveText('My lists');
     await expect(page.getByTestId('new-list-button')).toContainText('New list');
 
-    // La eleccion sobrevive a la recarga aunque el navegador este en espanol
+    // La elección sobrevive a la recarga aunque el navegador esté en español
     await page.reload();
     await expect(page.getByTestId('nav-lists')).toHaveText('My lists');
 

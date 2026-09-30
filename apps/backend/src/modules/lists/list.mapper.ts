@@ -2,7 +2,7 @@ import type { ListDetail, ListSummary, Member } from '@lista/contracts';
 import { ItemStatus, ListMember, ShoppingList } from '../../database/entities';
 import { isItemOverdue, toItemView } from '../items/item.mapper';
 
-// Las formas publicas viven en el contrato compartido con los clientes
+// Las formas públicas viven en el contrato compartido con los clientes
 export type MemberView = Member;
 export type ListSummaryView = ListSummary;
 export type ListDetailView = ListDetail;

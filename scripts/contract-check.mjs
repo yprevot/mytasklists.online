@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
  * Compara el contrato actual (packages/contracts) con el de otra rama y dice si
- * rompe a los clientes que ya estan publicados.
+ * rompe a los clientes que ya están publicados.
  *
  *   node scripts/contract-check.mjs [rama-base]     (por defecto origin/main)
  *
- * Como lo decide:
+ * Cómo lo decide:
  * - Lo que viaja del servidor al cliente (modelos, respuestas, ServerEvents) debe
  *   seguir encajando en la forma vieja: `Nuevo extends Viejo`. Agregar campos es
  *   seguro; quitar, renombrar o cambiar el tipo de uno, no.
@@ -13,7 +13,7 @@
  *   seguir aceptando lo que mandan las apps viejas: `Viejo extends Nuevo`. Agregar
  *   un campo opcional es seguro; uno obligatorio, no.
  *
- * Un cambio incompatible solo pasa si se sube la version mayor de
+ * Un cambio incompatible solo pasa si se sube la versión mayor de
  * packages/contracts/package.json (ver docs/COMPATIBILIDAD.md).
  */
 import { execFileSync } from 'node:child_process';
@@ -29,7 +29,7 @@ const CONTRACTS = 'packages/contracts';
 const git = (...args) =>
   execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
 
-/** Tipos exportados por los .d.ts de un directorio, con su numero de parametros genericos */
+/** Tipos exportados por los .d.ts de un directorio, con su número de parámetros genéricos */
 function exportedTypes(dir) {
   const types = new Map();
   for (const file of fs.readdirSync(dir).filter((name) => name.endsWith('.d.ts'))) {
@@ -57,7 +57,7 @@ export function checkContract(base = 'origin/main') {
   try {
     files = git('ls-tree', '--name-only', `${base}:${CONTRACTS}`).split('\n').filter(Boolean);
   } catch {
-    // La rama base todavia no tiene contrato: no hay nada publicado con que comparar
+    // La rama base todavía no tiene contrato: no hay nada publicado con que comparar
     return { base, available: false, breaking: [], added: [], approved: true };
   }
 
@@ -84,7 +84,7 @@ export function checkContract(base = 'origin/main') {
 
     for (const [name, arity] of oldTypes) {
       if (!newTypes.has(name)) {
-        breaking.push({ name, reason: 'se elimino del contrato' });
+        breaking.push({ name, reason: 'se eliminó del contrato' });
         continue;
       }
       const args = arity ? `<${Array(arity).fill('unknown').join(', ')}>` : '';
@@ -115,8 +115,8 @@ export function checkContract(base = 'origin/main') {
       breaking.push({
         name,
         reason: travelsToServer(name)
-          ? 'las apps publicadas mandan algo que el backend ya no aceptaria'
-          : 'las apps publicadas esperan una forma que el backend ya no devolveria',
+          ? 'las apps publicadas mandan algo que el backend ya no aceptaría'
+          : 'las apps publicadas esperan una forma que el backend ya no devolvería',
       });
     }
 
@@ -142,7 +142,7 @@ const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPat
 if (isMain) {
   const result = checkContract(process.argv[2]);
   if (!result.available) {
-    console.log(`${result.base} todavia no tiene ${CONTRACTS}: no hay contrato publicado con que comparar.`);
+    console.log(`${result.base} todavía no tiene ${CONTRACTS}: no hay contrato publicado con que comparar.`);
     process.exit(0);
   }
   if (!result.breaking.length) {
@@ -154,14 +154,14 @@ if (isMain) {
   for (const { name, reason } of result.breaking) console.log(`  - ${name}: ${reason}`);
   if (result.approved) {
     console.log(
-      `\nAprobado por la version mayor ${result.oldVersion} → ${result.newVersion}.` +
+      `\nAprobado por la versión mayor ${result.oldVersion} → ${result.newVersion}.` +
         '\nAntes de desplegar el backend, publica la app que ya no depende de lo retirado y sube MOBILE_MIN_VERSION.',
     );
     process.exit(0);
   }
   console.log(
-    '\nHazlo en dos pasos (agrega lo nuevo sin quitar lo viejo y retiralo cuando ninguna app lo use)' +
-      '\no, si es inevitable, sube la version mayor de packages/contracts/package.json.' +
+    '\nHazlo en dos pasos (agrega lo nuevo sin quitar lo viejo y retíralo cuando ninguna app lo use)' +
+      '\no, si es inevitable, sube la versión mayor de packages/contracts/package.json.' +
       '\nDetalle: docs/COMPATIBILIDAD.md',
   );
   process.exit(1);

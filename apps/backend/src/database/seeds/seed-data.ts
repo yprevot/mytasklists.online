@@ -16,19 +16,19 @@ const DAY = 86400000;
 const days = (n: number): Date => new Date(Date.now() + n * DAY);
 
 export const SEED_ACCOUNTS = {
-  admin: { email: 'admin@listadecompras.mx', password: 'Admin12345', fullName: 'Administracion' },
-  ana: { email: 'ana@example.com', password: 'Demo12345', fullName: 'Ana Lopez Garcia' },
-  carlos: { email: 'carlos@example.com', password: 'Demo12345', fullName: 'Carlos Ramirez Diaz' },
+  admin: { email: 'admin@listadecompras.mx', password: 'Admin12345', fullName: 'Administración' },
+  ana: { email: 'ana@example.com', password: 'Demo12345', fullName: 'Ana López García' },
+  carlos: { email: 'carlos@example.com', password: 'Demo12345', fullName: 'Carlos Ramírez Diaz' },
 };
 
 /**
- * Carga datos de demostracion. Es idempotente: si el usuario administrador ya
- * existe no vuelve a escribir nada, asi que se puede dejar activado en cada
+ * Carga datos de demostración. Es idempotente: si el usuario administrador ya
+ * existe no vuelve a escribir nada, así que se puede dejar activado en cada
  * arranque del contenedor.
  */
 export async function runSeed(dataSource: DataSource): Promise<string> {
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('El seed crea cuentas con contrasenas publicas y no se ejecuta en produccion');
+    throw new Error('El seed crea cuentas con contraseñas públicas y no se ejecuta en producción');
   }
   const users = dataSource.getRepository(User);
   const lists = dataSource.getRepository(ShoppingList);
@@ -37,7 +37,7 @@ export async function runSeed(dataSource: DataSource): Promise<string> {
   const activity = dataSource.getRepository(ActivityLog);
 
   const alreadySeeded = await users.findOne({ where: { email: SEED_ACCOUNTS.admin.email } });
-  if (alreadySeeded) return 'los datos de demostracion ya estaban cargados';
+  if (alreadySeeded) return 'los datos de demostración ya estaban cargados';
 
   const hash = (plain: string) => bcrypt.hash(plain, 10);
 
@@ -79,7 +79,7 @@ export async function runSeed(dataSource: DataSource): Promise<string> {
   const despensa = await lists.save(
     lists.create({
       name: 'Despensa quincenal',
-      description: 'Lo que compramos cada quince dias en el super',
+      description: 'Lo que compramos cada quince días en el super',
       color: '#0d6efd',
       icon: '\u{1F6D2}',
       ownerId: ana.id,
@@ -97,7 +97,7 @@ export async function runSeed(dataSource: DataSource): Promise<string> {
   ]);
 
   await items.save([
-    // Producto recurrente en curso: se agrego hace 3 dias y vence en 11
+    // Producto recurrente en curso: se agregó hace 3 días y vence en 11
     items.create({
       listId: despensa.id,
       name: 'Pan de caja',
@@ -143,7 +143,7 @@ export async function runSeed(dataSource: DataSource): Promise<string> {
     // Ya comprado: aparece tachado en la lista de abajo
     items.create({
       listId: despensa.id,
-      name: 'Cafe molido',
+      name: 'Café molido',
       quantity: 1,
       unit: 'kg',
       category: 'abarrotes',
@@ -218,7 +218,7 @@ export async function runSeed(dataSource: DataSource): Promise<string> {
       listId: despensa.id,
       userId: carlos.id,
       action: 'item.purchased',
-      summary: 'Cafe molido',
+      summary: 'Café molido',
     }),
   ]);
 

@@ -6,7 +6,7 @@ import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
-/** Lee el token del fragmento (#token=…): asi no queda en los logs del proxy */
+/** Lee el token del fragmento (#token=…): así no queda en los logs del proxy */
 const readToken = (): string | null =>
   new URLSearchParams(window.location.hash.replace(/^#/, '')).get('token');
 
@@ -33,7 +33,7 @@ export function ResetPasswordPage() {
     setError(null);
     try {
       await authApi.resetPassword(token, password);
-      // El backend cerro todas las sesiones, tambien la de esta pestana
+      // El backend cerró todas las sesiones, también la de esta pestaña
       if (user) await logout();
       setDone(true);
     } catch (err) {

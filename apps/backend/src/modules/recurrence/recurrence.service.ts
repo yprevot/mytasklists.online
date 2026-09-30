@@ -29,8 +29,8 @@ export interface SweepResult {
  * Cada pasada hace dos cosas:
  *
  *  1. **Reactivar**: los productos recurrentes cuya fecha `next_activation_at`
- *     ya llego vuelven a la lista de pendientes. Esa fecha se calculo al
- *     marcarlos como comprados (fecha de compra + dias de recurrencia).
+ *     ya llegó vuelven a la lista de pendientes. Esa fecha se calculó al
+ *     marcarlos como comprados (fecha de compra + días de recurrencia).
  *
  *  2. **Marcar vencidos**: los productos recurrentes que siguen pendientes y
  *     ya pasaron su `due_at` se avisan una sola vez; la interfaz los pinta con
@@ -56,12 +56,12 @@ export class RecurrenceService implements OnModuleInit {
     const expression = this.config.get<string>('recurrence.cron', '0 */5 * * * *');
     const job = new CronJob(expression, () => {
       void this.runSweep().catch((error) =>
-        this.logger.error(`Fallo la pasada de recurrencia: ${(error as Error).message}`),
+        this.logger.error(`Falló la pasada de recurrencia: ${(error as Error).message}`),
       );
     });
     this.scheduler.addCronJob(RecurrenceService.JOB_NAME, job as any);
     job.start();
-    this.logger.log(`Motor de recurrencia programado con la expresion "${expression}"`);
+    this.logger.log(`Motor de recurrencia programado con la expresión "${expression}"`);
   }
 
   async runSweep(now: Date = new Date()): Promise<SweepResult> {
@@ -73,7 +73,7 @@ export class RecurrenceService implements OnModuleInit {
     return { reactivated, overdue, ranAt: now.toISOString() };
   }
 
-  // ── 1. Reactivacion ─────────────────────────────────────────────────
+  // ── 1. Reactivación ─────────────────────────────────────────────────
   private async reactivateDue(now: Date): Promise<number> {
     const due = await this.items.find({
       where: {
@@ -185,7 +185,7 @@ export class RecurrenceService implements OnModuleInit {
   // ── Utilidad de pruebas / demo ──────────────────────────────────────
   /**
    * "Viaja en el tiempo" un producto restando `days` a todas sus fechas.
-   * Permite comprobar la recurrencia sin esperar dias reales; se puede
+   * Permite comprobar la recurrencia sin esperar días reales; se puede
    * desactivar con ALLOW_TIME_TRAVEL=false.
    */
   async advanceItem(itemId: string, userId: string, days: number): Promise<SweepResult> {

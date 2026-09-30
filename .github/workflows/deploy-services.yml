@@ -1,7 +1,7 @@
 # Despliega backend, web, panel y landing (Docker) cuando cambian en main. La app
-# movil tiene su propio workflow: un cambio solo en apps/mobile no llega aqui.
+# móvil tiene su propio workflow: un cambio solo en apps/mobile no llega aquí.
 #
-# Configuracion (Settings → Environments → production):
+# Configuración (Settings → Environments → production):
 #   variables: DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH (carpeta del repo en el servidor)
 #   secretos:  DEPLOY_SSH_KEY (clave privada), DEPLOY_KNOWN_HOSTS (ssh-keyscan del servidor)
 # Sin DEPLOY_HOST el workflow no hace nada.
@@ -51,7 +51,7 @@ jobs:
           node scripts/impact.mjs "$BEFORE" | tee -a "$GITHUB_STEP_SUMMARY"
           level=$(node scripts/impact.mjs "$BEFORE" --json | jq -r .level)
           if [ "$level" = "alto" ]; then
-            echo "::error::Este cambio necesita coordinarse con la app movil. Despliega a mano cuando este listo."
+            echo "::error::Este cambio necesita coordinarse con la app móvil. Despliega a mano cuando esté listo."
             exit 1
           fi
 

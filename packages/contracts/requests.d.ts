@@ -1,10 +1,10 @@
 /**
- * Cuerpos que envian los clientes (cliente → servidor). Los DTO del backend los
- * implementan, asi que no pueden separarse sin que falle la compilacion.
+ * Cuerpos que envían los clientes (cliente → servidor). Los DTO del backend los
+ * implementan, así que no pueden separarse sin que falle la compilación.
  */
 import type { DevicePlatform, Locale, MemberRole } from './models';
 
-// ── Autenticacion ──────────────────────────────────────────────────────
+// ── Autenticación ──────────────────────────────────────────────────────
 export interface RegisterRequest {
   fullName: string;
   email: string;
@@ -17,7 +17,7 @@ export interface LoginRequest {
   password: string;
 }
 
-/** Refresh y logout: la app movil lo manda en el cuerpo; la web, en una cookie */
+/** Refresh y logout: la app móvil lo manda en el cuerpo; la web, en una cookie */
 export interface RefreshRequest {
   refreshToken?: string;
 }

@@ -44,7 +44,7 @@ test.describe('Dashboard · usuarios y listas', () => {
     request,
   }) => {
     const user = await registerUser(request, { fullName: 'Persona Con Lista Visible' });
-    // Nombre unico para que la busqueda devuelva exactamente una fila
+    // Nombre único para que la búsqueda devuelva exactamente una fila
     const nombre = `Lista visible ${Date.now().toString(36)}`;
     await createList(request, user.accessToken, nombre);
 

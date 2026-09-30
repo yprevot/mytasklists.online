@@ -14,7 +14,7 @@ test.describe('Servicio backend · listas de compras', () => {
   let owner: TestUser;
 
   test.beforeEach(async ({ request }) => {
-    owner = await registerUser(request, { fullName: 'Duena De La Lista' });
+    owner = await registerUser(request, { fullName: 'Dueña De La Lista' });
   });
 
   test('CP-LIST-001 · una persona registrada puede tener varias listas', async ({ request }) => {
@@ -80,7 +80,7 @@ test.describe('Servicio backend · listas de compras', () => {
     expect(detalle.myRole).toBe('editor');
   });
 
-  test('CP-LIST-005 · no se puede compartir con alguien que no esta registrado', async ({ request }) => {
+  test('CP-LIST-005 · no se puede compartir con alguien que no está registrado', async ({ request }) => {
     const list = await createList(request, owner.accessToken, 'Sin destinatario');
 
     const response = await request.post(`${API_URL}/lists/${list.id}/share`, {
@@ -116,12 +116,12 @@ test.describe('Servicio backend · listas de compras', () => {
     const detalle = await getList(request, invitada.accessToken, list.id);
     expect(detalle.notifyOnChange).toBe(false);
 
-    // La preferencia es individual: la duena sigue con avisos activos
+    // La preferencia es individual: la dueña sigue con avisos activos
     const detalleOwner = await getList(request, owner.accessToken, list.id);
     expect(detalleOwner.notifyOnChange).toBe(true);
   });
 
-  test('CP-LIST-008 · la duena puede retirar a un integrante y el pierde acceso', async ({ request }) => {
+  test('CP-LIST-008 · la dueña puede retirar a un integrante y él pierde acceso', async ({ request }) => {
     const invitada = await registerUser(request);
     const list = await createList(request, owner.accessToken, 'Retiro');
     await shareList(request, owner.accessToken, list.id, invitada.email);

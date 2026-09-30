@@ -1,5 +1,5 @@
-# Se construye desde la raiz del monorepo (context: .) para instalar con
-# `npm ci` a partir del package-lock.json comun: builds reproducibles.
+# Se construye desde la raíz del monorepo (context: .) para instalar con
+# `npm ci` a partir del package-lock.json común: builds reproducibles.
 
 # ─────────────── Etapa 1: manifiestos del workspace ───────────────
 FROM node:24-alpine AS manifests
@@ -12,14 +12,14 @@ COPY apps/landing/package.json   apps/landing/
 COPY e2e/package.json            e2e/
 COPY packages/contracts           packages/contracts/
 
-# ─────────────── Etapa 2: dependencias + compilacion ───────────────
+# ─────────────── Etapa 2: dependencias + compilación ───────────────
 FROM manifests AS builder
 RUN npm ci --workspace @lista/backend --no-audit --no-fund
 COPY apps/backend/tsconfig.json apps/backend/nest-cli.json apps/backend/
 COPY apps/backend/src apps/backend/src
 RUN npm run build --workspace @lista/backend
 
-# ─────────────── Etapa 3: dependencias de produccion ───────────────
+# ─────────────── Etapa 3: dependencias de producción ───────────────
 FROM manifests AS deps
 RUN npm ci --workspace @lista/backend --omit=dev --no-audit --no-fund \
  && mkdir -p apps/backend/node_modules \

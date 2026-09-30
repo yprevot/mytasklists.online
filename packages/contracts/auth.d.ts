@@ -9,7 +9,7 @@ export interface AuthResponse {
   user: User;
 }
 
-/** El login devuelve un reto cuando la cuenta tiene verificacion en dos pasos */
+/** El login devuelve un reto cuando la cuenta tiene verificación en dos pasos */
 export interface MfaChallenge {
   mfaRequired: true;
   mfaToken: string;

@@ -4,13 +4,13 @@ const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:8080';
 const MOBILE_URL = process.env.E2E_MOBILE_URL ?? 'http://localhost:19006';
 
 /**
- * Configuracion de las pruebas end-to-end.
+ * Configuración de las pruebas end-to-end.
  *
  * Un proyecto por servicio:
  *   backend-api → pruebas de la API (sin interfaz, sin video)
- *   frontend    → aplicacion web de usuarios      (video por caso)
- *   dashboard   → panel de administracion         (video por caso)
- *   landing     → pagina publica de descargas     (video por caso)
+ *   frontend    → aplicación web de usuarios      (video por caso)
+ *   dashboard   → panel de administración         (video por caso)
+ *   landing     → página pública de descargas     (video por caso)
  *   mobile-app  → app React Native servida en web (video por caso)
  *
  * Los videos se reorganizan al terminar en `evidence/<servicio>/<caso>.webm`
@@ -57,7 +57,7 @@ export default defineConfig({
       },
     },
 
-    // ── Aplicacion web de usuarios ───────────────────────────────────
+    // ── Aplicación web de usuarios ───────────────────────────────────
     {
       name: 'frontend',
       testDir: './tests/frontend',
@@ -69,7 +69,7 @@ export default defineConfig({
       },
     },
 
-    // ── Panel de administracion ──────────────────────────────────────
+    // ── Panel de administración ──────────────────────────────────────
     {
       name: 'dashboard',
       testDir: './tests/dashboard',
@@ -81,7 +81,7 @@ export default defineConfig({
       },
     },
 
-    // ── Landing publica ──────────────────────────────────────────────
+    // ── Landing pública ──────────────────────────────────────────────
     {
       name: 'landing',
       testDir: './tests/landing',
@@ -93,7 +93,7 @@ export default defineConfig({
       },
     },
 
-    // ── App movil (React Native Web) ─────────────────────────────────
+    // ── App móvil (React Native Web) ─────────────────────────────────
     {
       name: 'mobile-app',
       testDir: './tests/mobile',
@@ -105,7 +105,7 @@ export default defineConfig({
     },
   ],
 
-  // Servidor estatico del bundle web de la app movil.
+  // Servidor estático del bundle web de la app móvil.
   // El resto de servicios corren en Docker (`docker compose up -d`).
   webServer: process.env.E2E_SKIP_MOBILE_SERVER
     ? undefined

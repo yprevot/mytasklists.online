@@ -1,5 +1,5 @@
 appId: com.listadecompras.app
-name: Idioma · cambiar entre espanol e ingles
+name: Idioma · cambiar entre español e inglés
 ---
 - runFlow: ../subflows/abrir-sin-sesion.yaml
 

@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { registerUser, type TestUser } from '../../utils/api-helpers';
 import { useSession } from '../../utils/ui-helpers';
 
-test.describe('Frontend web · gestion de listas', () => {
+test.describe('Frontend web · gestión de listas', () => {
   let user: TestUser;
 
   test.beforeEach(async ({ page, request }) => {
-    user = await registerUser(request, { fullName: 'Lucia Herrera' });
+    user = await registerUser(request, { fullName: 'Lucía Herrera' });
     await useSession(page, user);
   });
 

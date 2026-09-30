@@ -19,7 +19,7 @@ interface Value {
 
 const SocketContext = createContext<Value>({ socket: null, connected: false });
 
-/** Conexion en vivo con el backend mientras haya sesion iniciada */
+/** Conexión en vivo con el backend mientras haya sesión iniciada */
 export function SocketProvider({ children }: { children: ReactNode }) {
   const { accessToken, user } = useAuth();
   const [connected, setConnected] = useState(false);
@@ -38,7 +38,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const socket = io(SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket'],
-      // Funcion: cada reconexion usa el access token vigente (rota cada 15 min)
+      // Función: cada reconexión usa el access token vigente (rota cada 15 min)
       auth: (callback) => callback({ token: tokens.access ?? accessToken }),
       reconnection: true,
     });

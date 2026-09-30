@@ -53,7 +53,7 @@ export function SettingsPage() {
     event.preventDefault();
     setChanging(true);
     try {
-      // El backend cierra las demas sesiones y devuelve un par nuevo para esta
+      // El backend cierra las demás sesiones y devuelve un par nuevo para esta
       const session = await usersApi.changePassword(currentPassword, newPassword);
       adoptSession({ ...session, user: { ...session.user, hasPassword: true } });
       setCurrentPassword('');

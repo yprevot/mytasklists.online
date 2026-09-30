@@ -1,4 +1,4 @@
-# Entra con la cuenta que dejo scripts/crear-cuenta.js en output.cuenta
+# Entra con la cuenta que dejó scripts/crear-cuenta.js en output.cuenta
 appId: com.listadecompras.app
 ---
 - tapOn:
@@ -13,7 +13,7 @@ appId: com.listadecompras.app
 - runFlow:
     when:
       platform: iOS
-    # iOS ofrece guardar la contrasena en un dialogo del sistema que tapa la app
+    # iOS ofrece guardar la contraseña en un diálogo del sistema que tapa la app
     commands:
       - tapOn:
           text: Ahora no|Not Now

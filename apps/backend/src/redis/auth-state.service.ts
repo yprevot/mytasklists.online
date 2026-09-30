@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 import { REDIS_CLIENT } from './redis.constants';
 
-/** Debe superar la vida de cualquier token; el refresh dura 30 dias por defecto */
+/** Debe superar la vida de cualquier token; el refresh dura 30 días por defecto */
 const VERSION_TTL_SECONDS = 45 * 24 * 3600;
 
 export interface SessionState {
@@ -11,15 +11,15 @@ export interface SessionState {
 }
 
 /**
- * Estado de sesion que el JwtAuthGuard y el gateway consultan en cada peticion.
+ * Estado de sesión que el JwtAuthGuard y el gateway consultan en cada petición.
  *
- * Los access tokens son JWT sin estado, asi que para poder cortarlos antes de
- * que expiren (cambio de contrasena, cuenta desactivada) se guardan dos marcas
+ * Los access tokens son JWT sin estado, así que para poder cortarlos antes de
+ * que expiren (cambio de contraseña, cuenta desactivada) se guardan dos marcas
  * en Redis:
- *  - `auth:session-version:<userId>`: cada token lleva la version vigente al
+ *  - `auth:session-version:<userId>`: cada token lleva la versión vigente al
  *    emitirse (`sv`); cerrar todas las sesiones la incrementa y los tokens con
- *    una version anterior dejan de valer. Es exacto, sin depender del reloj.
- *  - `auth:disabled:<userId>`: la cuenta fue desactivada por administracion.
+ *    una versión anterior dejan de valer. Es exacto, sin depender del reloj.
+ *  - `auth:disabled:<userId>`: la cuenta fue desactivada por administración.
  */
 @Injectable()
 export class AuthStateService {
@@ -61,7 +61,7 @@ export class AuthStateService {
     return { disabled: disabled === '1', version: Number(version ?? 0) };
   }
 
-  /** `true` si un token emitido con esa version de sesion sigue siendo aceptable */
+  /** `true` si un token emitido con esa versión de sesión sigue siendo aceptable */
   async isTokenAllowed(userId: string, tokenVersion?: number): Promise<boolean> {
     const state = await this.getState(userId);
     return !state.disabled && (tokenVersion ?? 0) >= state.version;

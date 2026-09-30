@@ -13,7 +13,7 @@ import { authApi, usersApi } from '../api/endpoints';
 import { currentLanguage } from '../i18n';
 import type { AuthResponse, LoginResponse, User } from '../types';
 
-/** Sesion iniciada o reto de 2FA pendiente */
+/** Sesión iniciada o reto de 2FA pendiente */
 export type LoginStep = { status: 'done' } | { status: 'mfa'; mfaToken: string };
 
 interface Value {
@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           await authApi.logout(tokens.refresh);
         } catch {
-          /* la sesion local se limpia igualmente */
+          /* la sesión local se limpia igualmente */
         }
         await tokens.clear();
         clear();

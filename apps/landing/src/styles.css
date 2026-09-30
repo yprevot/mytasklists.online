@@ -1,7 +1,7 @@
 /*
  * ListaDeCompras · landing.
  *
- * Mundo: la etiqueta de precio de gondola. Amarillo de etiqueta de fondo para
+ * Mundo: la etiqueta de precio de góndola. Amarillo de etiqueta de fondo para
  * abrir, verde pino (la marca) para cerrar, tinta verde casi negra para el texto.
  * Mismos tokens que la app web (apps/frontend/src/styles/app.css).
  */
@@ -100,7 +100,7 @@ h3 {
   margin-inline: auto;
 }
 
-/* ── Navegacion ─────────────────────────────────────────────────────── */
+/* ── Navegación ─────────────────────────────────────────────────────── */
 .nav {
   position: sticky;
   top: 0;
@@ -295,7 +295,7 @@ h3 {
   letter-spacing: -0.01em;
 }
 
-/* Telefono: sube desde el borde de abajo del hero */
+/* Teléfono: sube desde el borde de abajo del hero */
 .phone {
   width: min(22rem, 100%);
   margin: 0 auto -3rem;
@@ -565,7 +565,7 @@ h3 {
   color: var(--ink-2);
 }
 
-/* Linea de tiempo del ejemplo */
+/* Línea de tiempo del ejemplo */
 .steps {
   position: relative;
   display: grid;

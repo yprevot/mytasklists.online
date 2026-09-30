@@ -1,7 +1,7 @@
-# Se construye desde la raiz del monorepo (context: .) con `npm ci` y el
-# package-lock.json comun.
+# Se construye desde la raíz del monorepo (context: .) con `npm ci` y el
+# package-lock.json común.
 
-# ─────────────── Etapa 1: compilacion del bundle ───────────────
+# ─────────────── Etapa 1: compilación del bundle ───────────────
 FROM node:24-alpine AS builder
 WORKDIR /app
 
@@ -28,7 +28,7 @@ COPY apps/frontend/public apps/frontend/public
 COPY apps/frontend/src apps/frontend/src
 RUN npm run build --workspace @lista/frontend
 
-# ─────────────── Etapa 2: servidor estatico ───────────────
+# ─────────────── Etapa 2: servidor estático ───────────────
 FROM nginx:1.30-alpine AS runtime
 COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html/app
 COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf

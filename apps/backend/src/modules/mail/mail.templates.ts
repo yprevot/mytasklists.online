@@ -1,6 +1,6 @@
 /**
  * Plantillas de los correos transaccionales, en el idioma de cada persona. Cada una
- * devuelve asunto, texto plano y HTML sencillo (tablas + estilos en linea, lo que
+ * devuelve asunto, texto plano y HTML sencillo (tablas + estilos en línea, lo que
  * mejor soportan los clientes de correo).
  */
 import type { Locale } from '@lista/contracts';
@@ -18,8 +18,8 @@ const escape = (value: string): string =>
 
 const LAYOUT = {
   es: {
-    fallback: 'Si el boton no funciona, copia este enlace en tu navegador:',
-    footer: 'Si no fuiste tu, ignora este correo. ListaDeCompras nunca te pedira tu contrasena por correo.',
+    fallback: 'Si el botón no funciona, copia este enlace en tu navegador:',
+    footer: 'Si no fuiste tú, ignora este correo. ListaDeCompras nunca te pedirá tu contraseña por correo.',
   },
   en: {
     fallback: 'If the button does not work, copy this link into your browser:',
@@ -102,15 +102,15 @@ export function resetPasswordTemplate(locale: Locale, name: string, url: string,
     };
   }
   return {
-    subject: 'Restablece tu contrasena de ListaDeCompras',
+    subject: 'Restablece tu contraseña de ListaDeCompras',
     text:
-      `Hola ${name}:\n\nRecibimos una solicitud para cambiar tu contrasena. Abre este enlace (vence en ${minutes} minutos):\n${url}\n\n` +
-      'Si no la pediste tu, ignora este correo: tu contrasena actual sigue funcionando.',
+      `Hola ${name}:\n\nRecibimos una solicitud para cambiar tu contraseña. Abre este enlace (vence en ${minutes} minutos):\n${url}\n\n` +
+      'Si no la pediste tú, ignora este correo: tu contraseña actual sigue funcionando.',
     html: layout(
       locale,
-      'Restablece tu contrasena',
-      `<p>Hola ${escape(name)}:</p><p>Recibimos una solicitud para cambiar tu contrasena. El enlace vence en ${minutes} minutos y solo se puede usar una vez.</p><p>Si no la pediste tu, ignora este correo: tu contrasena actual sigue funcionando.</p>`,
-      { label: 'Elegir una contrasena nueva', url },
+      'Restablece tu contraseña',
+      `<p>Hola ${escape(name)}:</p><p>Recibimos una solicitud para cambiar tu contraseña. El enlace vence en ${minutes} minutos y solo se puede usar una vez.</p><p>Si no la pediste tú, ignora este correo: tu contraseña actual sigue funcionando.</p>`,
+      { label: 'Elegir una contraseña nueva', url },
     ),
   };
 }
@@ -131,14 +131,14 @@ export function passwordChangedTemplate(locale: Locale, name: string, loginUrl: 
     };
   }
   return {
-    subject: 'Tu contrasena de ListaDeCompras cambio',
+    subject: 'Tu contraseña de ListaDeCompras cambió',
     text:
-      `Hola ${name}:\n\nTu contrasena se acaba de cambiar y cerramos todas tus sesiones abiertas.\n` +
-      `Si no fuiste tu, recupera tu cuenta desde ${loginUrl}`,
+      `Hola ${name}:\n\nTu contraseña se acaba de cambiar y cerramos todas tus sesiones abiertas.\n` +
+      `Si no fuiste tú, recupera tu cuenta desde ${loginUrl}`,
     html: layout(
       locale,
-      'Tu contrasena cambio',
-      `<p>Hola ${escape(name)}:</p><p>Tu contrasena se acaba de cambiar y cerramos todas tus sesiones abiertas.</p><p>Si no fuiste tu, recupera tu cuenta de inmediato.</p>`,
+      'Tu contraseña cambio',
+      `<p>Hola ${escape(name)}:</p><p>Tu contraseña se acaba de cambiar y cerramos todas tus sesiones abiertas.</p><p>Si no fuiste tú, recupera tu cuenta de inmediato.</p>`,
       { label: 'Ir a ListaDeCompras', url: loginUrl },
     ),
   };
@@ -159,12 +159,12 @@ export function mfaChangedTemplate(locale: Locale, name: string, enabled: boolea
   }
   const state = enabled ? 'activo' : 'desactivo';
   return {
-    subject: `Se ${state} la verificacion en dos pasos`,
-    text: `Hola ${name}:\n\nSe ${state} la verificacion en dos pasos de tu cuenta. Si no fuiste tu, cambia tu contrasena.`,
+    subject: `Se ${state} la verificación en dos pasos`,
+    text: `Hola ${name}:\n\nSe ${state} la verificación en dos pasos de tu cuenta. Si no fuiste tú, cambia tu contraseña.`,
     html: layout(
       locale,
-      `Verificacion en dos pasos: ${enabled ? 'activada' : 'desactivada'}`,
-      `<p>Hola ${escape(name)}:</p><p>Se ${state} la verificacion en dos pasos de tu cuenta. Si no fuiste tu, cambia tu contrasena de inmediato.</p>`,
+      `Verificación en dos pasos: ${enabled ? 'activada' : 'desactivada'}`,
+      `<p>Hola ${escape(name)}:</p><p>Se ${state} la verificación en dos pasos de tu cuenta. Si no fuiste tú, cambia tu contraseña de inmediato.</p>`,
     ),
   };
 }
@@ -188,14 +188,14 @@ export function socialLinkedTemplate(locale: Locale, name: string, provider: str
   return {
     subject: `Vinculamos tu cuenta de ${provider}`,
     text:
-      `Hola ${name}:\n\nIniciaste sesion con ${provider} y lo vinculamos a tu cuenta. Como tu correo nunca se ` +
-      'habia confirmado, desactivamos la contrasena anterior y cerramos las sesiones abiertas.\n' +
-      `Si quieres volver a entrar con contrasena, crea una nueva aqui: ${resetUrl}`,
+      `Hola ${name}:\n\nIniciaste sesión con ${provider} y lo vinculamos a tu cuenta. Como tu correo nunca se ` +
+      'había confirmado, desactivamos la contraseña anterior y cerramos las sesiones abiertas.\n' +
+      `Si quieres volver a entrar con contraseña, crea una nueva aquí: ${resetUrl}`,
     html: layout(
       locale,
       `Vinculamos tu cuenta de ${provider}`,
-      `<p>Hola ${escape(name)}:</p><p>Iniciaste sesion con ${escape(provider)} y lo vinculamos a tu cuenta.</p><p>Como tu correo nunca se habia confirmado, por seguridad desactivamos la contrasena anterior y cerramos las sesiones abiertas. Si quieres volver a entrar con contrasena, crea una nueva.</p>`,
-      { label: 'Crear una contrasena', url: resetUrl },
+      `<p>Hola ${escape(name)}:</p><p>Iniciaste sesión con ${escape(provider)} y lo vinculamos a tu cuenta.</p><p>Como tu correo nunca se había confirmado, por seguridad desactivamos la contraseña anterior y cerramos las sesiones abiertas. Si quieres volver a entrar con contraseña, crea una nueva.</p>`,
+      { label: 'Crear una contraseña', url: resetUrl },
     ),
   };
 }

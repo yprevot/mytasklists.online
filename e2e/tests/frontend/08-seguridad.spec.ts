@@ -5,7 +5,7 @@ import { linkFromEmail, waitForEmail } from '../../utils/mailpit';
 import { totp } from '../../utils/totp';
 
 test.describe('Frontend web · seguridad de la cuenta', () => {
-  test('CP-WEB-034 · recuperar la contrasena desde la interfaz', async ({ page, request }) => {
+  test('CP-WEB-034 · recuperar la contraseña desde la interfaz', async ({ page, request }) => {
     const user = await registerUser(request, { fullName: 'Persona Olvidadiza' });
 
     await page.goto('/app/login');
@@ -14,7 +14,7 @@ test.describe('Frontend web · seguridad de la cuenta', () => {
     await page.getByTestId('forgot-submit').click();
     await expect(page.getByTestId('forgot-sent')).toBeVisible();
 
-    const email = await waitForEmail(request, user.email, 'Restablece tu contrasena');
+    const email = await waitForEmail(request, user.email, 'Restablece tu contraseña');
     await page.goto(linkFromEmail(email, '/app/reset-password'));
     await page.getByTestId('reset-password').fill('ClaveDesdeCorreo123');
     await page.getByTestId('reset-confirm').fill('ClaveDesdeCorreo123');
@@ -40,7 +40,7 @@ test.describe('Frontend web · seguridad de la cuenta', () => {
     await expect(page.getByTestId('verify-banner')).toHaveCount(0);
   });
 
-  test('CP-WEB-036 · la sesion no queda en localStorage sino en una cookie httpOnly', async ({
+  test('CP-WEB-036 · la sesión no queda en localStorage sino en una cookie httpOnly', async ({
     page,
     request,
   }) => {
@@ -48,24 +48,24 @@ test.describe('Frontend web · seguridad de la cuenta', () => {
     await loginThroughUI(page, user.email, user.password);
 
     const stored = await page.evaluate(() => JSON.stringify(window.localStorage));
-    expect(stored).not.toContain('eyJ'); // ningun JWT en localStorage
+    expect(stored).not.toContain('eyJ'); // ningún JWT en localStorage
 
     const cookie = (await page.context().cookies()).find((entry) => entry.name === 'lc_rt');
     expect(cookie?.httpOnly).toBe(true);
     expect(cookie?.sameSite).toBe('Strict');
 
-    // Recargar recupera la sesion con la cookie
+    // Recargar recupera la sesión con la cookie
     await page.reload();
     await expect(page.getByTestId('lists-page')).toBeVisible();
   });
 
-  test('CP-WEB-037 · con verificacion en dos pasos el login pide el codigo', async ({ page, request }) => {
+  test('CP-WEB-037 · con verificación en dos pasos el login pide el código', async ({ page, request }) => {
     const user = await registerUser(request, { fullName: 'Persona Con Dos Pasos' });
     const { secret } = await (
       await request.post(`${API_URL}/auth/mfa/setup`, { headers: auth(user.accessToken) })
     ).json();
-    // Se activa con el codigo del periodo anterior (se acepta ±1 periodo): asi el
-    // codigo actual sigue libre para el login, que no admite reutilizar codigos
+    // Se activa con el código del periodo anterior (se acepta ±1 periodo): así el
+    // código actual sigue libre para el login, que no admite reutilizar códigos
     await request.post(`${API_URL}/auth/mfa/enable`, {
       headers: auth(user.accessToken),
       data: { code: totp(secret, -1) },

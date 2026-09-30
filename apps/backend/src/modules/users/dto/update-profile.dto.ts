@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 
 export class UpdateProfileDto implements UpdateProfileRequest {
-  @ApiPropertyOptional({ example: 'Ana Lopez' })
+  @ApiPropertyOptional({ example: 'Ana López' })
   @IsOptional()
   @IsString()
   @Length(3, 160)
@@ -21,7 +21,7 @@ export class UpdateProfileDto implements UpdateProfileRequest {
 
   @ApiPropertyOptional({ example: '+5215512345678' })
   @IsOptional()
-  @Matches(/^\+?[0-9]{8,20}$/, { message: 'El numero de WhatsApp no es valido' })
+  @Matches(/^\+?[0-9]{8,20}$/, { message: 'El número de WhatsApp no es válido' })
   whatsapp?: string;
 
   @ApiPropertyOptional({ description: 'Recibir avisos cuando alguien edita una lista compartida' })
@@ -48,7 +48,7 @@ export class ChangePasswordDto implements ChangePasswordRequest {
   currentPassword?: string;
 
   @IsString()
-  @MinLength(8, { message: 'La contrasena debe tener al menos 8 caracteres' })
-  @MaxLength(128, { message: 'La contrasena no puede superar 128 caracteres' })
+  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
+  @MaxLength(128, { message: 'La contraseña no puede superar 128 caracteres' })
   newPassword: string;
 }

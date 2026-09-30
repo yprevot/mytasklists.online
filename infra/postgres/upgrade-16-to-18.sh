@@ -2,12 +2,12 @@
 # ─────────────────────────────────────────────────────────────
 #  Copia los datos del volumen de PostgreSQL 16 al de PostgreSQL 18.
 #
-#  Solo hace falta si ya tenias datos con la version anterior del
+#  Solo hace falta si ya tenías datos con la versión anterior del
 #  docker-compose (volumen `<proyecto>_postgres-data`). El volumen viejo no se
-#  toca: cuando compruebes que todo esta bien lo puedes borrar con
+#  toca: cuando compruebes que todo está bien lo puedes borrar con
 #  `docker volume rm listadecompras_postgres-data`.
 #
-#  Uso (desde la raiz del repositorio):  sh infra/postgres/upgrade-16-to-18.sh
+#  Uso (desde la raíz del repositorio):  sh infra/postgres/upgrade-16-to-18.sh
 # ─────────────────────────────────────────────────────────────
 set -eu
 

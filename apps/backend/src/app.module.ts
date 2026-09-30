@@ -75,7 +75,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
       },
     }),
 
-    // Modulos de dominio
+    // Módulos de dominio
     RealtimeModule,
     NotificationsModule,
     AuthModule,

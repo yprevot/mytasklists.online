@@ -1,4 +1,4 @@
-/* Panel de administracion: densidad de herramienta de trabajo sobre los tokens de theme.css */
+/* Panel de administración: densidad de herramienta de trabajo sobre los tokens de theme.css */
 
 .dash-shell {
   display: flex;
@@ -11,7 +11,7 @@
   padding: 1.25rem 1rem 3rem;
 }
 
-/* Titulos: los mismos que en la app web */
+/* Títulos: los mismos que en la app web */
 .lc-page-title {
   font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.15rem);
   line-height: 1.1;
@@ -263,7 +263,7 @@
   color: var(--lc-ink-2);
 }
 
-/* ── Grafica ───────────────────────────────────────────────────────────── */
+/* ── Gráfica ───────────────────────────────────────────────────────────── */
 .dash-chart {
   display: flex;
   align-items: flex-end;

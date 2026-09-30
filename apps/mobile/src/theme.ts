@@ -1,6 +1,6 @@
 /**
  * Mismos tokens que la app web y el panel (apps/frontend/src/styles/app.css):
- * etiqueta de gondola, verde pino de marca y amarillo de etiqueta para lo
+ * etiqueta de góndola, verde pino de marca y amarillo de etiqueta para lo
  * recurrente. Las fuentes son las del sistema, como se espera en una app nativa.
  */
 export const colors = {

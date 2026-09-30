@@ -21,12 +21,12 @@ export interface NotifyInput {
   actorId?: string | null;
   actorName?: string;
   type: NotificationType;
-  /** Titulo y cuerpo en el idioma de cada destinatario */
+  /** Título y cuerpo en el idioma de cada destinatario */
   render: (texts: (typeof NOTIFICATION_TEXTS)[Locale]) => { title: string; body: string };
   payload?: Record<string, unknown>;
   /** Si se indica, esa persona no recibe el aviso (normalmente quien hizo el cambio) */
   excludeUserId?: string | null;
-  /** Fuerza el envio a un conjunto concreto de usuarios */
+  /** Fuerza el envío a un conjunto concreto de usuarios */
   onlyUserIds?: string[];
 }
 
@@ -34,10 +34,10 @@ export interface NotifyInput {
  * Reparte los avisos entre los integrantes de una lista compartida.
  *
  *  - En la web se entregan por WebSocket y el cliente los muestra como pop-up.
- *  - En la app movil se entregan como notificacion push de iOS/Android.
+ *  - En la app móvil se entregan como notificación push de iOS/Android.
  *
  * Cada integrante decide si quiere recibirlos (`list_members.notify_on_change`),
- * y ademas existe un interruptor global por usuario (`users.notifications_enabled`).
+ * y además existe un interruptor global por usuario (`users.notifications_enabled`).
  */
 @Injectable()
 export class NotificationsService {
@@ -95,7 +95,7 @@ export class NotificationsService {
       this.realtime.emitToUser(notification.userId, RT.NOTIFICATION, toNotificationView(notification));
     }
 
-    // Push en iOS/Android: un envio por idioma
+    // Push en iOS/Android: un envío por idioma
     for (const locale of new Set(recipients.map(localeOf))) {
       await this.push.sendToUsers(
         recipients.filter((member) => localeOf(member) === locale).map((member) => member.userId),

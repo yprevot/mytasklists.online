@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
 /**
- * Almacen de los tokens: Keychain en iOS y Keystore en Android (cifrados por el
+ * Almacén de los tokens: Keychain en iOS y Keystore en Android (cifrados por el
  * sistema). La build web solo existe para las pruebas y usa AsyncStorage.
  */
 const isWeb = Platform.OS === 'web';
@@ -13,7 +13,7 @@ export const secureStorage = {
     if (isWeb) return AsyncStorage.getItem(key);
     const value = await SecureStore.getItemAsync(key);
     if (value !== null) return value;
-    // Migracion: las versiones anteriores guardaban los tokens sin cifrar
+    // Migración: las versiones anteriores guardaban los tokens sin cifrar
     const legacy = await AsyncStorage.getItem(key);
     if (legacy !== null) {
       await SecureStore.setItemAsync(key, legacy);

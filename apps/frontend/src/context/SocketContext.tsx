@@ -31,7 +31,7 @@ const SocketContext = createContext<SocketContextValue>({
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '/';
 
 /**
- * Mantiene la conexion WebSocket viva mientras haya sesion.
+ * Mantiene la conexión WebSocket viva mientras haya sesión.
  * Los avisos que llegan por el canal `notification` se muestran como pop-up.
  */
 export function SocketProvider({ children }: { children: ReactNode }) {
@@ -54,7 +54,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const socket = io(SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
-      // Funcion: cada reconexion usa el access token vigente, no el del primer connect
+      // Función: cada reconexión usa el access token vigente, no el del primer connect
       auth: (callback) => callback({ token: tokenStore.access ?? accessToken }),
       reconnection: true,
       reconnectionDelay: 800,
@@ -108,7 +108,7 @@ export function useSocket(): SocketContextValue {
 }
 
 /**
- * Suscripcion tipada a un evento del socket con limpieza automatica. El nombre del
+ * Suscripción tipada a un evento del socket con limpieza automática. El nombre del
  * evento y la forma de su payload salen del contrato compartido.
  */
 export function useSocketEvent<E extends ServerEventName>(

@@ -5,9 +5,9 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
 /**
  * El access token vive solo en memoria y el refresh token en una cookie
- * httpOnly que pone el backend (cabecera `X-Auth-Client: web`). Ningun token
- * queda en localStorage, asi que un XSS no puede llevarse la sesion.
- * Al recargar la pagina la sesion se recupera con /auth/refresh.
+ * httpOnly que pone el backend (cabecera `X-Auth-Client: web`). Ningún token
+ * queda en localStorage, así que un XSS no puede llevarse la sesión.
+ * Al recargar la página la sesión se recupera con /auth/refresh.
  */
 const CLIENT_HEADERS = { 'X-Auth-Client': 'web' };
 
@@ -72,9 +72,9 @@ async function callRefresh(): Promise<AuthResponse | null> {
 }
 
 /**
- * Renueva la sesion con la cookie. Una sola renovacion a la vez por pestana y,
- * con Web Locks, tambien entre pestanas: el refresh token rota en cada uso, asi
- * que dos pestanas renovando a la vez se invalidarian mutuamente.
+ * Renueva la sesión con la cookie. Una sola renovación a la vez por pestaña y,
+ * con Web Locks, también entre pestañas: el refresh token rota en cada uso, así
+ * que dos pestañas renovando a la vez se invalidarían mutuamente.
  */
 export async function refreshSession(): Promise<AuthResponse | null> {
   if (refreshing) return refreshing;

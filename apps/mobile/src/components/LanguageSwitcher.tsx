@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LANGUAGES, setLanguage } from '../i18n';
 import { colors, radius, spacing } from '../theme';
 
-/** Selector ES / EN. La eleccion se guarda y gana sobre el idioma del telefono */
+/** Selector ES / EN. La elección se guarda y gana sobre el idioma del teléfono */
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
 

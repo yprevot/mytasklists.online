@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Dice que se despliega con los cambios actuales y que tan seguro es hacerlo.
+ * Dice qué se despliega con los cambios actuales y qué tan seguro es hacerlo.
  *
  *   node scripts/impact.mjs [rama-base]          informe en Markdown (por defecto origin/main)
  *   node scripts/impact.mjs [rama-base] --json   lo mismo en JSON, para los workflows de CI
  *
- * Compara contra el punto donde la rama se separo de la base e incluye lo que aun
- * no esta en un commit. Las reglas estan explicadas en docs/COMPATIBILIDAD.md.
+ * Compara contra el punto donde la rama se separó de la base e incluye lo que aún
+ * no está en un commit. Las reglas están explicadas en docs/COMPATIBILIDAD.md.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -26,7 +26,7 @@ let mergeBase;
 try {
   mergeBase = git('merge-base', base, 'HEAD').trim();
 } catch {
-  console.error(`No encuentro la rama base "${base}". Pasala como argumento: node scripts/impact.mjs main`);
+  console.error(`No encuentro la rama base "${base}". Pásala como argumento: node scripts/impact.mjs main`);
   process.exit(2);
 }
 
@@ -36,7 +36,7 @@ const files = [
 ];
 const touched = (...prefixes) => files.filter((file) => prefixes.some((prefix) => file.startsWith(prefix)));
 
-// ── Que se despliega ────────────────────────────────────────────────────
+// ── Qué se despliega ────────────────────────────────────────────────────
 const shared = touched('package.json', 'package-lock.json', 'packages/contracts/');
 const infra = touched('infra/', 'docker-compose', '.dockerignore');
 const services = {
@@ -47,7 +47,7 @@ const services = {
 };
 const mobileFiles = touched('apps/mobile/');
 
-// Lo que cambia el binario nativo: dependencias, configuracion de Expo, iconos y splash
+// Lo que cambia el binario nativo: dependencias, configuración de Expo, iconos y splash
 const NATIVE = ['app.json', 'app.config.', 'package-lock.json', 'eas.json', 'ios/', 'android/', 'plugins/', 'assets/'];
 
 /** En package.json solo importan las dependencias: los scripts no llegan al binario */
@@ -80,13 +80,13 @@ if (touched('packages/contracts/').length) {
     warn(
       'alto',
       `El contrato rompe a las apps publicadas (${contract.breaking.map((entry) => entry.name).join(', ')}). ` +
-        'Hazlo en dos pasos o sube la version mayor del contrato. `npm run contract:check` da el detalle.',
+        'Hazlo en dos pasos o sube la versión mayor del contrato. `npm run contract:check` da el detalle.',
     );
   } else if (contract.breaking.length) {
     warn(
       'alto',
       `Cambio incompatible aprobado (contrato ${contract.oldVersion} → ${contract.newVersion}). Orden obligatorio: ` +
-        'publicar la app que ya no usa lo retirado, esperar su adopcion, subir MOBILE_MIN_VERSION y despues desplegar el backend.',
+        'publicar la app que ya no usa lo retirado, esperar su adopción, subir MOBILE_MIN_VERSION y después desplegar el backend.',
     );
   }
 }
@@ -101,7 +101,7 @@ if (migrations.length) {
 }
 
 // Rutas que desaparecen: las apps publicadas las siguen llamando. Se compara la API
-// completa (prefijo del controlador + metodo) para no confundir una ruta movida de
+// completa (prefijo del controlador + método) para no confundir una ruta movida de
 // archivo con una ruta quitada.
 function routesOf(sources) {
   const routes = new Set();
@@ -132,7 +132,7 @@ if (touched('apps/backend/src/').some((file) => CONTROLLERS.test(file))) {
 if (removedRoutes.length) {
   warn(
     'alto',
-    `Se quitaron rutas de la API: ${removedRoutes.join(', ')}. Si la app movil las usa, las versiones publicadas ` +
+    `Se quitaron rutas de la API: ${removedRoutes.join(', ')}. Si la app móvil las usa, las versiones publicadas ` +
       'dejan de funcionar: agrega la ruta nueva y conserva la vieja hasta subir MOBILE_MIN_VERSION.',
   );
 }
@@ -148,21 +148,21 @@ if (mobileFiles.length) {
   try {
     previous = JSON.parse(git('show', `${mergeBase}:apps/mobile/app.json`)).expo.version;
   } catch {
-    // app.json no existia en la base
+    // app.json no existía en la base
   }
   mobileVersion = { previous, current };
   if (previous === current) {
     warn(
       'bajo',
-      `La app movil cambio pero su version sigue en ${current}. Subela en apps/mobile/app.json: es lo que permite ` +
-        'exigirla despues con MOBILE_MIN_VERSION.',
+      `La app móvil cambió pero su versión sigue en ${current}. Súbela en apps/mobile/app.json: es lo que permite ` +
+        'exigirla después con MOBILE_MIN_VERSION.',
     );
   }
   if (mobileNative.length) {
     warn(
       'medio',
-      `La app movil necesita un build nuevo para las tiendas (${mobileNative.map((file) => file.replace('apps/mobile/', '')).join(', ')}). ` +
-        'Las personas actualizan cuando quieren: el backend debe seguir atendiendo a la version anterior.',
+      `La app móvil necesita un build nuevo para las tiendas (${mobileNative.map((file) => file.replace('apps/mobile/', '')).join(', ')}). ` +
+        'Las personas actualizan cuando quieren: el backend debe seguir atendiendo a la versión anterior.',
     );
   }
 }
@@ -215,17 +215,17 @@ if (!files.length) {
   out.push('No hay cambios.');
 } else {
   out.push(`**${LEVEL[level]}** · ${files.length} archivos`, '');
-  out.push('| Que | Como se publica | Afectado |', '| --- | --- | --- |');
+  out.push('| Qué | Cómo se publica | Afectado |', '| --- | --- | --- |');
   for (const [name, list] of Object.entries(services)) {
     const affected = list.length ? `${list.length} archivos` : shared.length || infra.length ? 'reconstruir' : '—';
     out.push(`| ${name} | Deploy de servicios (Docker) | ${affected} |`);
   }
   const mobileHow = {
     ninguno: '—',
-    ota: 'Actualizacion OTA (EAS Update), sin pasar por la tienda',
-    tienda: 'Build nuevo y revision de App Store / Google Play',
+    ota: 'Actualización OTA (EAS Update), sin pasar por la tienda',
+    tienda: 'Build nuevo y revisión de App Store / Google Play',
   }[mobileRelease];
-  out.push(`| app movil | ${mobileHow} | ${mobileFiles.length ? `${mobileFiles.length} archivos` : '—'} |`);
+  out.push(`| app móvil | ${mobileHow} | ${mobileFiles.length ? `${mobileFiles.length} archivos` : '—'} |`);
   if (contract) {
     const state = !contract.breaking.length ? 'compatible' : contract.approved ? 'incompatible (aprobado)' : 'incompatible';
     out.push(`| contrato | Lo usan todos los anteriores | ${state} |`);

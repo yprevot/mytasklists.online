@@ -5,7 +5,7 @@ const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 /**
  * Igual que la app web: access token en memoria y refresh token en una cookie
  * httpOnly propia del panel (`X-Auth-Client: dashboard`), distinta de la de la
- * app para que entrar en uno no abra sesion en el otro.
+ * app para que entrar en uno no abra sesión en el otro.
  */
 const CLIENT_HEADERS = { 'X-Auth-Client': 'dashboard' };
 
@@ -58,7 +58,7 @@ async function callRefresh(): Promise<boolean> {
   return true;
 }
 
-/** Renueva con la cookie; Web Locks evita que dos pestanas roten a la vez */
+/** Renueva con la cookie; Web Locks evita que dos pestañas roten a la vez */
 export async function refreshSession(): Promise<boolean> {
   if (refreshing) return refreshing;
   refreshing = (async () => {

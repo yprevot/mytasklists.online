@@ -5,7 +5,7 @@ import type { es } from '../i18n/es';
 import { adminApi } from '../api/endpoints';
 import type { ActivityRow } from '../types';
 
-/** Etiqueta (clave del catalogo) y color de cada accion de la bitacora */
+/** Etiqueta (clave del catálogo) y color de cada acción de la bitácora */
 const ACTIONS: Record<string, { key: keyof typeof es.activity.actions; variant: string }> = {
   'list.created': { key: 'list_created', variant: 'primary' },
   'list.updated': { key: 'list_updated', variant: 'secondary' },
@@ -42,7 +42,7 @@ export function ActivityPage() {
         <div className="card-body">
           <ul className="list-group list-group-flush" data-testid="activity-list">
             {rows.map((row) => {
-              // Una accion nueva que el panel todavia no conoce se muestra tal cual
+              // Una acción nueva que el panel todavía no conoce se muestra tal cual
               const action = ACTIONS[row.action];
               const meta = action
                 ? { text: t(`activity.actions.${action.key}`), variant: action.variant }

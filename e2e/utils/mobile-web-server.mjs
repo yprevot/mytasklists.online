@@ -1,6 +1,6 @@
 /**
- * Servidor estatico minimo para el bundle web de la app React Native.
- * Si el bundle no existe todavia, lo genera con `expo export`.
+ * Servidor estático mínimo para el bundle web de la app React Native.
+ * Si el bundle no existe todavía, lo genera con `expo export`.
  */
 import { createServer } from 'node:http';
 import { existsSync } from 'node:fs';

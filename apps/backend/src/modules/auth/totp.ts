@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, 
 
 /**
  * TOTP (RFC 6238) compatible con Google Authenticator, 1Password, Authy…
- * SHA-1, 6 digitos, pasos de 30 s. Se implementa aqui (unas decenas de lineas)
+ * SHA-1, 6 dígitos, pasos de 30 s. Se implementa aquí (unas decenas de líneas)
  * para no sumar una dependencia al manejo de secretos.
  */
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -32,7 +32,7 @@ export function base32Decode(input: string): Buffer {
   const bytes: number[] = [];
   for (const char of clean) {
     const index = ALPHABET.indexOf(char);
-    if (index === -1) throw new Error('Secreto base32 invalido');
+    if (index === -1) throw new Error('Secreto base32 inválido');
     value = (value << 5) | index;
     bits += 5;
     if (bits >= 8) {
@@ -59,8 +59,8 @@ export function totpCode(secret: string, step: number): string {
 export const currentStep = (now = Date.now()): number => Math.floor(now / 1000 / TOTP_STEP_SECONDS);
 
 /**
- * Devuelve el paso de tiempo que coincide con el codigo (tolerando ±1 paso de
- * desfase de reloj) o `null`. El paso se usa para impedir reutilizar un codigo.
+ * Devuelve el paso de tiempo que coincide con el código (tolerando ±1 paso de
+ * desfase de reloj) o `null`. El paso se usa para impedir reutilizar un código.
  */
 export function verifyTotp(secret: string, code: string, now = Date.now(), window = 1): number | null {
   const normalized = code.replace(/\s+/g, '');
@@ -103,7 +103,7 @@ export function decryptSecret(payload: string, keyMaterial: string): string {
   return Buffer.concat([decipher.update(Buffer.from(data, 'base64url')), decipher.final()]).toString('utf8');
 }
 
-// ── Codigos de recuperacion ───────────────────────────────────────────────
+// ── Códigos de recuperación ───────────────────────────────────────────────
 export const hashRecoveryCode = (code: string): string =>
   createHash('sha256').update(code.replace(/[\s-]+/g, '').toLowerCase()).digest('hex');
 

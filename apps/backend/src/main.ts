@@ -14,7 +14,7 @@ import { runSeed } from './database/seeds/seed-data';
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
   const early = configuration();
-  // Un numero N confia en los N saltos mas cercanos (nginx = 1)
+  // Un número N confía en los N saltos más cercanos (nginx = 1)
   const trustProxy =
     typeof early.trustProxy === 'number'
       ? (_address: string, hop: number) => hop < (early.trustProxy as number)
@@ -22,7 +22,7 @@ async function bootstrap(): Promise<void> {
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    // trustProxy: solo nginx (1 salto) puede fijar X-Forwarded-For; asi la IP que
+    // trustProxy: solo nginx (1 salto) puede fijar X-Forwarded-For; así la IP que
     // usa el rate limiting no se puede falsear desde el cliente.
     new FastifyAdapter({ trustProxy, bodyLimit: early.bodyLimit }),
     { bufferLogs: false },
@@ -36,7 +36,7 @@ async function bootstrap(): Promise<void> {
 
   await app.register(fastifyCookie as any);
   await app.register(helmet as any, {
-    // Swagger UI necesita estilos y scripts en linea; la API pura no sirve HTML
+    // Swagger UI necesita estilos y scripts en línea; la API pura no sirve HTML
     contentSecurityPolicy: swaggerEnabled
       ? {
           directives: {
@@ -51,7 +51,7 @@ async function bootstrap(): Promise<void> {
   });
 
   // El callback de Apple llega como application/x-www-form-urlencoded; el
-  // adaptador de Fastify de Nest ya registra ese parser por si solo.
+  // adaptador de Fastify de Nest ya registra ese parser por sí solo.
   app.setGlobalPrefix(prefix);
   app.enableCors({
     origin: (origin, callback) => {
@@ -83,12 +83,12 @@ async function bootstrap(): Promise<void> {
 
   app.enableShutdownHooks();
 
-  // ── Documentacion OpenAPI (desactivada por defecto en produccion) ────
+  // ── Documentación OpenAPI (desactivada por defecto en producción) ────
   if (swaggerEnabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('ListaDeCompras API')
       .setDescription(
-        'API de listas de compras compartidas con productos recurrentes y sincronizacion en tiempo real.',
+        'API de listas de compras compartidas con productos recurrentes y sincronización en tiempo real.',
       )
       .setVersion('1.0.0')
       .addBearerAuth()
@@ -98,7 +98,7 @@ async function bootstrap(): Promise<void> {
     });
   }
 
-  // ── Datos de demostracion (nunca en produccion) ──────────────────────
+  // ── Datos de demostración (nunca en producción) ──────────────────────
   if (config.get<boolean>('database.runSeed', false)) {
     try {
       const dataSource = app.get(DataSource);
@@ -111,7 +111,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen({ port, host: '0.0.0.0' });
   logger.log(`API escuchando en http://0.0.0.0:${port}/${prefix}`);
-  if (swaggerEnabled) logger.log(`Documentacion en http://0.0.0.0:${port}/${prefix}/docs`);
+  if (swaggerEnabled) logger.log(`Documentación en http://0.0.0.0:${port}/${prefix}/docs`);
 }
 
 void bootstrap();

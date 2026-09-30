@@ -7,9 +7,9 @@ import { Button, Card } from './ui';
 import { colors, spacing } from '../theme';
 
 /**
- * Cuando la API responde 426 esta version de la app ya no es compatible: en vez
+ * Cuando la API responde 426 esta versión de la app ya no es compatible: en vez
  * de dejar pantallas a medio fallar, se bloquea la app y se manda a la tienda.
- * Se pregunta al abrir, y cualquier peticion posterior tambien puede dispararlo.
+ * Se pregunta al abrir, y cualquier petición posterior también puede dispararlo.
  */
 export function UpdateGate({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ export function UpdateGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onUpdateRequired(setRequired);
-    // Sin red se sigue: la primera peticion que llegue hara la misma comprobacion
+    // Sin red se sigue: la primera petición que llegue hará la misma comprobación
     compatApi.check().catch(() => undefined);
     return unsubscribe;
   }, []);

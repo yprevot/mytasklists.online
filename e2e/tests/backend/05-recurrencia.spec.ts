@@ -13,9 +13,9 @@ import {
 /**
  * El caso descrito en el enunciado:
  *
- *   "Si anado a una lista 'Pan de caja' un lunes y le pongo recurrencia de 14
- *    dias, si voy al super el viernes de esa misma semana y lo marco como
- *    comprado (han pasado 5 dias), en 14 dias se vuelve a activar."
+ *   "Si añado a una lista 'Pan de caja' un lunes y le pongo recurrencia de 14
+ *    días, si voy al super el viernes de esa misma semana y lo marco como
+ *    comprado (han pasado 5 días), en 14 días se vuelve a activar."
  */
 test.describe('Servicio backend · motor de recurrencia', () => {
   let user: TestUser;
@@ -27,7 +27,7 @@ test.describe('Servicio backend · motor de recurrencia', () => {
   });
 
   test('CP-REC-001 · el ciclo se cuenta desde la compra, no desde el alta', async ({ request }) => {
-    // Lunes: se agrega con recurrencia de 14 dias
+    // Lunes: se agrega con recurrencia de 14 días
     const item = await createItem(request, user.accessToken, listId, {
       name: 'Pan de caja',
       isRecurring: true,
@@ -35,7 +35,7 @@ test.describe('Servicio backend · motor de recurrencia', () => {
     });
     expect(item.daysUntilDue).toBe(14);
 
-    // Pasan 5 dias (llega el viernes) y se compra
+    // Pasan 5 días (llega el viernes) y se compra
     await advanceClock(request, user.accessToken, item.id, 5);
 
     const compra = await request.post(`${API_URL}/items/${item.id}/purchase`, {
@@ -44,15 +44,15 @@ test.describe('Servicio backend · motor de recurrencia', () => {
     const comprado = await compra.json();
 
     expect(comprado.status).toBe('purchased');
-    // La reactivacion se programa 14 dias despues del VIERNES
+    // La reactivación se programa 14 días después del VIERNES
     expect(comprado.daysUntilReactivation).toBe(14);
 
-    // A los 13 dias todavia no vuelve
+    // A los 13 días todavía no vuelve
     const casi = await advanceClock(request, user.accessToken, item.id, 13);
     expect(casi.reactivated).toBe(0);
     expect((await getList(request, user.accessToken, listId)).pendingCount).toBe(0);
 
-    // Al dia 14 reaparece en la lista de pendientes
+    // Al día 14 reaparece en la lista de pendientes
     const vuelve = await advanceClock(request, user.accessToken, item.id, 1);
     expect(vuelve.reactivated).toBe(1);
 
@@ -72,7 +72,7 @@ test.describe('Servicio backend · motor de recurrencia', () => {
       recurrenceDays: 7,
     });
 
-    // Todavia dentro del plazo
+    // Todavía dentro del plazo
     await advanceClock(request, user.accessToken, item.id, 6);
     let detalle = await getList(request, user.accessToken, listId);
     expect(detalle.pending[0].isOverdue).toBe(false);
@@ -122,7 +122,7 @@ test.describe('Servicio backend · motor de recurrencia', () => {
     expect(detalle.pendingCount).toBe(0);
     expect(detalle.purchasedCount).toBe(0);
 
-    // Aunque se quito de la vista, vuelve cuando toca
+    // Aunque se quitó de la vista, vuelve cuando toca
     const resultado = await advanceClock(request, user.accessToken, item.id, 21);
     expect(resultado.reactivated).toBe(1);
 
@@ -131,7 +131,7 @@ test.describe('Servicio backend · motor de recurrencia', () => {
     expect(detalle.pending[0].name).toBe('Papel de bano');
   });
 
-  test('CP-REC-005 · eliminar el producto si cancela la recurrencia', async ({ request }) => {
+  test('CP-REC-005 · eliminar el producto sí cancela la recurrencia', async ({ request }) => {
     const item = await createItem(request, user.accessToken, listId, {
       name: 'Suavizante',
       isRecurring: true,
@@ -152,7 +152,7 @@ test.describe('Servicio backend · motor de recurrencia', () => {
 
   test('CP-REC-006 · los ciclos se encadenan una y otra vez', async ({ request }) => {
     const item = await createItem(request, user.accessToken, listId, {
-      name: 'Cafe molido',
+      name: 'Café molido',
       isRecurring: true,
       recurrenceDays: 10,
     });
