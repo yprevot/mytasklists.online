@@ -15,7 +15,8 @@ const PushContext = createContext<Value>({ pushToken: null, permission: 'undeter
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),

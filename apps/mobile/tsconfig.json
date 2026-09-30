@@ -4,8 +4,7 @@
     "strict": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
-    "noImplicitAny": false,
-    "baseUrl": "."
+    "noImplicitAny": false
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]

@@ -35,20 +35,23 @@ queda en la lista pero cambia de color.
 | ----------- | ------------------------------------------- | -------------- |
 | `nginx`     | nginx 1.30 (proxy inverso, WebSocket, gzip, cabeceras de seguridad) | `:8080` |
 | `landing`   | HTML/CSS estatico + nginx                   | `/`            |
-| `frontend`  | React 18 + TypeScript + Vite + Bootstrap 5  | `/app/`        |
-| `dashboard` | React 18 + TypeScript + Vite + Bootstrap 5  | `/dashboard/`  |
-| `backend`   | NestJS 11 sobre Fastify + TypeORM (Node 24) | `/api/`        |
+| `frontend`  | React 19 + TypeScript 7 + Vite 8 + Bootstrap 5 | `/app/`     |
+| `dashboard` | React 19 + TypeScript 7 + Vite 8 + Bootstrap 5 | `/dashboard/` |
+| `backend`   | NestJS 12 sobre Fastify + TypeORM 1 (Node 24, TypeScript 6) | `/api/` |
 | `postgres`  | PostgreSQL 18                               | `127.0.0.1:5432` |
 | `redis`     | Redis 8 (con contrasena)                    | `127.0.0.1:6379` |
 | `mailpit`   | Mailpit (SMTP de desarrollo)                | `127.0.0.1:8025` |
-| App movil   | React Native (Expo SDK 52) — iOS y Android  | tiendas        |
+| App movil   | React Native 0.86 (Expo SDK 57) — iOS y Android | tiendas     |
 
 ---
 
 ## Arranque rapido
 
 Requisitos: Docker Engine 29+ con Compose v2.24+ (probado con Compose v5.5) y Node 24 LTS
-(minimo 22; solo para la app movil y las pruebas). El repositorio incluye `.nvmrc`.
+(minimo 22.12; solo para la app movil y las pruebas). El repositorio incluye `.nvmrc`.
+
+> El backend usa TypeScript 6 porque NestJS 12 (`@nestjs/cli`, `@nestjs/swagger`) todavia no
+> soporta TypeScript 7; la app movil usa la version que fija Expo SDK 57. El resto usa TS 7.
 
 ```bash
 cp .env.example .env

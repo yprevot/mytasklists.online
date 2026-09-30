@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "scheme": "listadecompras",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#2563eb",
-      "resizeMode": "contain"
-    },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
@@ -35,6 +30,13 @@
     "plugins": [
       "expo-apple-authentication",
       "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2563eb",
+          "resizeMode": "contain"
+        }
+      ],
       [
         "expo-notifications",
         {

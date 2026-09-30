@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAdminAuth } from './context/AdminAuthContext';
 import { Layout } from './components/Layout';
@@ -8,7 +9,7 @@ import { ListsPage } from './pages/ListsPage';
 import { ActivityPage } from './pages/ActivityPage';
 import { SecurityPage } from './pages/SecurityPage';
 
-function Protected({ children }: { children: JSX.Element }) {
+function Protected({ children }: { children: ReactElement }) {
   const { user, loading } = useAdminAuth();
   if (loading) {
     return (

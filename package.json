@@ -30,14 +30,11 @@
     "evidence": "npm run evidence --workspace e2e"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
   "overrides": {
-    "@nestjs/platform-fastify": {
-      "fastify": "^5.12.5"
-    },
-    "@nestjs/swagger": {
-      "js-yaml": "^5.4.2"
+    "typeorm": {
+      "ioredis": "^6.0.0"
     }
   }
 }
