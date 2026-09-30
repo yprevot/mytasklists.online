@@ -1,17 +1,5 @@
-export interface AdminUser {
-  id: string;
-  fullName: string;
-  email: string;
-  whatsapp: string | null;
-  avatarUrl: string | null;
-  provider: 'local' | 'google' | 'apple';
-  role: 'user' | 'admin';
-  notificationsEnabled: boolean;
-  emailVerified: boolean;
-  mfaEnabled: boolean;
-  isActive: boolean;
-  createdAt: string;
-}
+// Las cuentas tienen la misma forma que en el contrato compartido con el backend
+export type { User as AdminUser } from '@lista/contracts';
 
 export interface AdminStats {
   users: { total: number; active: number; newLast7Days: number; byProvider: Record<string, number> };

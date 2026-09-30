@@ -12,6 +12,7 @@ COPY apps/frontend/package.json  apps/frontend/
 COPY apps/dashboard/package.json apps/dashboard/
 COPY apps/landing/package.json   apps/landing/
 COPY e2e/package.json            e2e/
+COPY packages/contracts           packages/contracts/
 RUN npm ci --workspace @lista/dashboard --no-audit --no-fund
 
 COPY apps/dashboard/tsconfig.json apps/dashboard/vite.config.ts apps/dashboard/vite-env.d.ts apps/dashboard/index.html apps/dashboard/

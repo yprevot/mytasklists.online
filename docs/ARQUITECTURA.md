@@ -184,8 +184,9 @@ Los tokens que Expo reporta como `DeviceNotRegistered` se borran solos.
   respeta `TRUST_PROXY`), limites propios para login/registro/2FA y para los endpoints que
   envian correo, y bloqueo temporal por correo tras 10 intentos fallidos de login.
 
-Guards globales: `AppThrottlerGuard`, `JwtAuthGuard` (todo protegido salvo lo marcado con
-`@Public()`) y `RolesGuard` (`@Roles(UserRole.ADMIN)`).
+Guards globales, en este orden: `AppThrottlerGuard`, `AppVersionGuard` (426 a las apps moviles
+por debajo de `MOBILE_MIN_VERSION`, ver [COMPATIBILIDAD.md](COMPATIBILIDAD.md)), `JwtAuthGuard`
+(todo protegido salvo lo marcado con `@Public()`) y `RolesGuard` (`@Roles(UserRole.ADMIN)`).
 
 ---
 

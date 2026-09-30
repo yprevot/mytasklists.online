@@ -1,0 +1,15 @@
+# Abre la app desde cero: sin datos ni tokens guardados de una ejecucion anterior
+appId: com.listadecompras.app
+---
+- runFlow:
+    when:
+      platform: iOS
+    # En iOS los tokens viven en el Keychain, que sobrevive a clearState
+    commands:
+      - clearKeychain
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: login-screen
+    timeout: 20000

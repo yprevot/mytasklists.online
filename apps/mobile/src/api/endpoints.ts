@@ -1,5 +1,18 @@
 import { api } from './client';
-import type { AuthResponse, Item, ListDetail, ListSummary, LoginResponse, User } from '../types';
+import type {
+  AppCompatibility,
+  AuthResponse,
+  Item,
+  ListDetail,
+  ListSummary,
+  LoginResponse,
+  User,
+} from '../types';
+
+/** Si esta version ya no es compatible la API responde 426 y client.ts avisa a UpdateGate */
+export const compatApi = {
+  check: () => api.get<AppCompatibility>('/app/compatibility'),
+};
 
 export const authApi = {
   providers: () =>

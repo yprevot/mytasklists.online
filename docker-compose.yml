@@ -154,6 +154,10 @@ services:
       APPLE_CALLBACK_URL: ${APPLE_CALLBACK_URL:-http://localhost:8080/api/auth/apple/callback}
       APPLE_ALLOWED_AUDIENCES: ${APPLE_ALLOWED_AUDIENCES:-}
       EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+      # App movil: por debajo de esta version la API responde 426 (docs/COMPATIBILIDAD.md)
+      MOBILE_MIN_VERSION: ${MOBILE_MIN_VERSION:-1.0.0}
+      MOBILE_STORE_URL_IOS: ${MOBILE_STORE_URL_IOS:-}
+      MOBILE_STORE_URL_ANDROID: ${MOBILE_STORE_URL_ANDROID:-}
     expose:
       - "3000"
     healthcheck:

@@ -1,3 +1,4 @@
+import type { Item } from '@lista/contracts';
 import { ItemStatus, ListItem } from '../../database/entities';
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
@@ -22,36 +23,8 @@ export const isItemOverdue = (item: ListItem, now: Date = new Date()): boolean =
   item.dueAt !== null &&
   now.getTime() > new Date(item.dueAt).getTime();
 
-export interface ItemView {
-  id: string;
-  listId: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  note: string | null;
-  category: string;
-  status: ItemStatus;
-  isRecurring: boolean;
-  recurrenceDays: number | null;
-  activatedAt: string;
-  dueAt: string | null;
-  nextActivationAt: string | null;
-  purchasedAt: string | null;
-  purchasedById: string | null;
-  purchasedByName: string | null;
-  lastPurchasedAt: string | null;
-  cycleCount: number;
-  createdById: string | null;
-  createdByName: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  // ── campos calculados que consume la interfaz ──
-  isOverdue: boolean;
-  daysOverdue: number;
-  daysUntilDue: number | null;
-  daysUntilReactivation: number | null;
-}
+/** La forma publica del producto vive en el contrato compartido con los clientes */
+export type ItemView = Item;
 
 export const toItemView = (item: ListItem, now: Date = new Date()): ItemView => {
   const overdue = isItemOverdue(item, now);

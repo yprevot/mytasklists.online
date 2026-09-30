@@ -1,44 +1,11 @@
+import type { ListDetail, ListSummary, Member } from '@lista/contracts';
 import { ItemStatus, ListMember, ShoppingList } from '../../database/entities';
-import { isItemOverdue, ItemView, toItemView } from '../items/item.mapper';
+import { isItemOverdue, toItemView } from '../items/item.mapper';
 
-export interface MemberView {
-  id: string;
-  userId: string;
-  fullName: string;
-  email: string;
-  avatarUrl: string | null;
-  role: string;
-  notifyOnChange: boolean;
-  joinedAt: string;
-}
-
-export interface ListSummaryView {
-  id: string;
-  name: string;
-  description: string | null;
-  color: string;
-  icon: string;
-  ownerId: string;
-  isArchived: boolean;
-  isShared: boolean;
-  myRole: string;
-  notifyOnChange: boolean;
-  memberCount: number;
-  pendingCount: number;
-  purchasedCount: number;
-  overdueCount: number;
-  recurringCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ListDetailView extends ListSummaryView {
-  members: MemberView[];
-  /** Productos por comprar (lista de arriba) */
-  pending: ItemView[];
-  /** Productos ya comprados (lista de abajo, tachados) */
-  purchased: ItemView[];
-}
+// Las formas publicas viven en el contrato compartido con los clientes
+export type MemberView = Member;
+export type ListSummaryView = ListSummary;
+export type ListDetailView = ListDetail;
 
 export const toMemberView = (member: ListMember): MemberView => ({
   id: member.id,

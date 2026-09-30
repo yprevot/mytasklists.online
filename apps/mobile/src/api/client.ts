@@ -1,5 +1,7 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 import { secureStorage } from './secureStorage';
+import type { AppUpdateRequiredError } from '../types';
 
 const extra = (Constants.expoConfig?.extra ?? {}) as { apiUrl?: string; socketUrl?: string };
 
@@ -14,6 +16,17 @@ export const SOCKET_URL = (
   extra.socketUrl ??
   API_URL.replace(/\/api$/, '')
 ).replace(/\/$/, '');
+
+/**
+ * Version de la app (la `version` de app.json). Viaja en cada peticion para que la
+ * API corte a las que ya no son compatibles (docs/COMPATIBILIDAD.md).
+ */
+export const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
+
+const clientHeaders: Record<string, string> = {
+  'X-App-Version': APP_VERSION,
+  'X-App-Platform': Platform.OS,
+};
 
 const KEYS = { access: 'lc.mobile.access', refresh: 'lc.mobile.refresh' };
 
@@ -63,6 +76,20 @@ export const onSessionExpired = (listener: () => void): (() => void) => {
   };
 };
 
+export interface UpdateRequired {
+  message: string;
+  minVersion: string;
+  storeUrl: string | null;
+}
+
+const updateListeners = new Set<(info: UpdateRequired) => void>();
+export const onUpdateRequired = (listener: (info: UpdateRequired) => void): (() => void) => {
+  updateListeners.add(listener);
+  return () => {
+    updateListeners.delete(listener);
+  };
+};
+
 let refreshing: Promise<boolean> | null = null;
 
 async function renew(): Promise<boolean> {
@@ -73,7 +100,7 @@ async function renew(): Promise<boolean> {
     try {
       const response = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...clientHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken }),
       });
       if (!response.ok) return false;
@@ -99,7 +126,7 @@ interface Options {
 export async function request<T>(path: string, options: Options = {}): Promise<T> {
   const { method = 'GET', body, auth = true, retry = true } = options;
 
-  const headers: Record<string, string> = { Accept: 'application/json' };
+  const headers: Record<string, string> = { ...clientHeaders, Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
@@ -118,6 +145,16 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
 
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
+
+  if (response.status === 426) {
+    const problem = payload as AppUpdateRequiredError | null;
+    const info: UpdateRequired = {
+      message: String(problem?.message ?? 'Actualiza la app para seguir usandola'),
+      minVersion: problem?.details?.minVersion ?? '',
+      storeUrl: problem?.details?.storeUrl ?? null,
+    };
+    updateListeners.forEach((listener) => listener(info));
+  }
 
   if (!response.ok) {
     const raw = payload?.message;

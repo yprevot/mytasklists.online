@@ -1,0 +1,81 @@
+# Publica la app movil cuando cambia en main, por el camino que corresponda:
+# - Solo cambio JavaScript → actualizacion OTA con EAS Update (llega en minutos).
+# - Cambio nativo (dependencias, app.json, iconos…) → build nuevo para las tiendas.
+# La decision la toma scripts/impact.mjs. Aunque se equivocara, runtimeVersion
+# (fingerprint) impide que una OTA llegue a un binario incompatible.
+#
+# Configuracion: variable EAS_ENABLED=true y secreto EXPO_TOKEN (expo.dev → Access tokens).
+# Antes hay que vincular el proyecto: `npx eas init` y `npx eas update:configure` en apps/mobile.
+name: App movil
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/contracts/**'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Tipo de publicacion
+        type: choice
+        options: [ota, tienda]
+        default: ota
+
+concurrency:
+  group: mobile-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: vars.EAS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --prefix apps/mobile --no-audit --no-fund
+      - run: npm run typecheck --prefix apps/mobile
+
+      - name: OTA o tienda
+        id: plan
+        env:
+          CHOSEN: ${{ inputs.release }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$CHOSEN" ]; then
+            release="$CHOSEN"
+          else
+            node scripts/impact.mjs "$BEFORE" | tee -a "$GITHUB_STEP_SUMMARY"
+            release=$(node scripts/impact.mjs "$BEFORE" --json | jq -r .mobile.release)
+          fi
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+
+      - uses: expo/expo-github-action@v8
+        if: steps.plan.outputs.release != 'ninguno'
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build para App Store y Google Play
+        if: steps.plan.outputs.release == 'tienda'
+        working-directory: apps/mobile
+        run: eas build --platform all --profile production --non-interactive --no-wait
+
+      - name: Actualizacion OTA
+        if: steps.plan.outputs.release == 'ota'
+        working-directory: apps/mobile
+        env:
+          MESSAGE: ${{ github.event.head_commit.message || 'Publicacion manual' }}
+        run: eas update --channel production --environment production --message "$MESSAGE" --non-interactive

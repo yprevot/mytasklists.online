@@ -161,6 +161,11 @@ npx eas build --platform ios       # App Store
 npx eas build --platform android   # Google Play
 ```
 
+Los cambios solo de JavaScript se publican sin pasar por la tienda con EAS Update (OTA); el
+workflow `mobile.yml` elige el camino. Sube `version` en `app.json` en cada publicacion: la API
+puede exigir una version minima (`MOBILE_MIN_VERSION`) y las apps anteriores piden actualizar.
+Ver [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md).
+
 Los enlaces de descarga de la landing se configuran con `LANDING_IOS_URL` y
 `LANDING_ANDROID_URL` en el `.env`.
 
@@ -278,6 +283,23 @@ oculta los botones en consecuencia. La app movil usa los endpoints nativos
 
 ---
 
+## Compatibilidad y despliegues independientes
+
+La app movil vive en este repositorio pero se publica aparte, y las versiones de las tiendas
+conviven con el backend durante semanas. Tres piezas lo mantienen bajo control:
+
+- **`packages/contracts`**: las formas de la API se declaran una vez; backend, web, panel y app
+  las importan, y un cambio incompatible falla al compilar en todos.
+- **`npm run impact`**: dice que se despliega (servicios, OTA o tienda) y que tan seguro es.
+  `npm run contract:check` bloquea en CI lo que romperia a las apps publicadas.
+- **Version minima**: la app manda `X-App-Version`; por debajo de `MOBILE_MIN_VERSION` la API
+  responde 426 y la app pide actualizar.
+
+El semaforo de que se puede cambiar sin miedo y el procedimiento para cambios incompatibles
+estan en [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md).
+
+---
+
 ## Despliegue en produccion
 
 ```bash
@@ -320,7 +342,7 @@ como respaldo. Cuando compruebes que todo esta bien: `docker volume rm listadeco
 
 ## Pruebas end-to-end con Playwright
 
-**144 casos** repartidos en cinco proyectos, uno por servicio mas la app movil.
+**150 casos** repartidos en cinco proyectos, uno por servicio mas la app movil.
 Todos los casos con interfaz **graban un video de evidencia**. Los de correo leen la bandeja
 de Mailpit (`E2E_MAILPIT_URL`, por defecto http://localhost:8025).
 
@@ -332,7 +354,7 @@ npm --prefix e2e install
 npm --prefix e2e run install:browsers
 
 # desde la raiz del repositorio
-npm run test:e2e                 # los 5 proyectos (144 casos)
+npm run test:e2e                 # los 5 proyectos (150 casos)
 npm run test:e2e:backend         # solo la API
 npm run test:e2e:frontend        # solo la app web
 npm run test:e2e:dashboard       # solo el panel
@@ -357,13 +379,39 @@ e2e/evidence/
 
 | Proyecto     | Casos | Video |
 | ------------ | ----- | ----- |
-| `backend-api`| 72    | no aplica (servicio sin interfaz) |
+| `backend-api`| 76    | no aplica (servicio sin interfaz) |
 | `frontend`   | 37    | si |
 | `dashboard`  | 14    | si |
 | `landing`    | 6     | si |
-| `mobile-app` | 15    | si |
+| `mobile-app` | 17    | si |
 
 El catalogo completo esta en [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md).
+
+### En la app nativa con Maestro
+
+Playwright prueba la app movil sobre su build web. [Maestro](https://maestro.mobile.dev) la
+maneja en el simulador de iOS, tocando y escribiendo como una persona.
+
+```bash
+# una sola vez (instala tambien OpenJDK)
+brew install mobile-dev-inc/tap/maestro
+
+docker compose up -d --build                  # la pila tiene que estar arriba
+npm --prefix apps/mobile run ios:release      # compila la app (Release) y la instala en el simulador
+npm run test:maestro                          # corre apps/mobile/.maestro/flows
+```
+
+- El build Release lleva el JavaScript adentro: no hace falta Metro. Hay que recompilar despues
+  de cambiar la app.
+- Cada flujo crea su propia cuenta contra la API (`.maestro/scripts/crear-cuenta.js`). Para otra
+  API: `maestro test -e API_URL=https://... .maestro`.
+- `maestro studio` abre un inspector para ver los `testID` de la pantalla y armar flujos nuevos.
+- Si `maestro` no encuentra Java: `export JAVA_HOME=/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home`.
+
+| Flujo | Que comprueba |
+| --- | --- |
+| `01-acceso.yaml` | Credenciales invalidas muestran el error; con las correctas entra a sus listas |
+| `02-listas.yaml` | Crear una lista, agregar un producto y marcarlo como comprado |
 
 ---
 
@@ -374,6 +422,9 @@ El catalogo completo esta en [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md
 ├── docker-compose.yml            Los 8 servicios (entorno de desarrollo)
 ├── docker-compose.prod.yml       Ajustes de produccion (HTTPS, sin puertos de BD, sin Mailpit)
 ├── .env.example                  Todas las variables de entorno
+├── packages/contracts/           Contrato de la API (solo tipos) que comparten backend, web, panel y app
+├── scripts/                      impact.mjs y contract-check.mjs: que se despliega y si rompe algo
+├── .github/workflows/            CI, deploy de servicios y publicacion de la app movil
 ├── apps/
 │   ├── backend/                  NestJS + Fastify + TypeORM + Socket.IO
 │   │   └── src/
@@ -388,6 +439,7 @@ El catalogo completo esta en [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md
 │   │       │   ├── realtime/     Gateway de Socket.IO
 │   │       │   ├── notifications/Avisos web + push de Expo
 │   │       │   ├── admin/        Metricas del dashboard
+│   │       │   ├── compat/       Version minima de la app movil
 │   │       │   └── health/       Salud del servicio
 │   │       ├── common/throttle/  Rate limiting con contadores en Redis
 │   │       └── redis/            Cache, refresh tokens y estado de sesion
@@ -460,4 +512,6 @@ Eventos de WebSocket: `item:created`, `item:updated`, `item:purchased`, `item:re
 ## Documentacion adicional
 
 - [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) — modelo de datos, decisiones y flujos internos.
-- [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 144 casos de prueba, uno por uno.
+- [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 150 casos de prueba, uno por uno.
+- [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md) — que se puede desplegar sin miedo, contrato
+  compartido, version minima de la app y workflows de CI/CD.

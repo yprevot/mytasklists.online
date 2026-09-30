@@ -1,0 +1,90 @@
+# Se ejecuta en cada PR y en cada push a main. No despliega nada: dice que impacto
+# tiene el cambio, bloquea lo que rompe a las apps publicadas y corre las pruebas.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  impact:
+    name: Impacto y contrato
+    runs-on: ubuntu-latest
+    env:
+      # En un PR se compara con la rama destino; en main, con el commit anterior
+      BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Informe de impacto
+        run: node scripts/impact.mjs "$BASE" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: El contrato no rompe a las apps publicadas
+        run: node scripts/contract-check.mjs "$BASE"
+
+  build:
+    name: Tipos y build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --prefix apps/mobile --no-audit --no-fund
+      # Backend, web, panel y app movil contra el mismo contrato
+      - run: npm run typecheck
+      - run: npm run build --workspaces --if-present
+
+  e2e:
+    name: Pruebas e2e
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/mobile/package-lock.json
+      - name: Levantar la pila
+        run: |
+          cp .env.example .env
+          docker compose up -d --build --wait
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --prefix apps/mobile --no-audit --no-fund
+      - run: npm run install:browsers --workspace @lista/e2e
+      - run: npm run test:e2e
+      - name: Logs de la pila
+        if: failure()
+        run: docker compose logs --no-color > compose.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-evidencia
+          path: |
+            e2e/playwright-report
+            e2e/evidence
+            compose.log
+          if-no-files-found: ignore
+          retention-days: 14

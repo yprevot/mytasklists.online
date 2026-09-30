@@ -10,6 +10,7 @@ COPY apps/frontend/package.json  apps/frontend/
 COPY apps/dashboard/package.json apps/dashboard/
 COPY apps/landing/package.json   apps/landing/
 COPY e2e/package.json            e2e/
+COPY packages/contracts           packages/contracts/
 
 # ─────────────── Etapa 2: dependencias + compilacion ───────────────
 FROM manifests AS builder

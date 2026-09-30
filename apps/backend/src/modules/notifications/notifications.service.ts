@@ -10,6 +10,7 @@ import {
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { RT } from '../realtime/realtime.events';
 import { PushService } from './push.service';
+import { toNotificationView } from './notification.mapper';
 
 export interface NotifyInput {
   listId: string;
@@ -87,17 +88,7 @@ export class NotificationsService {
 
     // Pop-up en la web
     for (const notification of saved) {
-      this.realtime.emitToUser(notification.userId, RT.NOTIFICATION, {
-        id: notification.id,
-        type: notification.type,
-        title: notification.title,
-        body: notification.body,
-        listId: notification.listId,
-        itemId: notification.itemId,
-        actorId: notification.actorId,
-        payload: notification.payload,
-        createdAt: notification.createdAt,
-      });
+      this.realtime.emitToUser(notification.userId, RT.NOTIFICATION, toNotificationView(notification));
     }
 
     // Push en iOS/Android

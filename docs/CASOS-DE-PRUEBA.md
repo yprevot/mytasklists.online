@@ -1,6 +1,6 @@
 # Catalogo de casos de prueba
 
-144 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app movil).
+150 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app movil).
 
 Ejecucion completa:
 
@@ -17,7 +17,7 @@ con un indice en `e2e/evidence/INDICE.md`.
 
 ## Servicio `backend` (API REST + WebSocket)
 
-**72 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
+**76 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
 
 ### Servicio backend · salud e infraestructura
 
@@ -160,6 +160,17 @@ Archivo: `e2e/tests/backend/10-seguridad.spec.ts`
 | `CP-SEC-009` | Verificacion en dos pasos: alta, login con codigo, recuperacion y baja |
 | `CP-SEC-010` | La busqueda de personas solo acepta el correo exacto y no expone el WhatsApp |
 | `CP-SEC-011` | La API y las paginas envian cabeceras de seguridad |
+
+### Servicio backend · compatibilidad con versiones de la app
+
+Archivo: `e2e/tests/backend/11-compatibilidad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-COMPAT-001` | La API publica la version minima de la app movil |
+| `CP-COMPAT-002` | Una app por debajo de la minima recibe 426 con un codigo estable |
+| `CP-COMPAT-003` | El corte ocurre antes que la sesion: una app vieja no se manda al login |
+| `CP-COMPAT-004` | La version minima, las posteriores y la web sin cabecera se atienden |
 
 ---
 
@@ -338,7 +349,7 @@ Archivo: `e2e/tests/landing/01-landing.spec.ts`
 
 ## App movil React Native (iOS / Android)
 
-**15 casos.** Cada caso graba un video en `e2e/evidence/mobile-app/`. Se ejecuta sobre el build `react-native-web` de la misma base de codigo.
+**17 casos.** Cada caso graba un video en `e2e/evidence/mobile-app/`. Se ejecuta sobre el build `react-native-web` de la misma base de codigo.
 
 ### App movil · acceso
 
@@ -375,5 +386,14 @@ Archivo: `e2e/tests/mobile/03-tiempo-real.spec.ts`
 | `CP-MOV-012` | Lo que otra persona marca aparece al instante en el telefono |
 | `CP-MOV-013` | Llega el aviso emergente dentro de la app |
 | `CP-MOV-014` | Compartir una lista desde el telefono |
+
+### App movil · compatibilidad con la API
+
+Archivo: `e2e/tests/mobile/04-compatibilidad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-MOV-016` | La app se identifica con su version en cada peticion |
+| `CP-MOV-017` | Una version que ya no es compatible pide actualizar la app |
 
 ---

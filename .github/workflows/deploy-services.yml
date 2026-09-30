@@ -1,0 +1,76 @@
+# Despliega backend, web, panel y landing (Docker) cuando cambian en main. La app
+# movil tiene su propio workflow: un cambio solo en apps/mobile no llega aqui.
+#
+# Configuracion (Settings → Environments → production):
+#   variables: DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH (carpeta del repo en el servidor)
+#   secretos:  DEPLOY_SSH_KEY (clave privada), DEPLOY_KNOWN_HOSTS (ssh-keyscan del servidor)
+# Sin DEPLOY_HOST el workflow no hace nada.
+name: Deploy de servicios
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'apps/mobile/**'
+      - 'docs/**'
+      - 'e2e/**'
+      - '**/*.md'
+      - '.github/workflows/mobile.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-services
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: vars.DEPLOY_HOST != ''
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+
+      # Los cambios que rompen a las apps publicadas no se despliegan solos: hay que
+      # publicar antes la app nueva y subir MOBILE_MIN_VERSION (docs/COMPATIBILIDAD.md).
+      # Una vez coordinado, se lanza a mano con "Run workflow".
+      - name: Solo cambios sin riesgo alto
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          node scripts/impact.mjs "$BEFORE" | tee -a "$GITHUB_STEP_SUMMARY"
+          level=$(node scripts/impact.mjs "$BEFORE" --json | jq -r .level)
+          if [ "$level" = "alto" ]; then
+            echo "::error::Este cambio necesita coordinarse con la app movil. Despliega a mano cuando este listo."
+            exit 1
+          fi
+
+      - name: Preparar SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Desplegar
+        env:
+          HOST: ${{ vars.DEPLOY_HOST }}
+          USER: ${{ vars.DEPLOY_USER }}
+          DIR: ${{ vars.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy "$USER@$HOST" "cd '$DIR' \
+            && git pull --ff-only origin main \
+            && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build --remove-orphans \
+            && docker image prune -f"

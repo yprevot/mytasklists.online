@@ -5,12 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web --port 19006",
     "export:web": "expo export --platform web --output-dir dist",
     "serve:web": "npx --yes http-server dist -p 19006 -c-1 --proxy http://localhost:19006?",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ios:release": "expo run:ios --configuration Release --no-bundler",
+    "test:maestro": "JAVA_HOME=${JAVA_HOME:-/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home} maestro test .maestro"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",
@@ -27,6 +29,7 @@
     "expo-secure-store": "~57.0.4",
     "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
+    "expo-updates": "~57.0.24",
     "expo-web-browser": "~57.0.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",

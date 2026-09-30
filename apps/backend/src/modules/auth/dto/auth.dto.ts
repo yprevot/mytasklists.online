@@ -1,3 +1,15 @@
+import type {
+  ForgotPasswordRequest,
+  LoginRequest,
+  MfaCodeRequest,
+  MfaVerifyRequest,
+  RefreshRequest,
+  RegisterDeviceRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+  SocialTokenRequest,
+  VerifyEmailRequest,
+} from '@lista/contracts';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
@@ -13,7 +25,7 @@ import {
 } from 'class-validator';
 import { DevicePlatform } from '../../../database/entities';
 
-export class RegisterDto {
+export class RegisterDto implements RegisterRequest {
   @ApiProperty({ example: 'Ana Lopez Garcia', description: 'Nombre completo' })
   @IsString()
   @Length(3, 160, { message: 'El nombre completo debe tener entre 3 y 160 caracteres' })
@@ -35,7 +47,7 @@ export class RegisterDto {
   password: string;
 }
 
-export class LoginDto {
+export class LoginDto implements LoginRequest {
   @ApiProperty({ example: 'ana@example.com' })
   @IsEmail({}, { message: 'El correo electronico no es valido' })
   @Transform(({ value }) => String(value ?? '').trim().toLowerCase())
@@ -48,7 +60,7 @@ export class LoginDto {
   password: string;
 }
 
-export class RefreshDto {
+export class RefreshDto implements RefreshRequest {
   @ApiPropertyOptional({
     description: 'Obligatorio salvo en los clientes web, que lo envian en una cookie httpOnly',
   })
@@ -58,21 +70,21 @@ export class RefreshDto {
   refreshToken?: string;
 }
 
-export class VerifyEmailDto {
+export class VerifyEmailDto implements VerifyEmailRequest {
   @ApiProperty({ description: 'Token recibido en el enlace del correo' })
   @IsString()
   @Length(20, 200)
   token: string;
 }
 
-export class ForgotPasswordDto {
+export class ForgotPasswordDto implements ForgotPasswordRequest {
   @ApiProperty({ example: 'ana@example.com' })
   @IsEmail({}, { message: 'El correo electronico no es valido' })
   @Transform(({ value }) => String(value ?? '').trim().toLowerCase())
   email: string;
 }
 
-export class ResetPasswordDto {
+export class ResetPasswordDto implements ResetPasswordRequest {
   @ApiProperty({ description: 'Token recibido en el enlace del correo' })
   @IsString()
   @Length(20, 200)
@@ -85,21 +97,21 @@ export class ResetPasswordDto {
   newPassword: string;
 }
 
-export class MfaCodeDto {
+export class MfaCodeDto implements MfaCodeRequest {
   @ApiProperty({ description: 'Codigo de 6 digitos de la app autenticadora o un codigo de recuperacion' })
   @IsString()
   @Length(6, 20)
   code: string;
 }
 
-export class MfaVerifyDto extends MfaCodeDto {
+export class MfaVerifyDto extends MfaCodeDto implements MfaVerifyRequest {
   @ApiProperty({ description: 'Token del reto que devolvio el login' })
   @IsString()
   @Length(20, 200)
   mfaToken: string;
 }
 
-export class SocialTokenDto {
+export class SocialTokenDto implements SocialTokenRequest {
   @ApiProperty({ description: 'id_token de Google o identityToken de Apple' })
   @IsString()
   @IsNotEmpty()
@@ -116,7 +128,7 @@ export class SocialTokenDto {
   whatsapp?: string;
 }
 
-export class RegisterDeviceDto {
+export class RegisterDeviceDto implements RegisterDeviceRequest {
   @ApiProperty({ example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' })
   @IsString()
   @IsNotEmpty()

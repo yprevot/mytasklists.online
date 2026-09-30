@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { DEV_DEFAULTS } from './configuration';
+import { parseVersion } from '../common/version';
 
 const MIN_SECRET_LENGTH = 32;
 
@@ -10,6 +11,13 @@ const MIN_SECRET_LENGTH = 32;
  */
 export function validateEnv(env: Record<string, unknown>): Record<string, unknown> {
   const value = (key: string): string => String(env[key] ?? '');
+
+  // Un valor ilegible desactivaria el corte de versiones sin avisar
+  const minVersion = value('MOBILE_MIN_VERSION');
+  if (minVersion && !parseVersion(minVersion)) {
+    throw new Error(`MOBILE_MIN_VERSION debe tener la forma x.y.z (recibido: "${minVersion}")`);
+  }
+
   if (value('NODE_ENV') !== 'production') return env;
 
   const errors: string[] = [];

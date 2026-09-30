@@ -24,6 +24,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     let message: string | string[] = 'Ocurrio un error inesperado';
     let error = 'InternalServerError';
+    // Codigo estable y datos extra para que el cliente reaccione sin leer el texto
+    let extra: { code?: unknown; details?: unknown } = {};
 
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
@@ -33,6 +35,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const body = response as Record<string, unknown>;
         message = (body.message as string | string[]) ?? exception.message;
         error = (body.error as string) ?? exception.name;
+        if (body.code !== undefined) extra = { code: body.code, details: body.details };
       }
     } else if (exception instanceof Error) {
       this.logger.error(exception.message, exception.stack);
@@ -42,6 +45,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       statusCode: status,
       error,
       message,
+      ...extra,
       path: request?.url,
       timestamp: new Date().toISOString(),
     });

@@ -18,6 +18,13 @@ export interface RateLimitConfig {
   loginLockMs: number;
 }
 
+/** Compatibilidad con las apps de las tiendas (ver docs/COMPATIBILIDAD.md) */
+export interface MobileConfig {
+  /** Las apps por debajo de esta version reciben 426 y deben actualizarse */
+  minVersion: string;
+  storeUrls: { ios: string | null; android: string | null };
+}
+
 export interface AppConfig {
   env: string;
   isProduction: boolean;
@@ -89,6 +96,7 @@ export interface AppConfig {
   };
   recurrence: { cron: string };
   push: { expoAccessToken?: string };
+  mobile: MobileConfig;
 }
 
 export const DEV_DEFAULTS = {
@@ -209,5 +217,12 @@ export default (): AppConfig => {
     },
     recurrence: { cron: process.env.RECURRENCE_CRON ?? '0 */5 * * * *' },
     push: { expoAccessToken: process.env.EXPO_ACCESS_TOKEN || undefined },
+    mobile: {
+      minVersion: process.env.MOBILE_MIN_VERSION || '1.0.0',
+      storeUrls: {
+        ios: process.env.MOBILE_STORE_URL_IOS || null,
+        android: process.env.MOBILE_STORE_URL_ANDROID || null,
+      },
+    },
   };
 };

@@ -4,6 +4,7 @@
   "private": true,
   "description": "Sistema de listas de compras compartidas con productos recurrentes y sincronizacion en tiempo real",
   "workspaces": [
+    "packages/contracts",
     "apps/backend",
     "apps/frontend",
     "apps/dashboard",
@@ -18,6 +19,9 @@
     "logs": "docker compose logs -f",
     "ps": "docker compose ps",
     "seed": "docker compose exec backend node dist/database/seeds/seed.js",
+    "impact": "node scripts/impact.mjs",
+    "contract:check": "node scripts/contract-check.mjs",
+    "typecheck": "npm run typecheck --workspaces --if-present && npm run typecheck --prefix apps/mobile",
     "test:e2e": "npm run test --workspace e2e",
     "test:e2e:report": "npm run report --workspace e2e",
     "mobile": "npm --prefix apps/mobile run start",
@@ -27,6 +31,7 @@
     "test:e2e:dashboard": "npm run test:dashboard --workspace e2e",
     "test:e2e:landing": "npm run test:landing --workspace e2e",
     "test:e2e:mobile": "npm run test:mobile --workspace e2e",
+    "test:maestro": "npm --prefix apps/mobile run test:maestro",
     "evidence": "npm run evidence --workspace e2e"
   },
   "engines": {
@@ -36,5 +41,8 @@
     "typeorm": {
       "ioredis": "^6.0.0"
     }
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
   }
 }

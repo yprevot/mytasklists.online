@@ -15,5 +15,9 @@ e2e/videos/
 e2e/evidence/
 apps/*/node_modules/
 
+# Proyectos nativos que genera Expo (`expo run:ios|android`); la fuente es app.json
+apps/mobile/ios/
+apps/mobile/android/
+
 # Volcados de base de datos (infra/postgres/upgrade-16-to-18.sh)
 pg16-dump-*.sql

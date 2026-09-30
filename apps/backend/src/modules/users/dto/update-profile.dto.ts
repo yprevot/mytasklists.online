@@ -1,3 +1,4 @@
+import type { ChangePasswordRequest, UpdateProfileRequest } from '@lista/contracts';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -10,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class UpdateProfileDto {
+export class UpdateProfileDto implements UpdateProfileRequest {
   @ApiPropertyOptional({ example: 'Ana Lopez' })
   @IsOptional()
   @IsString()
@@ -34,7 +35,7 @@ export class UpdateProfileDto {
   avatarUrl?: string;
 }
 
-export class ChangePasswordDto {
+export class ChangePasswordDto implements ChangePasswordRequest {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
