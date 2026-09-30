@@ -1,18 +1,32 @@
 import { expect, type Page } from '@playwright/test';
+import { BASE_URL } from './api-helpers';
 
-/** Inyecta una sesion ya iniciada para no repetir el login en cada caso */
+/** Cookie httpOnly en la que cada SPA guarda su refresh token */
+const REFRESH_COOKIE = { lc: 'lc_rt', 'lc.dash': 'lc_dash_rt' } as const;
+
+/**
+ * Inyecta una sesion ya iniciada para no repetir el login en cada caso.
+ * Las SPA guardan el refresh token en una cookie httpOnly (nunca en
+ * localStorage): basta con ponerla en el contexto y la app recupera la sesion
+ * con /auth/refresh al cargar.
+ */
 export async function useSession(
   page: Page,
   tokens: { accessToken: string; refreshToken: string },
-  storagePrefix = 'lc',
+  storagePrefix: keyof typeof REFRESH_COOKIE = 'lc',
 ): Promise<void> {
-  await page.addInitScript(
-    ([prefix, access, refresh]) => {
-      window.localStorage.setItem(`${prefix}.accessToken`, access);
-      window.localStorage.setItem(`${prefix}.refreshToken`, refresh);
+  const { hostname } = new URL(BASE_URL);
+  await page.context().addCookies([
+    {
+      name: REFRESH_COOKIE[storagePrefix],
+      value: tokens.refreshToken,
+      domain: hostname,
+      path: '/api/auth',
+      httpOnly: true,
+      secure: BASE_URL.startsWith('https://'),
+      sameSite: 'Strict',
     },
-    [storagePrefix, tokens.accessToken, tokens.refreshToken] as const,
-  );
+  ]);
 }
 
 /** Login por la interfaz de la aplicacion web */

@@ -1,7 +1,9 @@
+import type { AppNotification } from '@lista/contracts';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { PushService } from './push.service';
+import { toNotificationView } from './notification.mapper';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { RegisterDeviceDto } from '../auth/dto/auth.dto';
@@ -17,8 +19,12 @@ export class NotificationsController {
 
   @Get()
   @ApiOperation({ summary: 'Avisos recibidos por el usuario' })
-  list(@CurrentUser() user: AuthenticatedUser, @Query('unread') unread?: string) {
-    return this.notifications.listForUser(user.id, unread === 'true');
+  async list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('unread') unread?: string,
+  ): Promise<AppNotification[]> {
+    const rows = await this.notifications.listForUser(user.id, unread === 'true');
+    return rows.map(toNotificationView);
   }
 
   @Get('unread-count')

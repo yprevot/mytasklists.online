@@ -6,3 +6,4 @@ export * from './list-invitation.entity';
 export * from './device-token.entity';
 export * from './notification.entity';
 export * from './activity-log.entity';
+export * from './user-identity.entity';

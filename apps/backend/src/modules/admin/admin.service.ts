@@ -211,8 +211,6 @@ export class AdminService {
     const query = this.lists
       .createQueryBuilder('list')
       .leftJoinAndSelect('list.owner', 'owner')
-      .loadRelationCountAndMap('list.memberCount', 'list.members')
-      .loadRelationCountAndMap('list.itemCount', 'list.items')
       .orderBy('list.updatedAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
@@ -224,6 +222,11 @@ export class AdminService {
     }
 
     const [data, total] = await query.getManyAndCount();
+    const ids = data.map((list) => list.id);
+    const [memberCount, itemCount] = await Promise.all([
+      this.countByList(this.members, ids),
+      this.countByList(this.items, ids),
+    ]);
     return {
       data: data.map((list) => ({
         id: list.id,
@@ -233,8 +236,8 @@ export class AdminService {
         isArchived: list.isArchived,
         ownerName: list.owner?.fullName ?? '—',
         ownerEmail: list.owner?.email ?? '—',
-        memberCount: (list as unknown as { memberCount: number }).memberCount ?? 0,
-        itemCount: (list as unknown as { itemCount: number }).itemCount ?? 0,
+        memberCount: memberCount.get(list.id) ?? 0,
+        itemCount: itemCount.get(list.id) ?? 0,
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,
       })),
@@ -243,5 +246,21 @@ export class AdminService {
       limit,
       pages: Math.max(1, Math.ceil(total / limit)),
     };
+  }
+
+  /** Cuenta filas por lista (integrantes o productos) de una pagina de listas */
+  private async countByList(
+    repo: Repository<ListMember> | Repository<ListItem>,
+    listIds: string[],
+  ): Promise<Map<string, number>> {
+    if (!listIds.length) return new Map();
+    const rows = await (repo as Repository<ListMember>)
+      .createQueryBuilder('row')
+      .select('row.listId', 'listId')
+      .addSelect('COUNT(*)', 'count')
+      .where('row.listId IN (:...listIds)', { listIds })
+      .groupBy('row.listId')
+      .getRawMany<{ listId: string; count: string }>();
+    return new Map(rows.map((row) => [row.listId, Number(row.count)]));
   }
 }

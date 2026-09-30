@@ -1,3 +1,4 @@
+import type { CreateItemRequest, ReorderItemsRequest, UpdateItemRequest } from '@lista/contracts';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -14,7 +15,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-export class CreateItemDto {
+export class CreateItemDto implements CreateItemRequest {
   @ApiProperty({ example: 'Pan de caja' })
   @IsString()
   @Length(1, 140)
@@ -63,7 +64,7 @@ export class CreateItemDto {
   recurrenceDays?: number;
 }
 
-export class UpdateItemDto {
+export class UpdateItemDto implements UpdateItemRequest {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -110,7 +111,7 @@ export class UpdateItemDto {
   recurrenceDays?: number | null;
 }
 
-export class ReorderItemsDto {
+export class ReorderItemsDto implements ReorderItemsRequest {
   @ApiProperty({ type: [String], description: 'Ids de los productos en el orden deseado' })
   @IsArray()
   @IsUUID('4', { each: true })

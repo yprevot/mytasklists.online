@@ -1,3 +1,4 @@
+import type { ServerEvents } from '@lista/contracts';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -15,6 +16,15 @@ import { RT } from '../realtime/realtime.events';
 import { NotificationsService } from '../notifications/notifications.service';
 import { addDays, ItemView, toItemView } from './item.mapper';
 import { CreateItemDto, ReorderItemsDto, UpdateItemDto } from './dto/item.dto';
+
+/** Eventos que avisan de un cambio dentro de una lista */
+type ListChangeEvent =
+  | 'item:created'
+  | 'item:updated'
+  | 'item:purchased'
+  | 'item:restored'
+  | 'item:removed'
+  | 'list:updated';
 
 @Injectable()
 export class ItemsService {
@@ -45,14 +55,14 @@ export class ItemsService {
     return user?.fullName ?? 'Alguien';
   }
 
-  private async afterChange(
+  private async afterChange<E extends ListChangeEvent>(
     listId: string,
-    event: string,
-    payload: Record<string, unknown>,
+    event: E,
+    payload: Omit<ServerEvents[E], 'listId'>,
   ): Promise<void> {
     await this.listsService.invalidate(listId);
     await this.listsService.touch(listId);
-    this.realtime.emitToList(listId, event, { listId, ...payload });
+    this.realtime.emitToList(listId, event, { listId, ...payload } as ServerEvents[E]);
   }
 
   private async log(entry: Partial<ActivityLog>): Promise<void> {

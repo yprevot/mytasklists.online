@@ -1,17 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Card } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { usePush } from '../context/PushContext';
 import { useSocket } from '../context/SocketContext';
+import { authApi } from '../api/endpoints';
+import { ApiError } from '../api/client';
 import { colors, spacing } from '../theme';
 
 export function SettingsScreen() {
   const { user, logout } = useAuth();
   const { connected } = useSocket();
   const { pushToken, permission } = usePush();
+  const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
 
   if (!user) return null;
+
+  const resendVerification = async () => {
+    try {
+      await authApi.resendVerification();
+      setVerifyNotice('Te reenviamos el enlace de confirmacion.');
+    } catch (err) {
+      setVerifyNotice(err instanceof ApiError ? err.message : 'No se pudo reenviar el enlace');
+    }
+  };
 
   return (
     <ScrollView
@@ -27,6 +39,8 @@ export function SettingsScreen() {
         <View style={styles.divider} />
 
         <Row label="Metodo de registro" value={user.provider} />
+        <Row label="Correo" value={user.emailVerified ? 'confirmado' : 'sin confirmar'} />
+        <Row label="Verificacion en dos pasos" value={user.mfaEnabled ? 'activa' : 'inactiva'} />
         <Row label="Conexion en vivo" value={connected ? 'activa' : 'sin conexion'} />
         <Row
           label="Notificaciones push"
@@ -35,6 +49,26 @@ export function SettingsScreen() {
           }
         />
       </Card>
+
+      {!user.emailVerified ? (
+        <Card style={{ marginTop: spacing.lg }}>
+          <Text style={styles.meta}>
+            Confirma tu correo con el enlace que te enviamos para proteger tu cuenta.
+          </Text>
+          {verifyNotice ? (
+            <Text style={[styles.meta, { marginTop: spacing.sm }]} testID="verify-notice">
+              {verifyNotice}
+            </Text>
+          ) : null}
+          <Button
+            title="Reenviar enlace"
+            variant="ghost"
+            onPress={resendVerification}
+            testID="verify-resend"
+            style={{ marginTop: spacing.md }}
+          />
+        </Card>
+      ) : null}
 
       <Button
         title="Cerrar sesion"

@@ -6,6 +6,7 @@ const NAV = [
   { to: '/users', label: 'Usuarios', icon: 'bi-people' },
   { to: '/lists', label: 'Listas', icon: 'bi-card-checklist' },
   { to: '/activity', label: 'Bitacora', icon: 'bi-clock-history' },
+  { to: '/security', label: 'Seguridad', icon: 'bi-shield-lock' },
 ];
 
 export function Layout() {

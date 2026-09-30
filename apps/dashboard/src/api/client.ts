@@ -1,21 +1,30 @@
 const API_URL = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
-const STORAGE = { access: 'lc.dash.accessToken', refresh: 'lc.dash.refreshToken' };
+/**
+ * Igual que la app web: access token en memoria y refresh token en una cookie
+ * httpOnly propia del panel (`X-Auth-Client: dashboard`), distinta de la de la
+ * app para que entrar en uno no abra sesion en el otro.
+ */
+const CLIENT_HEADERS = { 'X-Auth-Client': 'dashboard' };
+
+let accessToken: string | null = null;
+
+try {
+  localStorage.removeItem('lc.dash.accessToken');
+  localStorage.removeItem('lc.dash.refreshToken');
+} catch {
+  /* almacenamiento no disponible */
+}
 
 export const tokenStore = {
   get access() {
-    return localStorage.getItem(STORAGE.access);
+    return accessToken;
   },
-  get refresh() {
-    return localStorage.getItem(STORAGE.refresh);
-  },
-  save(access: string, refresh: string) {
-    localStorage.setItem(STORAGE.access, access);
-    localStorage.setItem(STORAGE.refresh, refresh);
+  save(token: string) {
+    accessToken = token;
   },
   clear() {
-    localStorage.removeItem(STORAGE.access);
-    localStorage.removeItem(STORAGE.refresh);
+    accessToken = null;
   },
 };
 
@@ -31,22 +40,26 @@ export class ApiError extends Error {
 
 let refreshing: Promise<boolean> | null = null;
 
-async function refreshTokens(): Promise<boolean> {
-  if (refreshing) return refreshing;
-  const refreshToken = tokenStore.refresh;
-  if (!refreshToken) return false;
+async function callRefresh(): Promise<boolean> {
+  const response = await fetch(`${API_URL}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...CLIENT_HEADERS },
+    body: '{}',
+  });
+  if (!response.ok) return false;
+  const data = await response.json();
+  tokenStore.save(data.accessToken);
+  return true;
+}
 
+/** Renueva con la cookie; Web Locks evita que dos pestanas roten a la vez */
+export async function refreshSession(): Promise<boolean> {
+  if (refreshing) return refreshing;
   refreshing = (async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
-      if (!response.ok) return false;
-      const data = await response.json();
-      tokenStore.save(data.accessToken, data.refreshToken);
-      return true;
+      const locks = (navigator as Navigator & { locks?: LockManager }).locks;
+      return locks ? await locks.request('lc-dash-refresh', callRefresh) : await callRefresh();
     } catch {
       return false;
     } finally {
@@ -66,6 +79,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   const { body, auth = true, retry = true, headers, ...rest } = options;
   const finalHeaders: Record<string, string> = {
     Accept: 'application/json',
+    ...CLIENT_HEADERS,
     ...((headers as Record<string, string>) ?? {}),
   };
   if (body !== undefined) finalHeaders['Content-Type'] = 'application/json';
@@ -73,12 +87,13 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
 
   const response = await fetch(`${API_URL}${path}`, {
     ...rest,
+    credentials: 'same-origin',
     headers: finalHeaders,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
   if (response.status === 401 && auth && retry) {
-    if (await refreshTokens()) return request<T>(path, { ...options, retry: false });
+    if (await refreshSession()) return request<T>(path, { ...options, retry: false });
     tokenStore.clear();
     throw new ApiError('Tu sesion expiro', 401);
   }

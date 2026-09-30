@@ -1,11 +1,11 @@
 # Catalogo de casos de prueba
 
-127 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app movil).
+150 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app movil).
 
 Ejecucion completa:
 
 ```bash
-docker compose up -d --build      # la pila debe estar arriba
+docker compose up -d --build      # la pila debe estar arriba (incluye Mailpit en :8025)
 npm run test:e2e                  # ejecuta los 5 proyectos
 npm run test:e2e:report           # abre el informe HTML
 ```
@@ -17,7 +17,7 @@ con un indice en `e2e/evidence/INDICE.md`.
 
 ## Servicio `backend` (API REST + WebSocket)
 
-**61 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
+**76 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
 
 ### Servicio backend · salud e infraestructura
 
@@ -143,11 +143,40 @@ Archivo: `e2e/tests/backend/09-cache-y-perfil.spec.ts`
 | `CP-PERF-003` | La busqueda de personas ayuda a compartir listas |
 | `CP-CACHE-001` | La cache de la lista se invalida al cambiar un producto |
 
+### Servicio backend · seguridad de la cuenta
+
+Archivo: `e2e/tests/backend/10-seguridad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-SEC-001` | El registro envia un correo de verificacion y el enlace (de un solo uso) confirma la cuenta |
+| `CP-SEC-002` | Recuperar la contrasena cambia la clave y cierra todas las sesiones |
+| `CP-SEC-003` | Recuperar contrasena no revela si el correo existe |
+| `CP-SEC-004` | El login no revela si la cuenta existe ni con que proveedor se creo |
+| `CP-SEC-005` | Demasiados intentos fallidos bloquean temporalmente el correo (429) |
+| `CP-SEC-006` | Cambiar la contrasena revoca los tokens anteriores y devuelve un par nuevo |
+| `CP-SEC-007` | Desactivar una cuenta corta su access token al instante |
+| `CP-SEC-008` | En clientes web el refresh token viaja en una cookie httpOnly |
+| `CP-SEC-009` | Verificacion en dos pasos: alta, login con codigo, recuperacion y baja |
+| `CP-SEC-010` | La busqueda de personas solo acepta el correo exacto y no expone el WhatsApp |
+| `CP-SEC-011` | La API y las paginas envian cabeceras de seguridad |
+
+### Servicio backend · compatibilidad con versiones de la app
+
+Archivo: `e2e/tests/backend/11-compatibilidad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-COMPAT-001` | La API publica la version minima de la app movil |
+| `CP-COMPAT-002` | Una app por debajo de la minima recibe 426 con un codigo estable |
+| `CP-COMPAT-003` | El corte ocurre antes que la sesion: una app vieja no se manda al login |
+| `CP-COMPAT-004` | La version minima, las posteriores y la web sin cabecera se atienden |
+
 ---
 
 ## Servicio `frontend` (aplicacion web de usuarios)
 
-**33 casos.** Cada caso graba un video en `e2e/evidence/frontend/`.
+**37 casos.** Cada caso graba un video en `e2e/evidence/frontend/`.
 
 ### Frontend web · registro de usuarios
 
@@ -231,11 +260,22 @@ Archivo: `e2e/tests/frontend/07-cuenta.spec.ts`
 | `CP-WEB-032` | Cambiar la contrasena desde la interfaz |
 | `CP-WEB-033` | El indicador de conexion en vivo se enciende |
 
+### Frontend web · seguridad de la cuenta
+
+Archivo: `e2e/tests/frontend/08-seguridad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-WEB-034` | Recuperar la contrasena desde la interfaz (enlace leido de Mailpit) |
+| `CP-WEB-035` | El enlace del correo confirma la cuenta y quita el aviso |
+| `CP-WEB-036` | La sesion no queda en localStorage sino en una cookie httpOnly |
+| `CP-WEB-037` | Con verificacion en dos pasos el login pide el codigo |
+
 ---
 
 ## Servicio `dashboard` (panel de administracion)
 
-**13 casos.** Cada caso graba un video en `e2e/evidence/dashboard/`.
+**14 casos.** Cada caso graba un video en `e2e/evidence/dashboard/`.
 
 ### Dashboard · acceso restringido
 
@@ -278,6 +318,14 @@ Archivo: `e2e/tests/dashboard/04-bitacora.spec.ts`
 | `CP-DASH-012` | Las acciones sobre las listas quedan registradas |
 | `CP-DASH-013` | La navegacion lateral recorre las cuatro secciones |
 
+### Dashboard · seguridad de la cuenta de administracion
+
+Archivo: `e2e/tests/dashboard/05-seguridad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-DASH-014` | La pagina de seguridad muestra el estado de 2FA y genera el QR |
+
 ---
 
 ## Servicio `landing` (pagina publica de descargas)
@@ -301,7 +349,7 @@ Archivo: `e2e/tests/landing/01-landing.spec.ts`
 
 ## App movil React Native (iOS / Android)
 
-**14 casos.** Cada caso graba un video en `e2e/evidence/mobile-app/`. Se ejecuta sobre el build `react-native-web` de la misma base de codigo.
+**17 casos.** Cada caso graba un video en `e2e/evidence/mobile-app/`. Se ejecuta sobre el build `react-native-web` de la misma base de codigo.
 
 ### App movil · acceso
 
@@ -315,6 +363,7 @@ Archivo: `e2e/tests/mobile/01-acceso.spec.ts`
 | `CP-MOV-004` | Credenciales invalidas muestran el error |
 | `CP-MOV-005` | Se ofrece inicio de sesion con Google y Apple |
 | `CP-MOV-006` | Cerrar sesion desde mi cuenta |
+| `CP-MOV-015` | Recuperar la contrasena desde el telefono |
 
 ### App movil · listas y recurrencia
 
@@ -337,5 +386,14 @@ Archivo: `e2e/tests/mobile/03-tiempo-real.spec.ts`
 | `CP-MOV-012` | Lo que otra persona marca aparece al instante en el telefono |
 | `CP-MOV-013` | Llega el aviso emergente dentro de la app |
 | `CP-MOV-014` | Compartir una lista desde el telefono |
+
+### App movil · compatibilidad con la API
+
+Archivo: `e2e/tests/mobile/04-compatibilidad.spec.ts`
+
+| Caso | Que se comprueba |
+| --- | --- |
+| `CP-MOV-016` | La app se identifica con su version en cada peticion |
+| `CP-MOV-017` | Una version que ya no es compatible pide actualizar la app |
 
 ---

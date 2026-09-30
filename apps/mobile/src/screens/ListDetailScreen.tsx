@@ -64,14 +64,14 @@ export function ListDetailScreen({ route, navigation }: any) {
     [listId, load],
   );
 
-  useSocketEvent<{ listId: string }>('item:created', onEvent);
-  useSocketEvent<{ listId: string }>('item:updated', onEvent);
-  useSocketEvent<{ listId: string }>('item:purchased', onEvent);
-  useSocketEvent<{ listId: string }>('item:restored', onEvent);
-  useSocketEvent<{ listId: string }>('item:removed', onEvent);
-  useSocketEvent<{ listId: string }>('item:reactivated', onEvent);
-  useSocketEvent<{ listId: string }>('item:overdue', onEvent);
-  useSocketEvent<{ listId: string }>('list:updated', onEvent);
+  useSocketEvent('item:created', onEvent);
+  useSocketEvent('item:updated', onEvent);
+  useSocketEvent('item:purchased', onEvent);
+  useSocketEvent('item:restored', onEvent);
+  useSocketEvent('item:removed', onEvent);
+  useSocketEvent('item:reactivated', onEvent);
+  useSocketEvent('item:overdue', onEvent);
+  useSocketEvent('list:updated', onEvent);
 
   const guard = async (action: () => Promise<unknown>) => {
     setBusy(true);

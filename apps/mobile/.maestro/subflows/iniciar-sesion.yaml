@@ -1,0 +1,24 @@
+# Entra con la cuenta que dejo scripts/crear-cuenta.js en output.cuenta
+appId: com.listadecompras.app
+---
+- tapOn:
+    id: login-email
+- inputText: ${output.cuenta.email}
+- tapOn:
+    id: login-password
+- inputText: ${output.cuenta.password}
+- hideKeyboard
+- tapOn:
+    id: login-submit
+- runFlow:
+    when:
+      platform: iOS
+    # iOS ofrece guardar la contrasena en un dialogo del sistema que tapa la app
+    commands:
+      - tapOn:
+          text: Ahora no|Not Now
+          optional: true
+- extendedWaitUntil:
+    visible:
+      id: lists-screen
+    timeout: 20000

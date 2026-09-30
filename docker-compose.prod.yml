@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────
+#  Ajustes de PRODUCCION sobre docker-compose.yml:
+#
+#    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+#  - NODE_ENV=production: el backend se niega a arrancar con secretos de
+#    desarrollo, sin contrasena de Redis o con RUN_SEED activo.
+#  - Postgres y Redis dejan de publicarse en el host.
+#  - nginx sirve HTTPS (80 → 443) con HSTS y limites por IP en /api/auth/.
+#  - Mailpit no arranca: define SMTP_HOST/SMTP_USER/SMTP_PASSWORD de tu proveedor.
+#
+#  Certificados: coloca fullchain.pem y privkey.pem en infra/nginx/certs/
+#  (por ejemplo, generados con certbot). Ver "Despliegue en produccion" en el README.
+# ─────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  mailpit:
+    profiles: ["dev"]
+
+  backend:
+    environment:
+      NODE_ENV: production
+      RUN_SEED: "false"
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
+      ALLOW_TIME_TRAVEL: "false"
+      SMTP_HOST: ${SMTP_HOST:?Define SMTP_HOST con el servidor SMTP de tu proveedor de correo}
+      SMTP_PORT: ${SMTP_PORT:-587}
+
+  nginx:
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/snippets:/etc/nginx/snippets:ro
+      - ./infra/nginx/prod:/etc/nginx/conf.d:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+      - ./infra/nginx/acme:/var/www/acme:ro
+    ports: !override
+      - "80:80"
+      - "443:443"

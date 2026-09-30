@@ -1,3 +1,4 @@
+import type { ClientEvents, ServerEventName, ServerEvents } from '@lista/contracts';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +20,8 @@ import { Server, Socket } from 'socket.io';
 import { ListMember } from '../../database/entities';
 import { JwtPayload } from '../../common/types';
 import { REDIS_CLIENT, REDIS_SUBSCRIBER } from '../../redis/redis.constants';
+import { AuthStateService } from '../../redis/auth-state.service';
+import configuration from '../../config/configuration';
 import { listRoom, RT, userRoom } from './realtime.events';
 
 interface AuthedSocket extends Socket {
@@ -36,8 +39,14 @@ interface AuthedSocket extends Socket {
  * El adaptador de Redis permite escalar el backend a varias replicas sin perder
  * eventos entre ellas.
  */
+/** Mismos origenes que la API REST (CORS_ORIGINS); sin cabecera Origin = app nativa */
+const allowOrigin = (origin: string | undefined, callback: (err: Error | null, ok?: boolean) => void) => {
+  const origins = configuration().corsOrigins;
+  callback(null, !origin || origins.includes(origin) || origins.includes('*'));
+};
+
 @WebSocketGateway({
-  cors: { origin: true, credentials: true },
+  cors: { origin: allowOrigin, credentials: true },
   transports: ['websocket', 'polling'],
 })
 export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -52,6 +61,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     @InjectRepository(ListMember) private readonly members: Repository<ListMember>,
     @Inject(REDIS_CLIENT) private readonly pub: Redis,
     @Inject(REDIS_SUBSCRIBER) private readonly sub: Redis,
+    private readonly authState: AuthStateService,
   ) {}
 
   afterInit(server: Server): void {
@@ -71,6 +81,10 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
           secret: this.config.get<string>('jwt.accessSecret'),
         });
+        if (payload.type !== 'access') return next(new Error('Tipo de token invalido'));
+        if (!(await this.authState.isTokenAllowed(payload.sub, payload.sv))) {
+          return next(new Error('La sesion ya no es valida'));
+        }
         const authed = socket as AuthedSocket;
         authed.userId = payload.sub;
         authed.email = payload.email;
@@ -110,7 +124,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       userId: client.userId,
       lists: memberships.map((m) => m.listId),
       serverTime: new Date().toISOString(),
-    });
+    } satisfies ServerEvents['connected']);
     this.logger.debug(`Conectado ${client.email} (${memberships.length} listas)`);
   }
 
@@ -121,7 +135,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   @SubscribeMessage(RT.JOIN)
   async onJoin(
     @ConnectedSocket() client: AuthedSocket,
-    @MessageBody() body: { listId: string },
+    @MessageBody() body: ClientEvents['list:join'],
   ): Promise<{ ok: boolean; listId?: string; error?: string }> {
     if (!client.userId || !body?.listId) return { ok: false, error: 'Peticion invalida' };
     const member = await this.members.findOne({
@@ -133,25 +147,25 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       listId: body.listId,
       userId: client.userId,
       status: 'online',
-    });
+    } satisfies ServerEvents['list:presence']);
     return { ok: true, listId: body.listId };
   }
 
   @SubscribeMessage(RT.LEAVE)
   async onLeave(
     @ConnectedSocket() client: AuthedSocket,
-    @MessageBody() body: { listId: string },
+    @MessageBody() body: ClientEvents['list:leave'],
   ): Promise<{ ok: boolean }> {
     if (body?.listId) await client.leave(listRoom(body.listId));
     return { ok: true };
   }
 
   // ── API interna usada por los servicios de dominio ──────────────────
-  emitToList(listId: string, event: string, payload: unknown): void {
+  emitToList<E extends ServerEventName>(listId: string, event: E, payload: ServerEvents[E]): void {
     this.server?.to(listRoom(listId)).emit(event, payload);
   }
 
-  emitToUser(userId: string, event: string, payload: unknown): void {
+  emitToUser<E extends ServerEventName>(userId: string, event: E, payload: ServerEvents[E]): void {
     this.server?.to(userRoom(userId)).emit(event, payload);
   }
 
@@ -164,5 +178,10 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   async removeUserFromListRoom(userId: string, listId: string): Promise<void> {
     const sockets = await this.server?.in(userRoom(userId)).fetchSockets();
     await Promise.all((sockets ?? []).map((socket) => socket.leave(listRoom(listId))));
+  }
+
+  /** Corta todas las conexiones de un usuario (cuenta desactivada o sesiones revocadas) */
+  async disconnectUser(userId: string): Promise<void> {
+    this.server?.in(userRoom(userId)).disconnectSockets(true);
   }
 }

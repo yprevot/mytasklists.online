@@ -3,14 +3,10 @@
     "name": "ListaDeCompras",
     "slug": "listadecompras",
     "version": "1.0.0",
+    "runtimeVersion": { "policy": "fingerprint" },
     "orientation": "portrait",
     "scheme": "listadecompras",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#2563eb",
-      "resizeMode": "contain"
-    },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
@@ -34,6 +30,14 @@
     },
     "plugins": [
       "expo-apple-authentication",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2563eb",
+          "resizeMode": "contain"
+        }
+      ],
       [
         "expo-notifications",
         {
@@ -44,6 +48,9 @@
     "extra": {
       "apiUrl": "http://localhost:8080/api",
       "socketUrl": "http://localhost:8080",
+      "googleIosClientId": "",
+      "googleAndroidClientId": "",
+      "googleWebClientId": "",
       "eas": {
         "projectId": "00000000-0000-0000-0000-000000000000"
       }

@@ -4,8 +4,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { AccountController } from './account.controller';
 import { TokenService } from './token.service';
 import { OAuthService } from './oauth.service';
+import { MfaService } from './mfa.service';
+import { AuthCookieService } from './auth-cookie.service';
 
 @Module({
   imports: [
@@ -19,8 +22,8 @@ import { OAuthService } from './oauth.service';
       }),
     }),
   ],
-  providers: [AuthService, TokenService, OAuthService],
-  controllers: [AuthController],
-  exports: [AuthService, TokenService, JwtModule],
+  providers: [AuthService, TokenService, OAuthService, MfaService, AuthCookieService],
+  controllers: [AuthController, AccountController],
+  exports: [AuthService, TokenService, MfaService, JwtModule],
 })
 export class AuthModule {}

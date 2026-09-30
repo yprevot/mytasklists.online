@@ -1,21 +1,12 @@
-import { User } from '../../database/entities';
+import type { PublicProfile, User } from '@lista/contracts';
+import { User as UserEntity } from '../../database/entities';
 
-export interface PublicUser {
-  id: string;
-  fullName: string;
-  email: string;
-  whatsapp: string | null;
-  avatarUrl: string | null;
-  provider: string;
-  role: string;
-  notificationsEnabled: boolean;
-  emailVerified: boolean;
-  isActive: boolean;
-  createdAt: Date;
-}
+// Las formas publicas viven en el contrato compartido con los clientes
+export type PublicUser = User;
+export type { PublicProfile };
 
-/** Nunca exponemos el hash de la contrasena al cliente */
-export const toPublicUser = (user: User): PublicUser => ({
+/** Nunca exponemos el hash de la contrasena ni el secreto de 2FA al cliente */
+export const toPublicUser = (user: UserEntity, extra: { hasPassword?: boolean } = {}): PublicUser => ({
   id: user.id,
   fullName: user.fullName,
   email: user.email,
@@ -25,6 +16,15 @@ export const toPublicUser = (user: User): PublicUser => ({
   role: user.role,
   notificationsEnabled: user.notificationsEnabled,
   emailVerified: user.emailVerified,
+  mfaEnabled: Boolean(user.totpEnabled),
   isActive: user.isActive,
-  createdAt: user.createdAt,
+  createdAt: new Date(user.createdAt).toISOString(),
+  ...(extra.hasPassword === undefined ? {} : { hasPassword: extra.hasPassword }),
+});
+
+export const toPublicProfile = (user: UserEntity): PublicProfile => ({
+  id: user.id,
+  fullName: user.fullName,
+  email: user.email,
+  avatarUrl: user.avatarUrl ?? null,
 });

@@ -8,7 +8,8 @@ import React, {
   type ReactNode,
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import { SOCKET_URL } from '../api/client';
+import type { ServerEventName, ServerEvents } from '@lista/contracts';
+import { SOCKET_URL, tokens } from '../api/client';
 import { useAuth } from './AuthContext';
 
 interface Value {
@@ -37,7 +38,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const socket = io(SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket'],
-      auth: { token: accessToken },
+      // Funcion: cada reconexion usa el access token vigente (rota cada 15 min)
+      auth: (callback) => callback({ token: tokens.access ?? accessToken }),
       reconnection: true,
     });
     socket.on('connect', () => setConnected(true));
@@ -61,17 +63,21 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
 export const useSocket = (): Value => useContext(SocketContext);
 
-export function useSocketEvent<T>(event: string, handler: (payload: T) => void): void {
+/** El nombre del evento y la forma de su payload salen del contrato compartido */
+export function useSocketEvent<E extends ServerEventName>(
+  event: E,
+  handler: (payload: ServerEvents[E]) => void,
+): void {
   const { socket } = useSocket();
   const ref = useRef(handler);
   ref.current = handler;
 
   useEffect(() => {
     if (!socket) return;
-    const listener = (payload: T) => ref.current(payload);
-    socket.on(event, listener);
+    const listener = (payload: ServerEvents[E]) => ref.current(payload);
+    socket.on(event as string, listener);
     return () => {
-      socket.off(event, listener);
+      socket.off(event as string, listener);
     };
   }, [socket, event]);
 }

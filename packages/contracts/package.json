@@ -1,0 +1,13 @@
+{
+  "name": "@lista/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Contrato entre el backend y sus clientes (web, panel y app movil). Solo tipos: no genera codigo en tiempo de ejecucion.",
+  "license": "UNLICENSED",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts"
+    }
+  }
+}

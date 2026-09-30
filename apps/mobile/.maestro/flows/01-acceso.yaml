@@ -1,0 +1,29 @@
+appId: com.listadecompras.app
+name: Acceso · credenciales invalidas e inicio de sesion
+env:
+  API_URL: http://localhost:8080/api
+---
+- runScript: ../scripts/crear-cuenta.js
+- runFlow: ../subflows/abrir-sin-sesion.yaml
+
+# Con la contrasena equivocada se queda en el login y lo explica
+- tapOn:
+    id: login-email
+- inputText: ${output.cuenta.email}
+- tapOn:
+    id: login-password
+- inputText: ClaveEquivocada99
+- hideKeyboard
+- tapOn:
+    id: login-submit
+- extendedWaitUntil:
+    visible:
+      id: login-error
+    timeout: 10000
+- assertNotVisible:
+    id: lists-screen
+
+# Con la correcta entra a sus listas
+- runFlow: ../subflows/abrir-sin-sesion.yaml
+- runFlow: ../subflows/iniciar-sesion.yaml
+- takeScreenshot: acceso-mis-listas

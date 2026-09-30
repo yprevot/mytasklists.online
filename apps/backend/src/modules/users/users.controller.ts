@@ -3,8 +3,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
-import { ChangePasswordDto, UpdateProfileDto } from './dto/update-profile.dto';
-import { toPublicUser } from './user.mapper';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { toPublicProfile, toPublicUser } from './user.mapper';
 
 @ApiTags('usuarios')
 @ApiBearerAuth()
@@ -15,7 +15,11 @@ export class UsersController {
   @Get('me')
   @ApiOperation({ summary: 'Perfil del usuario autenticado' })
   async me(@CurrentUser() current: AuthenticatedUser) {
-    return toPublicUser(await this.users.findById(current.id));
+    const [user, hasPassword] = await Promise.all([
+      this.users.findById(current.id),
+      this.users.hasPassword(current.id),
+    ]);
+    return toPublicUser(user, { hasPassword });
   }
 
   @Patch('me')
@@ -24,20 +28,15 @@ export class UsersController {
     return toPublicUser(await this.users.updateProfile(current.id, dto));
   }
 
-  @Patch('me/password')
-  @ApiOperation({ summary: 'Cambia la contrasena' })
-  async changePassword(
-    @CurrentUser() current: AuthenticatedUser,
-    @Body() dto: ChangePasswordDto,
-  ) {
-    await this.users.changePassword(current.id, dto);
-    return { ok: true };
-  }
+  // El cambio de contrasena vive en AuthModule (AccountController) porque
+  // tambien revoca las sesiones y emite un par de tokens nuevo.
 
   @Get('search')
-  @ApiOperation({ summary: 'Busca personas para compartir una lista' })
+  @ApiOperation({
+    summary: 'Busca a una persona por su correo exacto para compartir una lista',
+  })
   async search(@CurrentUser() current: AuthenticatedUser, @Query('q') q: string) {
-    const results = await this.users.search(q ?? '', current.id);
-    return results.map(toPublicUser);
+    const results = await this.users.searchByExactEmail(q ?? '', current.id);
+    return results.map(toPublicProfile);
   }
 }

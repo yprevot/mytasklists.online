@@ -1,0 +1,4 @@
+# Flujos de Maestro sobre la app nativa (simulador de iOS o emulador de Android).
+# La pila de Docker tiene que estar arriba. Ver README → "Pruebas en la app nativa".
+flows:
+  - flows/*

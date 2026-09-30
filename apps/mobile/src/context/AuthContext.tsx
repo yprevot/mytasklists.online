@@ -9,21 +9,26 @@ import React, {
 } from 'react';
 import { onSessionExpired, tokens } from '../api/client';
 import { authApi } from '../api/endpoints';
-import type { User } from '../types';
+import type { AuthResponse, LoginResponse, User } from '../types';
+
+/** Sesion iniciada o reto de 2FA pendiente */
+export type LoginStep = { status: 'done' } | { status: 'mfa'; mfaToken: string };
 
 interface Value {
   user: User | null;
   accessToken: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginStep>;
+  verifyMfa: (mfaToken: string, code: string) => Promise<void>;
   register: (payload: {
     fullName: string;
     email: string;
     whatsapp: string;
     password: string;
   }) => Promise<void>;
-  loginWithGoogle: (idToken: string) => Promise<void>;
-  loginWithApple: (identityToken: string, fullName?: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<LoginStep>;
+  loginWithApple: (identityToken: string, fullName?: string) => Promise<LoginStep>;
+  refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -67,13 +72,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const adopt = useCallback(
-    async (result: { accessToken: string; refreshToken: string; user: User }) => {
-      await tokens.save(result.accessToken, result.refreshToken);
-      setAccessToken(result.accessToken);
-      setUser(result.user);
+  const adopt = useCallback(async (result: AuthResponse) => {
+    await tokens.save(result.accessToken, result.refreshToken);
+    setAccessToken(result.accessToken);
+    setUser(result.user);
+  }, []);
+
+  const handle = useCallback(
+    async (result: LoginResponse): Promise<LoginStep> => {
+      if ('mfaRequired' in result) return { status: 'mfa', mfaToken: result.mfaToken };
+      await adopt(result);
+      return { status: 'done' };
     },
-    [],
+    [adopt],
   );
 
   const value = useMemo<Value>(
@@ -81,11 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       accessToken,
       loading,
-      login: async (email, password) => adopt(await authApi.login(email, password)),
+      login: async (email, password) => handle(await authApi.login(email, password)),
+      verifyMfa: async (mfaToken, code) => adopt(await authApi.verifyMfa(mfaToken, code)),
       register: async (payload) => adopt(await authApi.register(payload)),
-      loginWithGoogle: async (idToken) => adopt(await authApi.google(idToken)),
+      loginWithGoogle: async (idToken) => handle(await authApi.google(idToken)),
       loginWithApple: async (identityToken, fullName) =>
-        adopt(await authApi.apple(identityToken, fullName)),
+        handle(await authApi.apple(identityToken, fullName)),
+      refreshUser: async () => setUser(await authApi.me()),
       logout: async () => {
         try {
           await authApi.logout(tokens.refresh);
@@ -96,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clear();
       },
     }),
-    [user, accessToken, loading, adopt, clear],
+    [user, accessToken, loading, adopt, handle, clear],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

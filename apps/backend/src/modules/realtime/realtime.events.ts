@@ -1,3 +1,5 @@
+import type { ClientEventName, ServerEventName } from '@lista/contracts';
+
 /** Nombres de los eventos que viajan por WebSocket entre el backend y los clientes */
 export const RT = {
   // servidor → cliente
@@ -18,7 +20,7 @@ export const RT = {
   // cliente → servidor
   JOIN: 'list:join',
   LEAVE: 'list:leave',
-} as const;
+} as const satisfies Record<string, ServerEventName | ClientEventName>;
 
 export const listRoom = (listId: string): string => `list:${listId}`;
 export const userRoom = (userId: string): string => `user:${userId}`;

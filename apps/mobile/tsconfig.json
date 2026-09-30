@@ -5,7 +5,9 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "noImplicitAny": false,
-    "baseUrl": "."
+    "paths": {
+      "@lista/contracts": ["../../packages/contracts/index.d.ts"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]

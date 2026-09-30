@@ -1,0 +1,49 @@
+appId: com.listadecompras.app
+name: Listas · crear una lista, agregar un producto y comprarlo
+env:
+  API_URL: http://localhost:8080/api
+---
+- runScript: ../scripts/crear-cuenta.js
+- runFlow: ../subflows/abrir-sin-sesion.yaml
+- runFlow: ../subflows/iniciar-sesion.yaml
+
+- tapOn:
+    id: new-list-button
+- tapOn:
+    id: new-list-name
+- inputText: Super del domingo
+- hideKeyboard
+- tapOn:
+    id: new-list-submit
+- extendedWaitUntil:
+    visible: Super del domingo
+    timeout: 10000
+
+- tapOn: Super del domingo
+- extendedWaitUntil:
+    visible:
+      id: list-detail-screen
+    timeout: 20000
+
+- tapOn:
+    id: item-name-input
+- inputText: Pilas AA
+- hideKeyboard
+- tapOn:
+    id: add-item-button
+- extendedWaitUntil:
+    visible:
+      id: pending-item
+    timeout: 10000
+- assertVisible: Pilas AA
+- takeScreenshot: listas-producto-pendiente
+
+# Tocar el producto lo marca como comprado y baja a la lista de comprados
+- tapOn: Pilas AA
+- extendedWaitUntil:
+    visible:
+      id: purchased-item
+    timeout: 10000
+- assertNotVisible:
+    id: pending-item
+- takeScreenshot: listas-producto-comprado

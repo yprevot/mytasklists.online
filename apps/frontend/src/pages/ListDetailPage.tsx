@@ -65,17 +65,17 @@ export function ListDetailPage() {
     [id, scheduleReload],
   );
 
-  useSocketEvent<{ listId: string }>('item:created', onListEvent);
-  useSocketEvent<{ listId: string }>('item:updated', onListEvent);
-  useSocketEvent<{ listId: string }>('item:purchased', onListEvent);
-  useSocketEvent<{ listId: string }>('item:restored', onListEvent);
-  useSocketEvent<{ listId: string }>('item:removed', onListEvent);
-  useSocketEvent<{ listId: string }>('item:reactivated', onListEvent);
-  useSocketEvent<{ listId: string }>('item:overdue', onListEvent);
-  useSocketEvent<{ listId: string }>('list:updated', onListEvent);
-  useSocketEvent<{ listId: string }>('list:member-added', onListEvent);
-  useSocketEvent<{ listId: string }>('list:member-removed', onListEvent);
-  useSocketEvent<{ listId: string }>('list:deleted', (payload) => {
+  useSocketEvent('item:created', onListEvent);
+  useSocketEvent('item:updated', onListEvent);
+  useSocketEvent('item:purchased', onListEvent);
+  useSocketEvent('item:restored', onListEvent);
+  useSocketEvent('item:removed', onListEvent);
+  useSocketEvent('item:reactivated', onListEvent);
+  useSocketEvent('item:overdue', onListEvent);
+  useSocketEvent('list:updated', onListEvent);
+  useSocketEvent('list:member-added', onListEvent);
+  useSocketEvent('list:member-removed', onListEvent);
+  useSocketEvent('list:deleted', (payload) => {
     if (payload?.listId === id) {
       show({ title: 'Lista eliminada', body: 'Ya no tienes acceso a esta lista', variant: 'warning' });
       navigate('/', { replace: true });

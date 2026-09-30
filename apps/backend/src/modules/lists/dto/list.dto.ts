@@ -1,3 +1,9 @@
+import type {
+  CreateListRequest,
+  ShareListRequest,
+  UpdateListRequest,
+  UpdateMemberRequest,
+} from '@lista/contracts';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -11,7 +17,7 @@ import {
 } from 'class-validator';
 import { MemberRole } from '../../../database/entities';
 
-export class CreateListDto {
+export class CreateListDto implements CreateListRequest {
   @ApiProperty({ example: 'Despensa quincenal' })
   @IsString()
   @Length(2, 120)
@@ -35,7 +41,7 @@ export class CreateListDto {
   icon?: string;
 }
 
-export class UpdateListDto {
+export class UpdateListDto implements UpdateListRequest {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -65,7 +71,7 @@ export class UpdateListDto {
   isArchived?: boolean;
 }
 
-export class ShareListDto {
+export class ShareListDto implements ShareListRequest {
   @ApiPropertyOptional({ description: 'Correo de la persona con la que se comparte' })
   @IsOptional()
   @IsEmail({}, { message: 'El correo electronico no es valido' })
@@ -82,7 +88,7 @@ export class ShareListDto {
   role?: MemberRole;
 }
 
-export class UpdateMemberDto {
+export class UpdateMemberDto implements UpdateMemberRequest {
   @ApiPropertyOptional({ description: 'Recibir aviso cuando otra persona modifica la lista' })
   @IsOptional()
   @IsBoolean()

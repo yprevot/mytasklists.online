@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { SocialHelpScreen } from '../screens/SocialHelpScreen';
+import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ListsScreen } from '../screens/ListsScreen';
 import { ListDetailScreen } from '../screens/ListDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -73,6 +74,11 @@ export function RootNavigator() {
               name="SocialHelp"
               component={SocialHelpScreen}
               options={{ title: 'Iniciar sesion' }}
+            />
+            <Stack.Screen
+              name="ForgotPassword"
+              component={ForgotPasswordScreen}
+              options={{ title: 'Recuperar contrasena' }}
             />
           </>
         )}
