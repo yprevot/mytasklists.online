@@ -24,20 +24,10 @@ test.describe('Frontend web · seguridad de la cuenta', () => {
     await loginThroughUI(page, user.email, 'ClaveDesdeCorreo123');
   });
 
-  test('CP-WEB-035 · el enlace del correo confirma la cuenta y quita el aviso', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Persona Por Confirmar' });
-    await useSession(page, user);
-
-    await page.goto('/app/');
-    await expect(page.getByTestId('verify-banner')).toBeVisible();
-
-    const email = await waitForEmail(request, user.email, 'Confirma tu correo');
-    await page.goto(linkFromEmail(email, '/app/verify-email'));
-    await expect(page.getByTestId('verify-ok')).toContainText(user.email);
-
-    await page.goto('/app/');
-    await expect(page.getByTestId('lists-page')).toBeVisible();
-    await expect(page.getByTestId('verify-banner')).toHaveCount(0);
+  test('CP-WEB-035 · las cuentas nuevas ya tienen el correo verificado', async ({page,request})=>{
+    const user=await registerUser(request);await useSession(page,user);await page.goto('/app/');
+    await expect(page.getByTestId('lists-page')).toBeVisible();await expect(page.getByTestId('verify-banner')).toHaveCount(0);
+    const me=await request.get(`${API_URL}/auth/me`,{headers:auth(user.accessToken)});expect((await me.json()).emailVerified).toBe(true);
   });
 
   test('CP-WEB-036 · la sesión no queda en localStorage sino en una cookie httpOnly', async ({

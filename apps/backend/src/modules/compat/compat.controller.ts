@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { AppCompatibility } from '@lista/contracts';
+import { REGISTRATION_MIN_VERSION } from '../../common/mobile-rollout';
 import { Public } from '../../common/decorators/public.decorator';
 import type { MobileConfig } from '../../config/configuration';
 
@@ -19,6 +20,6 @@ export class CompatController {
   @ApiOperation({ summary: 'Versión mínima de la app móvil que la API sigue atendiendo' })
   compatibility(): AppCompatibility {
     const mobile = this.config.get<MobileConfig>('mobile')!;
-    return { minVersion: mobile.minVersion, storeUrls: mobile.storeUrls };
+    return { minVersion: mobile.minVersion, storeUrls: mobile.storeUrls, registrationFlow: 2, registrationMinVersion: REGISTRATION_MIN_VERSION, rolloutPhase: mobile.rolloutPhase, downloadUrl: mobile.downloadUrl, webUrl: mobile.webUrl };
   }
 }

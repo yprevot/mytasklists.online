@@ -1,3 +1,5 @@
+import { RegistrationService } from './registration.service';
+import { RegistrationRequestDto, RegistrationTokenDto, CompleteRegistrationDto } from './dto/registration.dto';
 import {
   Body,
   Controller,
@@ -52,6 +54,7 @@ export class AuthController {
 
   constructor(
     private readonly auth: AuthService,
+    private readonly registration: RegistrationService,
     private readonly oauth: OAuthService,
     private readonly cookies: AuthCookieService,
     private readonly tokens: TokenService,
@@ -90,6 +93,22 @@ export class AuthController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ) {
     return this.respond(request, reply, await this.auth.register(dto, locale));
+  }
+
+  @Public() @SensitiveThrottle() @Post('registration/request') @HttpCode(200)
+  requestRegistration(@Body() dto: RegistrationRequestDto, @RequestLocale() locale: Locale) {
+    return this.registration.request(dto.email, locale);
+  }
+  @Public() @AuthThrottle() @Post('registration/validate') @HttpCode(200)
+  validateRegistration(@Body() dto: RegistrationTokenDto, @Res({passthrough:true}) reply: FastifyReply) {
+    reply.header('Cache-Control','no-store');
+    return this.registration.validate(dto.token);
+  }
+  @Public() @AuthThrottle() @Post('registration/complete') @HttpCode(201)
+  async completeRegistration(@Body() dto: CompleteRegistrationDto, @Req() request: FastifyRequest,
+    @Res({passthrough:true}) reply: FastifyReply) {
+    reply.header('Cache-Control','no-store');
+    return this.respond(request,reply,await this.auth.issueRegistrationSession(await this.registration.complete(dto)));
   }
 
   @Public()

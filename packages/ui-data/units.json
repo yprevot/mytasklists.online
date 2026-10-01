@@ -1,0 +1,9 @@
+[
+ {"value":"pza","es":"Unidades","en":"Units"},
+ {"value":"lb","es":"Libras","en":"Pounds"},
+ {"value":"kg","es":"Kilogramos","en":"Kilograms"},
+ {"value":"g","es":"Gramos","en":"Grams"},
+ {"value":"l","es":"Litros","en":"Liters"},
+ {"value":"ml","es":"Mililitros","en":"Milliliters"},
+ {"value":"oz","es":"Onzas","en":"Ounces"}
+]

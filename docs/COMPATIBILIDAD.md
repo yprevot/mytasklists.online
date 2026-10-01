@@ -157,3 +157,20 @@ Configuración en GitHub (Settings → Environments / Secrets and variables):
 Sin `DEPLOY_ENABLED=true` o sin `EAS_ENABLED=true` los workflows de publicación no hacen nada. Antes de
 activar el de la app hay que vincularla una vez con EAS: `npx eas init` y
 `npx eas update:configure` dentro de `apps/mobile`.
+
+## Coordinación del registro por correo (flujo 2)
+
+La entrega actual implementa una fase **bridge**: primero se publica el backend con el registro por correo disponible, conservando login, sesiones y listas de la app 1.x. El registro antiguo nunca crea usuarios sin verificar; en una app antigua responde 426 con `APP_UPDATE_REQUIRED`, mínimo 2.0.0 y enlaces de descarga/web. El corte global sólo ocurre en **enforced**.
+
+1. Configurar en Coolify/compose `MOBILE_ROLLOUT_PHASE=bridge`, `MOBILE_MIN_VERSION=1.0.0` y `MOBILE_RELEASE_READY_VERSION=`. Ejecutar el deploy manual de servicios. La retirada del registro antiguo requiere despliegue manual aunque bridge conserve los demás flujos.
+2. Comprobar el servidor: `npm run release:check -- --url=https://mytasklists.online`. Debe anunciar `registrationFlow=2`, `rolloutPhase=bridge` y mínimo 1.0.0. El cliente nuevo consulta esa capacidad antes de registrar; ante un backend anterior muestra un mensaje y no llama a un endpoint inexistente.
+3. Publicar binarios 2.0.0; Expo IAP y Picker requieren build nativo. El workflow móvil comprueba el backend antes de iniciar una publicación. Un build EAS terminado no equivale a aprobación/publicación en las tiendas. Para Android directo se utiliza el perfil `direct` y el publicador de APK firmado existente. iOS requiere ficha publicada o TestFlight disponible.
+4. Verificar instalación, acceso, registro y compras/restauración donde corresponda; confirmar disponibilidad de 2.0.0 para las plataformas distribuidas y revisar adopción en EAS/tiendas. Declarar `MOBILE_RELEASE_READY_VERSION=2.0.0` sólo después. Es una confirmación del operador, no una medida automática de adopción.
+5. Antes del corte, ejecutar `MOBILE_ROLLOUT_PHASE=enforced MOBILE_MIN_VERSION=2.0.0 MOBILE_RELEASE_READY_VERSION=2.0.0 npm run release:check -- --before --url=https://mytasklists.online`. Rechaza servidores sin flujo 2, Android sin APK suficiente/ficha publicada e iOS sin ficha/TestFlight. En tiendas la versión/adopción se confirma manualmente; sus enlaces no prueban por sí solos la versión instalada.
+6. Establecer esos tres valores en el backend y redesplegar. El arranque rechaza un corte sin fase/confirmación coherentes. Comprobar la configuración efectiva con el mismo comando **sin `--before`**: las apps 1.x reciben 426 antes del login y pueden abrir descargas o la web; la app 2.x continúa.
+
+En GitHub configurar las variables `MOBILE_ROLLOUT_PHASE`, `MOBILE_MIN_VERSION`, `MOBILE_RELEASE_READY_VERSION` y `SITE_URL` con los mismos valores efectivos de Coolify. Los workflows no cambian las variables de Coolify. El workflow móvil usa el environment `production`, igual que el job de deploy. Las credenciales EAS/Coolify siguen siendo secretos. El deploy verifica la política candidata, la disponibilidad antes de enforced y la política efectiva después del deploy.
+
+Para revertir un corte de compatibilidad sin perder datos: volver a `bridge`, mínimo 1.0.0 y confirmación vacía, manteniendo el backend con flujo 2. No volver al backend antiguo: el cliente nuevo depende del registro por correo. Revisar disponibilidad de las rutas y correr `release:check`. No bajar el mínimo de una API que haya retirado otros contratos necesarios para 1.x.
+
+Pruebas locales: `npm run test:rollout`, `e2e/tests/backend/16-coordinacion-movil.spec.ts` y `e2e/tests/mobile/08-coordinacion-backend.spec.ts`. La activación en producción y la publicación de los binarios siguen requiriendo las cuentas/configuración reales; no se ejecutaron desde esta tarea.

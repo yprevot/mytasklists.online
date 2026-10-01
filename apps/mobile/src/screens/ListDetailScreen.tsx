@@ -1,3 +1,5 @@
+import { Picker } from '@react-native-picker/picker';
+import UNITS from '../../../../packages/ui-data/units.json';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -25,7 +27,11 @@ const PRESETS = [3, 7, 14, 30];
 export function ListDetailScreen({ route, navigation }: any) {
   const listId: string = route.params.id;
   const { socket } = useSocket();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const en=i18n.language.startsWith('en');
+  const [quantity,setQuantity]=useState('1');
+  const [unit,setUnit]=useState('pza');
+  const [customUnit,setCustomUnit]=useState('');
 
   const [list, setList] = useState<ListDetail | null>(null);
   const [busy, setBusy] = useState(false);
@@ -87,15 +93,13 @@ export function ListDetailScreen({ route, navigation }: any) {
     }
   };
 
-  const addItem = () => {
-    if (!name.trim()) return;
-    const payload = {
-      name: name.trim(),
-      isRecurring,
-      ...(isRecurring ? { recurrenceDays } : {}),
-    };
-    setName('');
-    void guard(() => itemsApi.create(listId, payload));
+  const addItem = async () => {
+    if (!name.trim() || busy) return;
+    const amount=Number(quantity.replace(',','.'));const selected=unit==='custom'?customUnit.trim():unit;
+    if(!Number.isFinite(amount)||amount<0.01||amount>99999||Math.abs(Math.round(amount*100)-amount*100)>1e-7||!selected||selected.length>20){Alert.alert(t('common.oops'),en?'Enter a valid quantity and unit.':'Escribe una cantidad y unidad válidas.');return;}
+    setBusy(true);
+    try {await itemsApi.create(listId,{name:name.trim(),quantity:amount,unit:selected,isRecurring,...(isRecurring?{recurrenceDays}:{})});setName('');setQuantity('1');setUnit('pza');setCustomUnit('');await load();}
+    catch(e){Alert.alert(t('common.oops'),(e as Error).message);}finally{setBusy(false);}
   };
 
   if (!list) {
@@ -135,6 +139,14 @@ export function ListDetailScreen({ route, navigation }: any) {
           returnKeyType="done"
         />
 
+        <Text style={{color:colors.ink,marginTop:spacing.md}}>{en?'Quantity':'Cantidad'}</Text>
+        <TextInput accessibilityLabel={en?'Quantity':'Cantidad'} style={styles.addInput} value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" testID="item-quantity-input"/>
+        <Text style={{color:colors.ink}}>{en?'Unit':'Unidad'}</Text>
+        <Picker accessibilityLabel={en?'Unit':'Unidad'} selectedValue={unit} onValueChange={setUnit} testID="item-unit-input" style={{color:colors.ink}}>
+          {UNITS.map(u=><Picker.Item key={u.value} label={en?u.en:u.es} value={u.value}/>)}
+          <Picker.Item label={en?'Custom…':'Personalizado…'} value="custom"/>
+        </Picker>
+        {unit==='custom' && <TextInput accessibilityLabel={en?'Unit name':'Nombre de la unidad'} style={styles.addInput} value={customUnit} onChangeText={setCustomUnit} maxLength={20} placeholder={en?'Unit name':'Nombre de la unidad'} testID="item-custom-unit"/>}
         <View style={styles.recurRow}>
           <Text style={styles.recurLabel}>{t('detail.repeat')}</Text>
           <Switch

@@ -1,3 +1,4 @@
+import { waitForEmail, tokenFromEmail } from './mailpit';
 import type { APIRequestContext } from '@playwright/test';
 
 export const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:8080';
@@ -45,7 +46,11 @@ export async function registerUser(
     password: overrides.password ?? DEFAULT_PASSWORD,
   };
 
-  const response = await request.post(`${API_URL}/auth/register`, { data: payload });
+  const initiate = await request.post(`${API_URL}/auth/registration/request`, { data: {email: payload.email} });
+  if (!initiate.ok()) throw new Error(`No se pudo solicitar registro: ${initiate.status()}`);
+  const mail = await waitForEmail(request, payload.email, 'Completa tu registro');
+  const token = tokenFromEmail(mail, '/app/register/complete');
+  const response = await request.post(`${API_URL}/auth/registration/complete`, { data: {token,fullName:payload.fullName,whatsapp:payload.whatsapp,password:payload.password,passwordConfirmation:payload.password} });
   if (!response.ok()) {
     throw new Error(`No se pudo registrar a ${payload.email}: ${await response.text()}`);
   }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -28,8 +28,16 @@ export class PushService {
     platform: DevicePlatform,
     deviceName?: string,
   ): Promise<DeviceToken> {
+    if (!Expo.isExpoPushToken(token)) {
+      throw new BadRequestException('El token de notificaciones no es válido');
+    }
     const existing = await this.devices.findOne({ where: { token } });
     if (existing) {
+      // El mismo teléfono pasa a otra cuenta (cerró sesión sin darse de baja, o reinstaló): el
+      // último registro gana, para que los avisos de la cuenta anterior no sigan llegando a él
+      if (existing.userId !== userId) {
+        this.logger.warn(`Token push ${existing.id} reasignado de ${existing.userId} a ${userId}`);
+      }
       existing.userId = userId;
       existing.platform = platform;
       existing.deviceName = deviceName ?? existing.deviceName;

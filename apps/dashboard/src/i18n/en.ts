@@ -33,6 +33,7 @@ export const en: Catalog<typeof es> = {
     submitting: 'Signing in…',
   },
   nav: {
+    promotions: 'Promotions',
     overview: 'Overview',
     users: 'Users',
     lists: 'Lists',
@@ -140,5 +141,6 @@ export const en: Catalog<typeof es> = {
     manual: 'Or type this key by hand:',
     step2: '2. Enter the 6-digit code it shows.',
     disableLabel: 'To turn it off, enter a current code or a recovery code',
+    required: 'To protect people’s data, the panel requires two-step verification. Turn it on to continue.',
   },
 };

@@ -1,3 +1,4 @@
+import UNITS from '../../../../packages/ui-data/units.json';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import type { Item } from '../types';
@@ -23,7 +24,9 @@ const relativeDate = (iso: string | null, t: TFunction): string => {
  * Se muestran tachados y se quitan manualmente con la "x".
  */
 export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const knownUnit=UNITS.find(u=>u.value===item.unit);
+  const unitLabel=knownUnit?(i18n.language.startsWith('en')?knownUnit.en:knownUnit.es):item.unit;
   return (
     <li
       className="lc-item lc-item--comprado"
@@ -47,6 +50,7 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
           <span className="lc-item-name text-truncate" data-testid="purchased-name">
             {item.name}
           </span>
+          {(Number(item.quantity)!==1||item.unit!=='pza')&&<span className="lc-hint" data-testid="purchased-quantity">{Number(item.quantity)} {unitLabel}</span>}
           <span className="lc-hint" data-testid="purchased-meta">
             {item.purchasedByName ? `${item.purchasedByName} · ` : ''}
             {relativeDate(item.purchasedAt, t)}

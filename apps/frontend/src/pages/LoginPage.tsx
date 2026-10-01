@@ -18,9 +18,9 @@ export function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [mfaToken, setMfaToken] = useState<string | null>(null);
 
-  if (!loading && user) return <Navigate to={location.state?.from ?? '/'} replace />;
+  if (!loading && user) return <Navigate to={sessionStorage.getItem('lc.plan')==='premium'?'/billing':(location.state?.from ?? '/')} replace />;
 
-  const goHome = () => navigate(location.state?.from ?? '/', { replace: true });
+  const goHome = () => navigate(sessionStorage.getItem('lc.plan')==='premium'?'/billing':(location.state?.from ?? '/'), { replace: true });
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

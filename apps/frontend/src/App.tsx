@@ -1,3 +1,5 @@
+import { BillingPage } from './pages/BillingPage';
+import { RequestRegistrationPage } from './pages/RequestRegistrationPage';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -15,8 +17,10 @@ import { NotFoundPage } from './pages/NotFoundPage';
 export default function App() {
   return (
     <Routes>
+      <Route path="/billing" element={<BillingPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register" element={<RequestRegistrationPage />} />
+      <Route path="/register/complete" element={<RegisterPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />

@@ -8,7 +8,9 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AdminMfaGuard } from '../../common/guards/admin-mfa.guard';
 import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RecurrenceService } from './recurrence.service';
@@ -28,6 +30,7 @@ export class RecurrenceController {
 
   @Post('run')
   @Roles(UserRole.ADMIN)
+  @UseGuards(AdminMfaGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Fuerza una pasada del motor de recurrencia (administración)' })
   run() {

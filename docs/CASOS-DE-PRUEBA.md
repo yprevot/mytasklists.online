@@ -105,6 +105,8 @@ Archivo: `e2e/tests/backend/06-tiempo-real.spec.ts`
 | `CP-RT-005` | Quien desactiva los avisos no recibe notificación pero sí el cambio |
 | `CP-RT-006` | Quien hace el cambio no se auto-notifica |
 | `CP-RT-007` | El aviso queda guardado para consultarlo después |
+| `CP-RT-008` | `list:join` admite a integrantes y rechaza a quien no lo es |
+| `CP-RT-009` | El token no se acepta en la URL del WebSocket |
 
 ### Servicio backend · avisos y dispositivos móviles
 
@@ -116,6 +118,7 @@ Archivo: `e2e/tests/backend/07-notificaciones.spec.ts`
 | `CP-NOT-002` | La plataforma del dispositivo se valida |
 | `CP-NOT-003` | Marcar avisos como leídos |
 | `CP-NOT-004` | Cada quien solo ve sus propios avisos |
+| `CP-NOT-005` | Solo se aceptan tokens push de Expo |
 
 ### Servicio backend · panel de administración
 

@@ -1,3 +1,4 @@
+import { BillingService } from '../billing/billing.service';
 import type { DeleteAccountRequest } from '@lista/contracts';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
@@ -40,6 +41,7 @@ export class AccountDeletionService {
 
   constructor(
     private readonly dataSource: DataSource,
+    private readonly billing: BillingService,
     private readonly users: UsersService,
     private readonly mfa: MfaService,
     private readonly oauth: OAuthService,
@@ -65,6 +67,7 @@ export class AccountDeletionService {
       }
     }
 
+    await this.billing.preventOrphanedBilling(userId);
     const appleRevoked = await this.revokeApple(user, dto.appleAuthorizationCode);
 
     const memberships = await this.dataSource.getRepository(ListMember).find({ where: { userId } });
@@ -102,6 +105,7 @@ export class AccountDeletionService {
       await manager.update(ListInvitation, { invitedById: userId }, { invitedById: null });
 
       if (ownedIds.length) await manager.delete(ShoppingList, { id: In(ownedIds) });
+      await manager.query('DELETE FROM registration_requests WHERE email=$1',[user.email]);
       await manager.delete(User, { id: userId });
     });
 

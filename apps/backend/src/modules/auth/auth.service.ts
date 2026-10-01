@@ -11,7 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcryptjs';
-import { AuthProvider, User } from '../../database/entities';
+import { AuthProvider, User, UserRole } from '../../database/entities';
 import { UsersService } from '../users/users.service';
 import { PublicUser, toPublicUser } from '../users/user.mapper';
 import { CacheService } from '../../redis/cache.service';
@@ -97,17 +97,10 @@ export class AuthService {
 
   // ── Registro y sesión con correo/contraseña ─────────────────────────
   async register(dto: RegisterDto, locale?: Locale): Promise<AuthResult> {
-    const user = await this.users.create({
-      locale,
-      fullName: dto.fullName,
-      email: dto.email,
-      whatsapp: dto.whatsapp,
-      password: dto.password,
-      provider: AuthProvider.LOCAL,
-    });
-    await this.sendVerificationEmail(user);
-    return this.issueSession(user);
+    throw new HttpException({code:'REGISTRATION_REQUIRED',message:'El registro requiere validar tu correo. Solicita un enlace desde Crear cuenta.',details:{continueUrl:this.config.get<string>('publicUrl')+'/app/register'}}, 426);
   }
+
+  async issueRegistrationSession(user: User): Promise<AuthResult> { return this.issueSession(user); }
 
   async login(dto: LoginDto): Promise<LoginOutcome> {
     const lockMs = this.config.get<number>('rateLimit.loginLockMs', 15 * 60_000);
@@ -315,6 +308,12 @@ export class AuthService {
   }
 
   async mfaDisable(userId: string, code: string) {
+    const account = await this.users.findById(userId);
+    if (account.role === UserRole.ADMIN && this.config.get<boolean>('adminRequireMfa', true)) {
+      throw new BadRequestException(
+        'Las cuentas de administración deben mantener la verificación en dos pasos',
+      );
+    }
     if (!(await this.mfa.verifyCode(userId, code))) {
       throw new UnauthorizedException('El código no es correcto');
     }

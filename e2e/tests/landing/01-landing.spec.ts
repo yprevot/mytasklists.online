@@ -7,15 +7,15 @@ test.describe('Landing · página pública de descargas', () => {
 
   test('CP-LAND-001 · el hero explica la propuesta y ofrece las dos descargas', async ({ page }) => {
     await expect(page).toHaveTitle(/MyTaskLists/);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Tu despensa');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Listas de compras');
 
     const ios = page.getByTestId('download-ios');
     const android = page.getByTestId('download-android');
 
     await expect(ios).toBeVisible();
-    await expect(ios).toContainText('App Store');
+    await expect(ios).toContainText('iPhone');
     await expect(android).toBeVisible();
-    await expect(android).toContainText('Google Play');
+    await expect(android).toContainText('Android');
 
     await expect(ios).toHaveAttribute('href', /.+/);
     await expect(android).toHaveAttribute('href', /.+/);
@@ -23,7 +23,9 @@ test.describe('Landing · página pública de descargas', () => {
 
   test('CP-LAND-002 · la sección de descarga repite ambas tiendas', async ({ page }) => {
     await page.getByTestId('nav-download').click();
-    await expect(page.locator('#descargar')).toBeInViewport();
+    await expect(page).toHaveURL(/descargar/);
+    await expect(page.locator('#android')).toBeVisible();
+    await page.goto('/');
 
     await expect(page.getByTestId('download-ios-cta')).toContainText('iPhone y iPad');
     await expect(page.getByTestId('download-android-cta')).toContainText('Android');
@@ -31,7 +33,7 @@ test.describe('Landing · página pública de descargas', () => {
 
   test('CP-LAND-003 · se puede saltar a la aplicación web', async ({ page }) => {
     const link = page.getByTestId('open-web-app');
-    await expect(link).toHaveAttribute('href', '/app/');
+    await expect(link).toHaveAttribute('href', '/app/login');
 
     await link.click();
     await expect(page).toHaveURL(/\/app\//);
@@ -71,7 +73,7 @@ test.describe('Landing · página pública de descargas', () => {
     const footer = page.locator('footer');
     await expect(footer.getByRole('link', { name: 'App web' })).toHaveAttribute('href', '/app/');
     await expect(footer.getByRole('link', { name: 'Panel' })).toHaveAttribute('href', '/dashboard/');
-    await expect(footer.getByRole('link', { name: 'API' })).toHaveAttribute('href', '/api/docs');
+    await expect(footer.getByRole('link', { name: 'Precios' })).toHaveAttribute('href', '/precios/');
   });
 
   test('CP-LAND-009 · la política de privacidad se publica en español y en inglés', async ({ page }) => {

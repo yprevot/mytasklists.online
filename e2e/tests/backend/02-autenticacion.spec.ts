@@ -1,3 +1,4 @@
+import { requestRegistration } from '../../utils/registration';
 import { expect, test } from '@playwright/test';
 import {
   API_URL,
@@ -19,7 +20,8 @@ test.describe('Servicio backend · registro e inicio de sesión', () => {
       password: DEFAULT_PASSWORD,
     };
 
-    const response = await request.post(`${API_URL}/auth/register`, { data: payload });
+    const {token}=await requestRegistration(request,payload.email);
+    const response = await request.post(`${API_URL}/auth/registration/complete`, { data: {...payload,token,passwordConfirmation:payload.password} });
     expect(response.status()).toBe(201);
 
     const body = await response.json();
@@ -32,20 +34,9 @@ test.describe('Servicio backend · registro e inicio de sesión', () => {
     expect(body.refreshToken).toBeTruthy();
   });
 
-  test('CP-AUTH-002 · no se permiten dos cuentas con el mismo correo', async ({ request }) => {
-    const user = await registerUser(request);
-
-    const response = await request.post(`${API_URL}/auth/register`, {
-      data: {
-        fullName: 'Otra Persona',
-        email: user.email,
-        whatsapp: uniqueWhatsapp(),
-        password: DEFAULT_PASSWORD,
-      },
-    });
-
-    expect(response.status()).toBe(400);
-    expect(JSON.stringify(await response.json())).toContain('correo');
+  test('CP-AUTH-002 · no se pueden crear cuentas sin verificación previa', async ({request})=>{
+    const response=await request.post(`${API_URL}/auth/register`,{data:{fullName:'Registro Antiguo',email:uniqueEmail(),whatsapp:uniqueWhatsapp(),password:DEFAULT_PASSWORD}});
+    expect(response.status()).toBe(426);
   });
 
   test('CP-AUTH-003 · el registro valida el WhatsApp y la longitud de la contraseña', async ({ request }) => {

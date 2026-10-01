@@ -1,3 +1,4 @@
+import { BillingModule } from './modules/billing/billing.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -6,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import configuration, { RateLimitConfig } from './config/configuration';
 import { validateEnv } from './config/env.validation';
+import { SafeTypeOrmLogger } from './database/safe-typeorm.logger';
 import * as entities from './database/entities';
 import { MIGRATIONS } from './database/migrations';
 import type Redis from 'ioredis';
@@ -56,6 +58,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
         retryAttempts: 15,
         retryDelay: 3000,
         logging: ['error', 'warn'] as any,
+        logger: new SafeTypeOrmLogger(),
       }),
     }),
 
@@ -88,6 +91,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
     HealthModule,
     CompatModule,
     NewsletterModule,
+    BillingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AppThrottlerGuard },

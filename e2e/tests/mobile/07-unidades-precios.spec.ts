@@ -1,0 +1,6 @@
+import {test,expect} from '@playwright/test';
+import {registerUser,createList} from '../../utils/api-helpers';
+test('UNI-MOV · cantidad decimal y unidad personalizada se muestran antes y después de comprar',async({page,request})=>{
+ const user=await registerUser(request);await createList(request,user.accessToken,'Unidades móvil');await page.goto('/');await page.getByTestId('login-email').fill(user.email);await page.getByTestId('login-password').fill(user.password);await page.getByTestId('login-submit').click();await page.getByTestId('list-card').filter({hasText:'Unidades móvil'}).click();
+ await expect(page.getByTestId('item-unit-input')).toHaveValue('pza');await page.getByTestId('item-name-input').fill('Café especial');await page.getByTestId('item-unit-input').selectOption('custom');await page.getByTestId('item-custom-unit').fill('bolsas');await page.getByTestId('item-quantity-input').fill('1,25');await page.getByTestId('add-item-button').click();const item=page.getByTestId('pending-item').filter({hasText:'Café especial'});await expect(item).toContainText('1.25 bolsas');await item.click();await expect(page.getByTestId('purchased-item').filter({hasText:'Café especial'})).toContainText('1.25 bolsas');
+});

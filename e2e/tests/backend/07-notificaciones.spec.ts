@@ -37,6 +37,16 @@ test.describe('Servicio backend · avisos y dispositivos móviles', () => {
     expect(response.status()).toBe(400);
   });
 
+  test('CP-NOT-005 · solo se aceptan tokens push de Expo', async ({ request }) => {
+    const user = await registerUser(request);
+
+    const response = await request.post(`${API_URL}/notifications/devices`, {
+      headers: auth(user.accessToken),
+      data: { token: 'no-es-un-token-de-expo', platform: 'android' },
+    });
+    expect(response.status()).toBe(400);
+  });
+
   test('CP-NOT-003 · marcar avisos como leídos', async ({ request }) => {
     const ana = await registerUser(request, { fullName: 'Ana Lectora' });
     const carlos = await registerUser(request, { fullName: 'Carlos Lector' });

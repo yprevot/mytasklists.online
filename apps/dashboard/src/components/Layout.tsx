@@ -1,12 +1,14 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { ADMIN_MFA_REQUIRED_EVENT } from '../api/client';
 
 interface NavEntry {
   to: string;
-  key: 'overview' | 'users' | 'lists' | 'activity' | 'security';
+  key: 'overview' | 'users' | 'lists' | 'activity' | 'security' | 'promotions';
   /** No depende del idioma: las pruebas e2e lo usan en los dos */
   testId: string;
   icon: string;
@@ -18,12 +20,21 @@ const NAV: NavEntry[] = [
   { to: '/users', key: 'users', testId: 'usuarios', icon: 'bi-people' },
   { to: '/lists', key: 'lists', testId: 'listas', icon: 'bi-card-checklist' },
   { to: '/activity', key: 'activity', testId: 'bitacora', icon: 'bi-clock-history' },
+  { to: '/promotions', key: 'promotions', testId: 'promociones', icon: 'bi-tag' },
   { to: '/security', key: 'security', testId: 'seguridad', icon: 'bi-shield-lock' },
 ];
 
 export function Layout() {
   const { user, logout } = useAdminAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Sin 2FA la API corta el panel: se lleva a la persona a activarla
+  useEffect(() => {
+    const toSecurity = () => navigate('/security', { replace: true, state: { mfaRequired: true } });
+    window.addEventListener(ADMIN_MFA_REQUIRED_EVENT, toSecurity);
+    return () => window.removeEventListener(ADMIN_MFA_REQUIRED_EVENT, toSecurity);
+  }, [navigate]);
 
   return (
     <div className="dash-shell">

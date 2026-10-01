@@ -37,7 +37,7 @@ const files = [
 const touched = (...prefixes) => files.filter((file) => prefixes.some((prefix) => file.startsWith(prefix)));
 
 // ── Qué se despliega ────────────────────────────────────────────────────
-const shared = touched('package.json', 'package-lock.json', 'packages/contracts/');
+const shared = touched('package.json', 'package-lock.json', 'packages/contracts/', 'packages/ui-data/');
 const infra = touched('infra/', 'docker-compose', '.dockerignore');
 const services = {
   backend: touched('apps/backend/'),
@@ -45,10 +45,10 @@ const services = {
   dashboard: touched('apps/dashboard/'),
   landing: touched('apps/landing/'),
 };
-const mobileFiles = touched('apps/mobile/');
+const mobileFiles = touched('apps/mobile/', 'packages/ui-data/');
 
 // Lo que cambia el binario nativo: dependencias, configuración de Expo, iconos y splash
-const NATIVE = ['app.json', 'app.config.', 'package-lock.json', 'eas.json', 'ios/', 'android/', 'plugins/', 'assets/'];
+const NATIVE = ['app.json', 'app.config.', 'package-lock.json', 'eas.json', 'ios/', 'android/', 'plugins/', 'assets/', 'metro.config.'];
 
 /** En package.json solo importan las dependencias: los scripts no llegan al binario */
 function mobileDependenciesChanged() {
@@ -86,7 +86,9 @@ if (touched('packages/contracts/').length) {
     warn(
       'alto',
       `Cambio incompatible aprobado (contrato ${contract.oldVersion} → ${contract.newVersion}). Orden obligatorio: ` +
-        'publicar la app que ya no usa lo retirado, esperar su adopción, subir MOBILE_MIN_VERSION y después desplegar el backend.',
+        (contract.breaking.some(change=>change.name==='registrationFlow')
+          ? 'backend en bridge primero, publicar el binario movil, verificar disponibilidad/adopcion y solo entonces usar enforced con MOBILE_MIN_VERSION.'
+          : 'publicar la app que ya no usa lo retirado, esperar su adopción, subir MOBILE_MIN_VERSION y después desplegar el backend.'),
     );
   }
 }

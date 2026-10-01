@@ -12,7 +12,8 @@ import { colors, spacing } from '../theme';
  * Se pregunta al abrir, y cualquier petición posterior también puede dispararlo.
  */
 export function UpdateGate({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const en = i18n.language.startsWith('en');
   const [required, setRequired] = useState<UpdateRequired | null>(null);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function UpdateGate({ children }: { children: ReactNode }) {
         </Text>
         {required.storeUrl ? (
           <Button
-            title={t('update.store')}
+            title={required.storeUrl===required.downloadUrl||required.storeUrl?.includes('/descargar/')?(en?'See downloads':'Ver descargas'):t('update.store')}
             onPress={() => Linking.openURL(required.storeUrl!)}
             testID="open-store"
             style={{ marginTop: spacing.lg }}
@@ -43,6 +44,7 @@ export function UpdateGate({ children }: { children: ReactNode }) {
         ) : (
           <Text style={styles.versions}>{t('update.searchStore')}</Text>
         )}
+        {required.webUrl && <Button title={en?'Use web app':'Usar app web'} variant="ghost" onPress={()=>Linking.openURL(required.webUrl!)} testID="open-web-fallback" style={{marginTop:spacing.md}}/>}
       </Card>
     </View>
   );

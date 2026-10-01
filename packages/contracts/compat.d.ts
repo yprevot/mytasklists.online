@@ -15,6 +15,12 @@ export type AppPlatform = DevicePlatform;
 export interface AppCompatibility {
   /** Versión mínima de la app móvil que la API sigue atendiendo */
   minVersion: string;
+  /** Ausente en servidores anteriores al registro por correo. */
+  registrationFlow?: number;
+  registrationMinVersion?: string;
+  rolloutPhase?: 'bridge' | 'enforced';
+  downloadUrl?: string;
+  webUrl?: string;
   storeUrls: {
     ios: string | null;
     android: string | null;
@@ -39,5 +45,7 @@ export interface AppUpdateRequiredError extends ApiErrorBody {
   details: {
     minVersion: string;
     storeUrl: string | null;
+    downloadUrl?: string;
+    webUrl?: string;
   };
 }

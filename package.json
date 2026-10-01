@@ -2,7 +2,7 @@
   "name": "mytasklists",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistema de listas de compras compartidas con productos recurrentes y sincronización en tiempo real",
+  "description": "Sistema de listas de compras compartidas con productos recurrentes y sincronizaci\u00f3n en tiempo real",
   "workspaces": [
     "packages/contracts",
     "apps/backend",
@@ -32,7 +32,9 @@
     "test:e2e:landing": "npm run test:landing --workspace e2e",
     "test:e2e:mobile": "npm run test:mobile --workspace e2e",
     "test:maestro": "npm --prefix apps/mobile run test:maestro",
-    "evidence": "npm run evidence --workspace e2e"
+    "evidence": "npm run evidence --workspace e2e",
+    "release:check": "node scripts/mobile-rollout.mjs",
+    "test:rollout": "npm run build --workspace @lista/backend && node --test scripts/test-mobile-rollout.mjs"
   },
   "engines": {
     "node": ">=22.12"

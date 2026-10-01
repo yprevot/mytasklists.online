@@ -24,11 +24,12 @@ import { MfaService } from '../auth/mfa.service';
 import { AuthStateService } from '../../redis/auth-state.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
+import { AdminMfaGuard } from '../../common/guards/admin-mfa.guard';
 
 @ApiTags('administración')
 @ApiBearerAuth()
 @Roles(UserRole.ADMIN)
-@UseGuards(RolesGuard)
+@UseGuards(RolesGuard, AdminMfaGuard)
 @Controller('admin')
 export class AdminController {
   constructor(

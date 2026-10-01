@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: downloads only expose controlled, unchanged publication manifests
+ok 1 - downloads only expose controlled, unchanged publication manifests
+  ---
+  duration_ms: 3.319875
+  type: 'test'
+  ...
+# Subtest: 20% discount quotes 400 cents and preserves duration
+ok 2 - 20% discount quotes 400 cents and preserves duration
+  ---
+  duration_ms: 1.548917
+  type: 'test'
+  ...
+# Subtest: fixed discount never produces negative amount
+ok 3 - fixed discount never produces negative amount
+  ---
+  duration_ms: 0.208375
+  type: 'test'
+  ...
+# Subtest: expired, wrong currency and product restrictions reject
+ok 4 - expired, wrong currency and product restrictions reject
+  ---
+  duration_ms: 0.437333
+  type: 'test'
+  ...
+# Subtest: changed promotion expires old checkout before creating discounted session
+ok 5 - changed promotion expires old checkout before creating discounted session
+  ---
+  duration_ms: 0.448875
+  type: 'test'
+  ...
+# Subtest: unconfirmed changed price cannot reuse pending checkout
+ok 6 - unconfirmed changed price cannot reuse pending checkout
+  ---
+  duration_ms: 0.69125
+  type: 'test'
+  ...
+# Subtest: same offer reuses open checkout and cannot create a second charge session
+ok 7 - same offer reuses open checkout and cannot create a second charge session
+  ---
+  duration_ms: 0.138208
+  type: 'test'
+  ...
+# Subtest: expired validation and consumed completion never create a user
+ok 8 - expired validation and consumed completion never create a user
+  ---
+  duration_ms: 200.031875
+  type: 'test'
+  ...
+# Subtest: SMTP failure never rotates the previous registration token
+ok 9 - SMTP failure never rotates the previous registration token
+  ---
+  duration_ms: 1502.732667
+  type: 'test'
+  ...
+# Subtest: promotion persistence failure deactivates the external promotion
+ok 10 - promotion persistence failure deactivates the external promotion
+  ---
+  duration_ms: 7.577834
+  type: 'test'
+  ...
+# Subtest: promotion expiry in the past is rejected before provider mutation
+ok 11 - promotion expiry in the past is rejected before provider mutation
+  ---
+  duration_ms: 2.751917
+  type: 'test'
+  ...
+# Subtest: live price cannot open checkout in test mode
+ok 12 - live price cannot open checkout in test mode
+  ---
+  duration_ms: 1.161292
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2029.4795

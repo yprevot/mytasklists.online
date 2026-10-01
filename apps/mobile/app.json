@@ -2,7 +2,7 @@
   "expo": {
     "name": "MyTaskLists",
     "slug": "mytasklists",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "runtimeVersion": {
       "policy": "fingerprint"
     },
@@ -48,7 +48,9 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#1d5b45",
-          "resizeMode": "contain"
+          "resizeMode": "contain",
+          "image": "./assets/icon.png",
+          "imageWidth": 160
         }
       ],
       [
@@ -67,6 +69,7 @@
       "eas": {
         "projectId": "00000000-0000-0000-0000-000000000000"
       }
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }

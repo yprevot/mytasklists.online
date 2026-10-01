@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 import type { MailContent } from './mail.templates';
@@ -28,14 +28,21 @@ export class MailService implements OnModuleDestroy {
     this.transporter = createTransport({
       host: config.get<string>('mail.host'),
       port: config.get<number>('mail.port', 587),
+      connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000,
       secure: config.get<boolean>('mail.secure', false),
       auth: user ? { user, pass: config.get<string>('mail.password') } : undefined,
     });
   }
 
+  async assertAvailable(): Promise<void> {
+    if (!this.transporter) throw new ServiceUnavailableException('El servicio de correo no está disponible. Inténtalo más tarde.');
+    try { await this.transporter.verify(); }
+    catch { throw new ServiceUnavailableException('El servicio de correo no está disponible. Inténtalo más tarde.'); }
+  }
+
   async send(to: string, content: MailContent): Promise<void> {
     if (!this.transporter) {
-      this.logger.log(`[correo sin enviar] para=${to} asunto="${content.subject}"\n${content.text}`);
+      this.logger.warn(`Correo no enviado: SMTP no configurado`);
       return;
     }
     await this.transporter.sendMail({
@@ -50,7 +57,7 @@ export class MailService implements OnModuleDestroy {
   /** Envío en segundo plano: un fallo del SMTP nunca debe tumbar la petición */
   sendInBackground(to: string, content: MailContent): void {
     this.send(to, content).catch((error) =>
-      this.logger.error(`No se pudo enviar "${content.subject}": ${(error as Error).message}`),
+      this.logger.error('No se pudo enviar correo transaccional'),
     );
   }
 

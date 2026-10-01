@@ -14,6 +14,7 @@ on:
     paths:
       - 'apps/mobile/**'
       - 'packages/contracts/**'
+      - 'packages/ui-data/**'
   workflow_dispatch:
     inputs:
       release:
@@ -31,6 +32,7 @@ permissions:
 
 jobs:
   release:
+    environment: production
     if: vars.EAS_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +57,14 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           if [ -n "$CHOSEN" ]; then
+            if [ "$CHOSEN" = "ota" ]; then
+              base_ref="${BEFORE:-HEAD~1}"
+              native_release=$(node scripts/impact.mjs "$base_ref" --json | jq -r .mobile.release)
+              if [ "$native_release" = "tienda" ]; then
+                echo "::error::Este cambio necesita un binario nativo; no se permite forzar OTA."
+                exit 1
+              fi
+            fi
             release="$CHOSEN"
           else
             node scripts/impact.mjs "$BEFORE" | tee -a "$GITHUB_STEP_SUMMARY"
@@ -67,6 +77,16 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
+
+
+      - name: El servidor debe soportar el registro nuevo antes de publicar
+        if: steps.plan.outputs.release != 'ninguno'
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          MOBILE_ROLLOUT_PHASE: ${{ vars.MOBILE_ROLLOUT_PHASE || 'bridge' }}
+          MOBILE_MIN_VERSION: ${{ vars.MOBILE_MIN_VERSION || '1.0.0' }}
+          MOBILE_RELEASE_READY_VERSION: ${{ vars.MOBILE_RELEASE_READY_VERSION }}
+        run: node scripts/mobile-rollout.mjs
 
       - name: Build para App Store y Google Play
         if: steps.plan.outputs.release == 'tienda'

@@ -1,3 +1,4 @@
+import UNITS from '../../../../packages/ui-data/units.json';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { itemsApi } from '../api/endpoints';
@@ -16,10 +17,12 @@ const PRESET_DAYS = [3, 7, 14, 21, 30];
  * convierte el producto en recurrente: al comprarlo se reprogramará solo.
  */
 export function AddItemForm({ listId, disabled, onError }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const en = i18n.language.startsWith("en");
+  const [customUnit,setCustomUnit] = useState('');
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
-  const [unit, setUnit] = useState<string>(t('addItem.defaultUnit'));
+  const [unit, setUnit] = useState<string>('pza');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceDays, setRecurrenceDays] = useState('14');
   const [saving, setSaving] = useState(false);
@@ -30,17 +33,22 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
     const trimmed = name.trim();
     if (!trimmed || saving) return;
 
+    const amount = Number(quantity.replace(',', '.'));
+    const selectedUnit = unit === 'custom' ? customUnit.trim() : unit;
+    if (!Number.isFinite(amount) || amount < 0.01 || amount > 99999 || Math.abs(Math.round(amount*100)-amount*100)>1e-7 || !selectedUnit || selectedUnit.length>20) {
+      onError(en?'Enter a valid quantity (up to 2 decimals) and unit.':'Escribe una cantidad válida (hasta 2 decimales) y una unidad.');return;
+    }
     setSaving(true);
     try {
       await itemsApi.create(listId, {
         name: trimmed,
-        quantity: Number(quantity) || 1,
-        unit: unit.trim() || t('addItem.defaultUnit'),
+        quantity: amount,
+        unit: selectedUnit,
         isRecurring,
         ...(isRecurring ? { recurrenceDays: Number(recurrenceDays) || 14 } : {}),
       });
       setName('');
-      setQuantity('1');
+      setQuantity('1');setUnit('pza');setCustomUnit('');
     } catch (error) {
       onError(error instanceof ApiError ? error.message : t('addItem.failed'));
     } finally {
@@ -99,9 +107,8 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
               </label>
               <input
                 id="item-quantity"
-                type="number"
-                min="0.01"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 className="form-control"
                 value={quantity}
                 onChange={(event) => setQuantity(event.target.value)}
@@ -112,13 +119,13 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
               <label className="form-label" htmlFor="item-unit">
                 {t('addItem.unit')}
               </label>
-              <input
-                id="item-unit"
-                className="form-control"
-                value={unit}
-                onChange={(event) => setUnit(event.target.value)}
-                data-testid="item-unit-input"
-              />
+              <select id="item-unit" className="form-select" value={unit} onChange={e=>setUnit(e.target.value)} data-testid="item-unit-input">
+                {UNITS.map(u=><option key={u.value} value={u.value}>{en?u.en:u.es}</option>)}
+                <option value="custom">{en?'Custom…':'Personalizado…'}</option>
+              </select>
+              {unit==='custom' && <><label className="form-label mt-2" htmlFor="custom-unit">{en?'Unit name':'Nombre de la unidad'}</label>
+                <input id="custom-unit" className="form-control" required maxLength={20} value={customUnit} onChange={e=>setCustomUnit(e.target.value)} autoFocus data-testid="item-custom-unit"/></>}
+
             </div>
             <div className="col-12 col-md-6">
               <div className="form-check form-switch mt-md-4">

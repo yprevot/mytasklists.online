@@ -1,0 +1,7 @@
+{
+  "phase": "bridge",
+  "minimum": "1.0.0",
+  "ready": null,
+  "appVersion": "2.0.0",
+  "check": "server-effective"
+}

@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AppPlatform } from '@lista/contracts';
+import { REGISTRATION_MIN_VERSION, updateDestination } from '../mobile-rollout';
 import { compareVersions, parseVersion } from '../version';
 import type { MobileConfig } from '../../config/configuration';
 
@@ -26,19 +27,20 @@ export class AppVersionGuard implements CanActivate {
     if (!version) return true;
 
     const mobile = this.config.get<MobileConfig>('mobile')!;
-    const minimum = parseVersion(mobile.minVersion);
+    const legacyRegistration = String(request.url || '').split('?')[0].replace(/\/$/,'').endsWith('/auth/register');
+    const minimumText = legacyRegistration ? REGISTRATION_MIN_VERSION : mobile.minVersion;
+    const minimum = parseVersion(minimumText);
     if (!minimum || compareVersions(version, minimum) >= 0) return true;
 
     const platform = request.headers?.['x-app-platform'] as AppPlatform | undefined;
-    const storeUrl =
-      platform === 'ios' ? mobile.storeUrls.ios : platform === 'android' ? mobile.storeUrls.android : null;
+    const storeUrl = updateDestination(mobile, platform);
 
     throw new HttpException(
       {
         error: 'UpgradeRequired',
         message: 'Esta versión de la app ya no es compatible. Actualízala para seguir usándola.',
         code: APP_UPDATE_REQUIRED,
-        details: { minVersion: mobile.minVersion, storeUrl },
+        details: { minVersion: minimumText, storeUrl, downloadUrl: mobile.downloadUrl, webUrl: mobile.webUrl },
       },
       426,
     );

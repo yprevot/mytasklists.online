@@ -1,3 +1,4 @@
+import { BillingScreen } from '../screens/BillingScreen';
 import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -84,6 +85,7 @@ export function RootNavigator() {
               component={ListDetailScreen}
               options={({ route }: any) => ({ title: route.params?.name ?? t('nav.list') })}
             />
+            <Stack.Screen name="Billing" component={BillingScreen} options={{title:"Premium"}}/>
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.account') }} />
             <Stack.Screen
               name="DeleteAccount"

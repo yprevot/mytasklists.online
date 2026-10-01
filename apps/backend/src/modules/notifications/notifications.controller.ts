@@ -7,6 +7,7 @@ import { toNotificationView } from './notification.mapper';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { RegisterDeviceDto } from '../auth/dto/auth.dto';
+import { AuthThrottle } from '../../common/throttle/throttle-profiles';
 
 @ApiTags('notificaciones')
 @ApiBearerAuth()
@@ -47,6 +48,7 @@ export class NotificationsController {
     return { ok: true };
   }
 
+  @AuthThrottle()
   @Post('devices')
   @ApiOperation({ summary: 'Registra el token push del dispositivo móvil' })
   async registerDevice(@CurrentUser() user: AuthenticatedUser, @Body() dto: RegisterDeviceDto) {

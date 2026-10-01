@@ -151,6 +151,7 @@ export const en: Catalog<typeof es> = {
     termsUrl: '/terms',
   },
   layout: {
+    myPlan: 'My plan',
     mainNav: 'Main navigation',
     openMenu: 'Open menu',
     lists: 'My lists',

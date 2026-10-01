@@ -1,3 +1,4 @@
+import UNITS from '../../../../packages/ui-data/units.json';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Item } from '../types';
@@ -10,8 +11,8 @@ interface Props {
   onAdvanceClock: (item: Item, days: number) => void;
 }
 
-const formatQuantity = (item: Item): string =>
-  `${Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(2)} ${item.unit}`;
+const formatQuantity = (item: Item, language: string): string =>
+  `${Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(2)} ${UNITS.find(u=>u.value===item.unit)?.[language.startsWith('en')?'en':'es'] || item.unit}`;
 
 /**
  * Fila de un producto pendiente.
@@ -22,7 +23,7 @@ const formatQuantity = (item: Item): string =>
  *  · rojo  → recurrente vencido (pasó su plazo sin comprarse)
  */
 export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClock }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [busy, setBusy] = useState(false);
 
   const stateClass = item.isOverdue
@@ -63,7 +64,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
             {item.name}
           </span>
           <span className="lc-chip" data-testid="item-quantity">
-            {formatQuantity(item)}
+            {formatQuantity(item,i18n.language)}
           </span>
 
           {item.isRecurring && (

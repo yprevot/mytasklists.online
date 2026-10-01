@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import QRCode from 'qrcode';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { adminApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAdminAuth } from '../context/AdminAuthContext';
@@ -11,6 +12,8 @@ type Setup = { secret: string; otpauthUrl: string; qr: string };
 export function SecurityPage() {
   const { user, reloadUser } = useAdminAuth();
   const { t } = useTranslation();
+  const location = useLocation();
+  const mfaRequired = Boolean((location.state as { mfaRequired?: boolean } | null)?.mfaRequired);
   const [setup, setSetup] = useState<Setup | null>(null);
   const [code, setCode] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
@@ -66,6 +69,12 @@ export function SecurityPage() {
   return (
     <div data-testid="security-page">
       <h1 className="lc-page-title mb-4">{t('security.title')}</h1>
+
+      {mfaRequired && !user.mfaEnabled && (
+        <div className="alert alert-warning" style={{ maxWidth: 640 }} data-testid="mfa-required">
+          {t('security.required')}
+        </div>
+      )}
 
       <div className="card border-0 shadow-sm" style={{ maxWidth: 640 }}>
         <div className="card-body">

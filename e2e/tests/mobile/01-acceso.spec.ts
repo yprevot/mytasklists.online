@@ -7,37 +7,14 @@ import { DEFAULT_PASSWORD, registerUser, uniqueEmail, uniqueWhatsapp } from '../
  * (react-native-web) en un viewport de teléfono.
  */
 test.describe('App móvil · acceso', () => {
-  test('CP-MOV-001 · registro desde el teléfono con los cuatro datos', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByTestId('login-screen')).toBeVisible();
-
-    await page.getByTestId('go-register').click();
-    await expect(page.getByTestId('register-screen')).toBeVisible();
-
-    await page.getByTestId('register-fullname').fill('Móvil De Prueba');
-    await page.getByTestId('register-email').fill(uniqueEmail('móvil'));
-    await page.getByTestId('register-whatsapp').fill(uniqueWhatsapp());
-    await page.getByTestId('register-password').fill(DEFAULT_PASSWORD);
-    await page.getByTestId('register-submit').click();
-
-    await expect(page.getByTestId('lists-screen')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId('lists-empty')).toBeVisible();
+  test('CP-MOV-001 · solicita enlace de registro desde el teléfono', async ({ page }) => {
+    await page.goto('/');await page.getByTestId('go-register').click();
+    await page.getByTestId('register-email').fill(uniqueEmail('movil'));await page.getByTestId('register-submit').click();
+    await expect(page.getByTestId('registration-sent')).toBeVisible();await expect(page.getByTestId('register-fullname')).toHaveCount(0);
   });
-
-  test('CP-MOV-002 · el registro valida los campos antes de enviarlos', async ({ page }) => {
-    await page.goto('/');
-    await page.getByTestId('go-register').click();
-
-    await page.getByTestId('register-fullname').fill('Ab');
-    await page.getByTestId('register-email').fill('no-es-correo');
-    await page.getByTestId('register-whatsapp').fill('12');
-    await page.getByTestId('register-password').fill('corta');
-    await page.getByTestId('register-submit').click();
-
-    await expect(page.getByTestId('register-fullname-error')).toBeVisible();
-    await expect(page.getByTestId('register-email-error')).toBeVisible();
-    await expect(page.getByTestId('register-whatsapp-error')).toBeVisible();
-    await expect(page.getByTestId('register-password-error')).toBeVisible();
+  test('CP-MOV-002 · correo inválido no inicia el registro', async ({ page }) => {
+    await page.goto('/');await page.getByTestId('go-register').click();await page.getByTestId('register-email').fill('no-es-correo');await page.getByTestId('register-submit').click();
+    await expect(page.getByTestId('register-error')).toBeVisible();await expect(page.getByTestId('registration-sent')).toHaveCount(0);
   });
 
   test('CP-MOV-003 · inicio de sesión con una cuenta existente', async ({ page, request }) => {

@@ -17,3 +17,5 @@ export * from './auth';
 export * from './requests';
 export * from './realtime';
 export * from './compat';
+
+export * from "./billing";

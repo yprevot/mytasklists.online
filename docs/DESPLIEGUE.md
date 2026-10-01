@@ -388,3 +388,17 @@ con restic. Redis solo guarda caché, sesiones y contadores: si se pierde, las p
 - **Identificadores móviles nuevos** (`online.mytasklists.app`, esquema `mytasklists`): la carpeta nativa generada
   `apps/mobile/ios` (no versionada) hay que regenerarla con `npx expo prebuild --clean` antes de compilar en local.
 - Sin `REDIS_PASSWORD`, `JWT_*` o `APP_ENCRYPTION_KEY` el backend **no arranca** en producción: es intencional.
+- **2FA obligatoria para administradores** (`ADMIN_REQUIRE_MFA=true` en `compose.prod.yml`): una cuenta admin sin 2FA
+  inicia sesión en el panel pero solo ve la página **Seguridad** hasta activarla, y no puede desactivarla después. Si
+  un admin pierde el teléfono y los códigos de recuperación, otro admin le restablece la 2FA desde **Usuarios**; si no
+  hay otro, se hace en la base: `update users set totp_enabled=false, totp_secret=null where email='…'`.
+
+### APK directo sin cuentas de tiendas
+
+Con JDK 17 y Android SDK instalados, `node scripts/build-android-direct.mjs` genera un APK release de la versión declarada en `apps/mobile/app.json`, dirigido a la API HTTPS de producción y sin OTA de Expo. Se pueden definir `JAVA_HOME`, `ANDROID_HOME` y `APKSIGNER` para otras instalaciones.
+
+La firma persistente se guarda en `~/.codex/secrets/mytasklists-android/` (directorio privado, archivos 0600). Respaldar ese directorio de forma segura: perder la clave impide actualizar las instalaciones existentes. Nunca subirlo al repositorio ni al servidor público.
+
+El script verifica la firma y genera `downloads/mytasklists-<version>.apk` y `downloads/android.json` con tamaño y SHA-256. Publicar primero el APK y después el manifiesto, de forma atómica, en el directorio montado como `/downloads` por backend y landing. Una versión ya publicada no se reemplaza con bytes distintos.
+
+Sin Apple Developer no se publica un IPA para usuarios; iOS utiliza la aplicación web instalable. La fase de coordinación continúa en `bridge` con mínimo `1.0.0` hasta contar con ambos canales nativos. Los pagos permanecen desactivados hasta configurar proveedor y condiciones comerciales.

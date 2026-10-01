@@ -102,6 +102,7 @@ export function Layout() {
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
+                    <Link className="dropdown-item" to="/billing">{t('layout.myPlan')}</Link>
                     <Link className="dropdown-item" to="/settings">
                       {t('layout.account')}
                     </Link>
