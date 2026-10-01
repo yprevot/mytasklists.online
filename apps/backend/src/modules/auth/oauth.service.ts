@@ -29,6 +29,7 @@ const GOOGLE_ISSUERS = ['https://accounts.google.com', 'accounts.google.com'];
 const APPLE_AUTH_URL = 'https://appleid.apple.com/auth/authorize';
 const APPLE_TOKEN_URL = 'https://appleid.apple.com/auth/token';
 const APPLE_JWKS_URL = 'https://appleid.apple.com/auth/keys';
+const APPLE_REVOKE_URL = 'https://appleid.apple.com/auth/revoke';
 const APPLE_ISSUER = 'https://appleid.apple.com';
 
 const STATE_TTL_SECONDS = 600;
@@ -193,8 +194,13 @@ export class OAuthService {
     return `${APPLE_AUTH_URL}?${params.toString()}`;
   }
 
-  /** Apple exige un client_secret que es en realidad un JWT ES256 de corta vida */
-  private async buildAppleClientSecret(): Promise<string> {
+  /**
+   * Apple exige un client_secret que es en realidad un JWT ES256 de corta vida.
+   * Su `sub` es el client_id: el Service ID en la web y el bundle id en la app nativa.
+   */
+  private async buildAppleClientSecret(
+    clientId = this.config.get<string>('apple.clientId', ''),
+  ): Promise<string> {
     const privateKeyPem = this.config.get<string>('apple.privateKey', '');
     if (!privateKeyPem) throw new NotImplementedException('Falta APPLE_PRIVATE_KEY');
     const key = await importPKCS8(privateKeyPem, 'ES256');
@@ -204,8 +210,63 @@ export class OAuthService {
       .setIssuedAt()
       .setExpirationTime('10m')
       .setAudience(APPLE_ISSUER)
-      .setSubject(this.config.get<string>('apple.clientId', ''))
+      .setSubject(clientId)
       .sign(key);
+  }
+
+  /**
+   * Revoca los tokens de Sign in with Apple al borrar una cuenta, como pide Apple.
+   * No guardamos tokens de Apple, así que la app de iOS manda un authorizationCode
+   * recién emitido: se canjea por un refresh token y ese se revoca. Solo se revoca si
+   * el código pertenece al `sub` de la cuenta que se borra. Devuelve si lo logró.
+   */
+  async revokeAppleAuthorization(code: string, expectedSubject: string): Promise<boolean> {
+    if (!this.config.get<string>('apple.privateKey', '')) return false;
+    const clientId = this.config.get<string>('apple.bundleId', '');
+    try {
+      const clientSecret = await this.buildAppleClientSecret(clientId);
+      const exchange = await fetch(APPLE_TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'authorization_code',
+        }),
+      });
+      if (!exchange.ok) {
+        this.logger.warn(`Apple rechazó el código para revocar: ${await exchange.text()}`);
+        return false;
+      }
+      const tokens = (await exchange.json()) as { refresh_token?: string; id_token?: string };
+      if (!tokens.refresh_token || !tokens.id_token) return false;
+
+      const { payload } = await jwtVerify(tokens.id_token, this.appleJwks, {
+        issuer: APPLE_ISSUER,
+        audience: clientId,
+      });
+      if (payload.sub !== expectedSubject) {
+        this.logger.warn('El código de Apple para revocar no corresponde a la cuenta que se borra');
+        return false;
+      }
+
+      const revoke = await fetch(APPLE_REVOKE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          token: tokens.refresh_token,
+          token_type_hint: 'refresh_token',
+        }),
+      });
+      if (!revoke.ok) this.logger.warn(`Apple no revocó el token: ${await revoke.text()}`);
+      return revoke.ok;
+    } catch (error) {
+      this.logger.warn(`No se pudo revocar la autorización de Apple: ${(error as Error).message}`);
+      return false;
+    }
   }
 
   async handleAppleCallback(input: {

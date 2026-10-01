@@ -97,6 +97,8 @@ export interface AppConfig {
     keyId: string;
     privateKey: string;
     callbackUrl: string;
+    /** Bundle id de la app de iOS: client_id de los códigos que emite el inicio nativo */
+    bundleId: string;
     enabled: boolean;
     /** Service ID (web) + bundle id de la app nativa */
     allowedAudiences: string[];
@@ -220,6 +222,7 @@ export default (): AppConfig => {
       keyId: process.env.APPLE_KEY_ID ?? '',
       privateKey: (process.env.APPLE_PRIVATE_KEY ?? '').replace(/\\n/g, '\n'),
       callbackUrl: process.env.APPLE_CALLBACK_URL ?? 'http://localhost:8080/api/auth/apple/callback',
+      bundleId: process.env.APPLE_BUNDLE_ID ?? 'online.mytasklists.app',
       enabled: Boolean(appleClientId && process.env.APPLE_TEAM_ID && process.env.APPLE_KEY_ID),
       allowedAudiences: [appleClientId, ...list(process.env.APPLE_ALLOWED_AUDIENCES)].filter(Boolean),
     },

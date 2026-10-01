@@ -46,9 +46,15 @@ export function AuthShell({ children, switcher = true }: { children: ReactNode; 
           <Brand className="lc-auth-mobile-brand" />
           {children}
         </div>
-        <a className="lc-auth-legal" href={t('legal.privacyUrl')} data-testid="privacy-link">
-          {t('legal.privacy')}
-        </a>
+        <nav className="lc-auth-legal" aria-label={t('legal.privacyTitle')}>
+          <a href={t('legal.privacyUrl')} data-testid="privacy-link">
+            {t('legal.privacy')}
+          </a>
+          <span aria-hidden="true">·</span>
+          <a href={t('legal.termsUrl')} data-testid="terms-link">
+            {t('legal.terms')}
+          </a>
+        </nav>
       </main>
     </div>
   );

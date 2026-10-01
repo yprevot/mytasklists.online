@@ -1,4 +1,4 @@
-import type { ChangePasswordRequest, Locale, UpdateProfileRequest } from '@lista/contracts';
+import type { ChangePasswordRequest, DeleteAccountRequest, Locale, UpdateProfileRequest } from '@lista/contracts';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -51,4 +51,24 @@ export class ChangePasswordDto implements ChangePasswordRequest {
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
   @MaxLength(128, { message: 'La contraseña no puede superar 128 caracteres' })
   newPassword: string;
+}
+
+export class DeleteAccountDto implements DeleteAccountRequest {
+  @ApiPropertyOptional({ description: 'Obligatoria si la cuenta tiene contraseña' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  password?: string;
+
+  @ApiPropertyOptional({ description: 'Código de 2FA o de recuperación, si la 2FA está activa' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  mfaCode?: string;
+
+  @ApiPropertyOptional({ description: 'authorizationCode nuevo de Sign in with Apple (iOS) para revocar sus tokens' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  appleAuthorizationCode?: string;
 }

@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 export function SettingsPage() {
-  const { user, setUser, adoptSession } = useAuth();
+  const { user, setUser, adoptSession, forgetSession } = useAuth();
   const { show } = useToast();
   const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
@@ -17,6 +17,11 @@ export function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [changing, setChanging] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteCode, setDeleteCode] = useState('');
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -71,6 +76,29 @@ export function SettingsPage() {
       });
     } finally {
       setChanging(false);
+    }
+  };
+
+  const hasPassword = user.hasPassword ?? user.provider === 'local';
+
+  const deleteAccount = async (event: FormEvent) => {
+    event.preventDefault();
+    setDeleting(true);
+    try {
+      await usersApi.deleteAccount({
+        password: hasPassword ? deletePassword : undefined,
+        mfaCode: user.mfaEnabled ? deleteCode.trim() : undefined,
+      });
+      show({ title: t('settings.deleted'), body: t('settings.deletedBody'), variant: 'success' });
+      // El backend ya revocó todas las sesiones: solo queda olvidar la local
+      forgetSession();
+    } catch (err) {
+      show({
+        title: t('settings.deleteFailed'),
+        body: err instanceof ApiError ? err.message : t('common.tryAgain'),
+        variant: 'danger',
+      });
+      setDeleting(false);
     }
   };
 
@@ -158,7 +186,7 @@ export function SettingsPage() {
             <div className="card-body">
               <h2 className="h5 mb-3">{t('settings.passwordTitle')}</h2>
 
-              {(user.hasPassword ?? user.provider === 'local') && (
+              {hasPassword && (
                 <div className="mb-3">
                   <label className="form-label" htmlFor="current-password">
                     {t('settings.currentPassword')}
@@ -217,6 +245,103 @@ export function SettingsPage() {
               <a href={t('legal.privacyUrl')} className="fw-semibold" data-testid="settings-privacy-link">
                 {t('legal.privacy')}
               </a>
+              <span className="text-muted mx-2">·</span>
+              <a href={t('legal.termsUrl')} className="fw-semibold" data-testid="settings-terms-link">
+                {t('legal.terms')}
+              </a>
+            </div>
+          </div>
+
+          <div className="card border-0 shadow-sm mt-4" data-testid="delete-account-card">
+            <div className="card-body">
+              <h2 className="h5 mb-2">{t('settings.deleteTitle')}</h2>
+              <p className="text-muted small mb-3">{t('settings.deleteHint')}</p>
+
+              {!deleteOpen ? (
+                <button
+                  type="button"
+                  className="btn btn-outline-danger"
+                  onClick={() => setDeleteOpen(true)}
+                  data-testid="delete-account-open"
+                >
+                  {t('settings.deleteOpen')}
+                </button>
+              ) : (
+                <form onSubmit={deleteAccount} data-testid="delete-account-form">
+                  {hasPassword && (
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="delete-password">
+                        {t('settings.deletePassword')}
+                      </label>
+                      <input
+                        id="delete-password"
+                        type="password"
+                        className="form-control"
+                        value={deletePassword}
+                        onChange={(event) => setDeletePassword(event.target.value)}
+                        autoComplete="current-password"
+                        data-testid="delete-password"
+                      />
+                    </div>
+                  )}
+                  {user.mfaEnabled && (
+                    <div className="mb-3">
+                      <label className="form-label" htmlFor="delete-code">
+                        {t('settings.deleteCode')}
+                      </label>
+                      <input
+                        id="delete-code"
+                        className="form-control"
+                        value={deleteCode}
+                        onChange={(event) => setDeleteCode(event.target.value)}
+                        autoComplete="one-time-code"
+                        inputMode="numeric"
+                        data-testid="delete-code"
+                      />
+                    </div>
+                  )}
+                  <div className="form-check mb-3">
+                    <input
+                      id="delete-confirm"
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={deleteConfirmed}
+                      onChange={(event) => setDeleteConfirmed(event.target.checked)}
+                      data-testid="delete-confirm"
+                    />
+                    <label className="form-check-label" htmlFor="delete-confirm">
+                      {t('settings.deleteConfirm')}
+                    </label>
+                  </div>
+                  <div className="d-flex flex-wrap gap-2">
+                    <button
+                      type="submit"
+                      className="btn btn-danger"
+                      disabled={
+                        deleting ||
+                        !deleteConfirmed ||
+                        (hasPassword && !deletePassword) ||
+                        (user.mfaEnabled && !deleteCode.trim())
+                      }
+                      data-testid="delete-account-submit"
+                    >
+                      {deleting ? t('settings.deleting') : t('settings.deleteSubmit')}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-link text-muted"
+                      onClick={() => {
+                        setDeleteOpen(false);
+                        setDeletePassword('');
+                        setDeleteCode('');
+                        setDeleteConfirmed(false);
+                      }}
+                    >
+                      {t('common.cancel')}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>

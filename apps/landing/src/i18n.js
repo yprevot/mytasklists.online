@@ -79,6 +79,7 @@
     'footer.app': 'Web app',
     'footer.panel': 'Admin panel',
     'footer.privacy': 'Privacy',
+    'footer.terms': 'Terms',
   };
 
   const nodes = Array.from(document.querySelectorAll('[data-i18n]'));
@@ -115,6 +116,9 @@
     }
     for (const link of document.querySelectorAll('[data-privacy-link]')) {
       link.setAttribute('href', english ? '/privacy' : '/privacidad');
+    }
+    for (const link of document.querySelectorAll('[data-terms-link]')) {
+      link.setAttribute('href', english ? '/terms' : '/terminos');
     }
     for (const button of document.querySelectorAll('[data-lang]')) {
       button.setAttribute('aria-pressed', String(button.getAttribute('data-lang') === language));

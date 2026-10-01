@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../components/ui';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { PrivacyLink } from '../components/PrivacyLink';
+import { PrivacyLink, TermsLink } from '../components/PrivacyLink';
 import { useAuth } from '../context/AuthContext';
 import { usePush } from '../context/PushContext';
 import { useSocket } from '../context/SocketContext';
@@ -11,7 +11,7 @@ import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { colors, spacing } from '../theme';
 
-export function SettingsScreen() {
+export function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuth();
   const { connected } = useSocket();
   const { pushToken, permission } = usePush();
@@ -75,6 +75,7 @@ export function SettingsScreen() {
         <Text style={styles.rowLabel}>{t('legal.privacyTitle')}</Text>
         <Text style={[styles.meta, { marginTop: spacing.sm }]}>{t('legal.privacyHint')}</Text>
         <PrivacyLink style={{ alignSelf: 'flex-start', marginTop: spacing.sm }} />
+        <TermsLink style={{ alignSelf: 'flex-start' }} />
       </Card>
 
       {!user.emailVerified ? (
@@ -103,6 +104,14 @@ export function SettingsScreen() {
         onPress={logout}
         testID="logout-button"
         style={{ marginTop: spacing.xl }}
+      />
+
+      <Button
+        title={t('deleteAccount.open')}
+        variant="ghost"
+        onPress={() => navigation.navigate('DeleteAccount')}
+        testID="delete-account-open"
+        style={{ marginTop: spacing.md }}
       />
     </ScrollView>
   );

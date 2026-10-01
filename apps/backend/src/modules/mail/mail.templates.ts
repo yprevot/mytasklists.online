@@ -199,3 +199,30 @@ export function socialLinkedTemplate(locale: Locale, name: string, provider: str
     ),
   };
 }
+
+export function accountDeletedTemplate(locale: Locale, name: string): MailContent {
+  if (locale === 'en') {
+    return {
+      subject: 'Your MyTaskLists account was deleted',
+      text:
+        `Hi ${name},\n\nYour MyTaskLists account and its data were deleted, and we signed you out of every device.\n` +
+        `The lists you created were deleted for everyone you shared them with. Thanks for having used MyTaskLists.`,
+      html: layout(
+        locale,
+        'Your account was deleted',
+        `<p>Hi ${escape(name)},</p><p>Your MyTaskLists account and its data were deleted, and we signed you out of every device.</p><p>The lists you created were deleted for everyone you shared them with. Thanks for having used MyTaskLists.</p>`,
+      ),
+    };
+  }
+  return {
+    subject: 'Eliminamos tu cuenta de MyTaskLists',
+    text:
+      `Hola ${name}:\n\nEliminamos tu cuenta de MyTaskLists y sus datos, y cerramos tu sesión en todos los dispositivos.\n` +
+      `Las listas que creaste se eliminaron también para quienes las compartían contigo. Gracias por haber usado MyTaskLists.`,
+    html: layout(
+      locale,
+      'Eliminamos tu cuenta',
+      `<p>Hola ${escape(name)}:</p><p>Eliminamos tu cuenta de MyTaskLists y sus datos, y cerramos tu sesión en todos los dispositivos.</p><p>Las listas que creaste se eliminaron también para quienes las compartían contigo. Gracias por haber usado MyTaskLists.</p>`,
+    ),
+  };
+}

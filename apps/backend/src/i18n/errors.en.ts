@@ -36,6 +36,9 @@ export const ERRORS_EN: Record<string, string> = {
 
   // Verificación en dos pasos
   'El código no es correcto': 'The code is incorrect',
+  'Escribe tu contraseña para eliminar la cuenta': 'Enter your password to delete your account',
+  'La contraseña no es correcta': 'The password is incorrect',
+  'El código de verificación no es correcto': 'The verification code is incorrect',
   'Demasiados códigos incorrectos. Vuelve a iniciar sesión.': 'Too many incorrect codes. Please sign in again.',
   'El inicio de sesión expiró. Vuelve a empezar.': 'The sign-in expired. Please start again.',
   'El alta expiró. Vuelve a generar el código QR.': 'The setup expired. Generate the QR code again.',

@@ -14,8 +14,8 @@ const replacements = {
   __ANDROID_URL__: process.env.LANDING_ANDROID_URL || '#descargar',
   __APP_URL__: process.env.LANDING_APP_URL || '/app/',
   __YEAR__: String(new Date().getFullYear()),
-  __LEGAL_NAME__: process.env.LANDING_LEGAL_NAME || 'MyTaskLists',
-  __LEGAL_ADDRESS__: process.env.LANDING_LEGAL_ADDRESS || '',
+  __LEGAL_NAME__: process.env.LANDING_LEGAL_NAME || 'MyTaskListsOnline',
+  __LEGAL_ADDRESS__: process.env.LANDING_LEGAL_ADDRESS || 'Cuernavaca, Morelos, México',
   __PRIVACY_EMAIL__: process.env.LANDING_PRIVACY_EMAIL || 'privacidad@mytasklists.online',
 };
 

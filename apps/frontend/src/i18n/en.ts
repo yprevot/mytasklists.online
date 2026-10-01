@@ -145,8 +145,10 @@ export const en: Catalog<typeof es> = {
   legal: {
     privacy: 'Privacy policy',
     privacyUrl: '/privacy',
-    privacyTitle: 'Privacy',
+    privacyTitle: 'Privacy and terms',
     privacyHint: 'What data we keep, why, and how to request a copy or delete your account.',
+    terms: 'Terms of service',
+    termsUrl: '/terms',
   },
   layout: {
     mainNav: 'Main navigation',
@@ -295,5 +297,17 @@ export const en: Catalog<typeof es> = {
     changeFailed: 'Could not change it',
     languageTitle: 'Language',
     languageHint: 'It is also used for the emails and notifications we send you.',
+    deleteTitle: 'Delete account',
+    deleteHint:
+      'Your account, lists, alerts and devices are deleted, and you are signed out everywhere. The lists you created are also deleted for the people you share them with. This cannot be undone.',
+    deleteOpen: 'Delete my account',
+    deletePassword: 'Your password',
+    deleteCode: 'Two-step verification code',
+    deleteConfirm: 'I understand my data will be deleted and this cannot be undone',
+    deleteSubmit: 'Delete permanently',
+    deleting: 'Deleting…',
+    deleted: 'Account deleted',
+    deletedBody: 'We deleted your account and your data. Thanks for having used MyTaskLists.',
+    deleteFailed: 'Could not delete the account',
   },
 };

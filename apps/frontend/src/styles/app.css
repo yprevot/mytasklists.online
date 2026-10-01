@@ -1061,12 +1061,19 @@ html {
   max-width: 26rem;
 }
 .lc-auth-legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
   margin-top: 2rem;
   color: var(--lc-ink-2);
   font-size: 0.875rem;
+}
+.lc-auth-legal a {
+  color: inherit;
   text-underline-offset: 0.2em;
 }
-.lc-auth-legal:hover {
+.lc-auth-legal a:hover {
   color: var(--lc-ink);
 }
 .lc-auth-head {

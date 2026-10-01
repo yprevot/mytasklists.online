@@ -32,6 +32,8 @@ interface Value {
   loginWithApple: (identityToken: string, fullName?: string) => Promise<LoginStep>;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
+  /** Olvida la sesión local sin llamar al backend (p. ej. tras borrar la cuenta) */
+  forgetSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<Value | null>(null);
@@ -118,6 +120,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch {
           /* la sesión local se limpia igualmente */
         }
+        await tokens.clear();
+        clear();
+      },
+      forgetSession: async () => {
         await tokens.clear();
         clear();
       },

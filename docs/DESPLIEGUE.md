@@ -98,11 +98,12 @@ Marca cada punto; el detalle paso a paso está en las secciones 5 a 8.
 **Google**
 - [ ] Proyecto, pantalla de consentimiento y cliente OAuth web (sección 7).
 - [ ] `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en Coolify.
-- [x] **Política de privacidad** en `/privacidad` (español) y `/privacy` (inglés), enlazada desde la landing, la app
-      web y la app móvil. Antes de publicar: variables del repositorio `LANDING_LEGAL_NAME` (nombre o razón social),
-      `LANDING_LEGAL_ADDRESS` (domicilio; sin él la línea no aparece) y `LANDING_PRIVACY_EMAIL` (por defecto
-      `privacidad@mytasklists.online`, buzón que hay que crear). Conviene que la revise un abogado.
-- [ ] **Condiciones del servicio**: Google también las pide en la pantalla de consentimiento y aún no existen.
+- [x] **Política de privacidad** (`/privacidad`, `/privacy`) y **condiciones del servicio** (`/terminos`, `/terms`),
+      enlazadas desde la landing, la app web y la app móvil. El responsable sale de `LANDING_LEGAL_NAME`,
+      `LANDING_LEGAL_ADDRESS` y `LANDING_PRIVACY_EMAIL` (variables opcionales del repositorio); sin ellas se usan
+      `MyTaskListsOnline`, `Cuernavaca, Morelos, México` y `privacidad@mytasklists.online`.
+- [ ] Buzón `privacidad@mytasklists.online` (o el de `LANDING_PRIVACY_EMAIL`): lo citan las dos páginas.
+- [ ] Revisión de las dos páginas por un abogado.
 
 ## 5. Tokens, paso a paso
 
@@ -377,10 +378,11 @@ con restic. Redis solo guarda caché, sesiones y contadores: si se pierde, las p
 ## 9. Riesgos y pendientes
 
 - **Primer cliente real en VPS1**: el camino `imagenes` solo se ha probado con `yunitztech.com` en VPS2.
-- **Condiciones del servicio** inexistentes (las pide la pantalla de consentimiento de Google).
-- **Borrado de cuenta**: la política lo ofrece por correo a `LANDING_PRIVACY_EMAIL` (plazo de 30 días, a mano). App Store
-  exige además poder iniciarlo **desde la app** (guía 5.1.1(v)) y Google Play pide una URL de borrado
-  (sirve `https://mytasklists.online/privacidad#eliminar`).
+- **Borrado de cuenta**: se hace desde «Mi cuenta → Eliminar cuenta» en la web, iOS y Android (`DELETE /users/me`), como
+  pide App Store (guía 5.1.1(v)). En Google Play → Seguridad de los datos, la URL de borrado es
+  `https://mytasklists.online/privacidad#eliminar`. Quien ya no puede entrar lo pide por correo (a mano, 30 días).
+- **Revocación de Sign in with Apple** al borrar la cuenta: necesita `APPLE_PRIVATE_KEY`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`
+  y `APPLE_BUNDLE_ID` (por defecto `online.mytasklists.app`). Sin ellos la cuenta se borra igual, pero sin revocar.
 - **Dominio y registrador**: confirma el dominio y dónde está su DNS (`manual` o `hostinger`).
 - **SMTP**: `mail.yunitztech.com` sirve a todos los clientes; el DMARC se sube a `reject` tras 2–4 semanas de informes limpios.
 - **Identificadores móviles nuevos** (`online.mytasklists.app`, esquema `mytasklists`): la carpeta nativa generada

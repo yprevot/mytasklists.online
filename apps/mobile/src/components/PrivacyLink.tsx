@@ -8,21 +8,26 @@ import { colors, spacing } from '../theme';
 /** La política vive en la landing, en el mismo dominio que la API */
 const SITE_URL = API_URL.replace(/\/api$/, '');
 
-/** Abre la política de privacidad, en el idioma de la app, sin salir de ella */
-export function PrivacyLink({ style }: { style?: StyleProp<ViewStyle> }) {
+type LinkProps = { style?: StyleProp<ViewStyle> };
+
+/** Abre una página legal de la landing, en el idioma de la app, sin salir de ella */
+function LegalLink({ page, testID, style }: LinkProps & { page: 'privacy' | 'terms'; testID: string }) {
   const { t } = useTranslation();
 
   return (
     <Pressable
-      onPress={() => void WebBrowser.openBrowserAsync(`${SITE_URL}${t('legal.privacyPath')}`)}
+      onPress={() => void WebBrowser.openBrowserAsync(`${SITE_URL}${t(`legal.${page}Path`)}`)}
       accessibilityRole="link"
-      testID="privacy-link"
+      testID={testID}
       style={style}
     >
-      <Text style={styles.text}>{t('legal.privacy')}</Text>
+      <Text style={styles.text}>{t(`legal.${page}`)}</Text>
     </Pressable>
   );
 }
+
+export const PrivacyLink = ({ style }: LinkProps) => <LegalLink page="privacy" testID="privacy-link" style={style} />;
+export const TermsLink = ({ style }: LinkProps) => <LegalLink page="terms" testID="terms-link" style={style} />;
 
 const styles = StyleSheet.create({
   text: {

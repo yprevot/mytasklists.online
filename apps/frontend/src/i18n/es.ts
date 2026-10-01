@@ -144,8 +144,10 @@ export const es = {
   legal: {
     privacy: 'Política de privacidad',
     privacyUrl: '/privacidad',
-    privacyTitle: 'Privacidad',
+    privacyTitle: 'Privacidad y condiciones',
     privacyHint: 'Qué datos guardamos, para qué y cómo pedir una copia o borrar tu cuenta.',
+    terms: 'Condiciones del servicio',
+    termsUrl: '/terminos',
   },
   layout: {
     mainNav: 'Navegación principal',
@@ -294,5 +296,17 @@ export const es = {
     changeFailed: 'No se pudo cambiar',
     languageTitle: 'Idioma',
     languageHint: 'También se usa en los correos y avisos que te enviamos.',
+    deleteTitle: 'Eliminar cuenta',
+    deleteHint:
+      'Se borran tu cuenta, tus listas, tus avisos y tus dispositivos, y se cierra tu sesión en todas partes. Las listas que creaste se eliminan también para quienes las comparten contigo. No se puede deshacer.',
+    deleteOpen: 'Eliminar mi cuenta',
+    deletePassword: 'Tu contraseña',
+    deleteCode: 'Código de verificación en dos pasos',
+    deleteConfirm: 'Entiendo que se borrarán mis datos y que no se puede deshacer',
+    deleteSubmit: 'Eliminar definitivamente',
+    deleting: 'Eliminando…',
+    deleted: 'Cuenta eliminada',
+    deletedBody: 'Borramos tu cuenta y tus datos. Gracias por haber usado MyTaskLists.',
+    deleteFailed: 'No se pudo eliminar la cuenta',
   },
 } as const;

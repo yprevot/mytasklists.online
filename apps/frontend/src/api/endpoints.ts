@@ -1,4 +1,4 @@
-import type { UpdateProfileRequest } from '@lista/contracts';
+import type { DeleteAccountRequest, UpdateProfileRequest } from '@lista/contracts';
 import { api } from './client';
 import type {
   AppNotification,
@@ -42,6 +42,8 @@ export const usersApi = {
       currentPassword: currentPassword || undefined,
       newPassword,
     }),
+  deleteAccount: (payload: DeleteAccountRequest) =>
+    api.delete<{ ok: true; appleRevoked: boolean }>('/users/me', { body: payload }),
 };
 
 export const listsApi = {
