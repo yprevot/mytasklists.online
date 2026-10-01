@@ -382,6 +382,7 @@ Archivo: `e2e/tests/landing/01-landing.spec.ts`
 | `CP-LAND-005` | La página se adapta al móvil |
 | `CP-LAND-006` | El pie enlaza la app, el panel y la API |
 | `CP-LAND-008` | El formulario del boletín aparece solo si está disponible |
+| `CP-LAND-009` | La política de privacidad se publica en español y en inglés |
 
 ### Landing · idiomas
 

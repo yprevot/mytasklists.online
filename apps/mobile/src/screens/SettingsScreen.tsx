@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../components/ui';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { PrivacyLink } from '../components/PrivacyLink';
 import { useAuth } from '../context/AuthContext';
 import { usePush } from '../context/PushContext';
 import { useSocket } from '../context/SocketContext';
@@ -68,6 +69,12 @@ export function SettingsScreen() {
           <LanguageSwitcher />
         </View>
         <Text style={[styles.meta, { marginTop: spacing.sm }]}>{t('settings.languageHint')}</Text>
+      </Card>
+
+      <Card style={{ marginTop: spacing.lg }}>
+        <Text style={styles.rowLabel}>{t('legal.privacyTitle')}</Text>
+        <Text style={[styles.meta, { marginTop: spacing.sm }]}>{t('legal.privacyHint')}</Text>
+        <PrivacyLink style={{ alignSelf: 'flex-start', marginTop: spacing.sm }} />
       </Card>
 
       {!user.emailVerified ? (

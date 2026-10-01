@@ -1060,6 +1060,15 @@ html {
   width: 100%;
   max-width: 26rem;
 }
+.lc-auth-legal {
+  margin-top: 2rem;
+  color: var(--lc-ink-2);
+  font-size: 0.875rem;
+  text-underline-offset: 0.2em;
+}
+.lc-auth-legal:hover {
+  color: var(--lc-ink);
+}
 .lc-auth-head {
   margin-bottom: 1.75rem;
 }

@@ -74,6 +74,19 @@ test.describe('Landing · página pública de descargas', () => {
     await expect(footer.getByRole('link', { name: 'API' })).toHaveAttribute('href', '/api/docs');
   });
 
+  test('CP-LAND-009 · la política de privacidad se publica en español y en inglés', async ({ page }) => {
+    await page.getByTestId('footer-privacy').click();
+    await expect(page).toHaveURL(/\/privacidad$/);
+    const policy = page.getByTestId('privacy-policy');
+    await expect(policy.getByRole('heading', { level: 1 })).toHaveText('Política de privacidad');
+    await expect(policy.locator('#eliminar')).toContainText('Eliminar mi cuenta');
+    await expect(policy).not.toContainText('__');
+
+    await page.getByTestId('language-en').click();
+    await expect(page).toHaveURL(/\/privacy$/);
+    await expect(page.getByTestId('privacy-policy').getByRole('heading', { level: 1 })).toHaveText('Privacy policy');
+  });
+
   test('CP-LAND-008 · el formulario del boletín aparece solo si está disponible', async ({ page }) => {
     const status = await page.request.get('/api/newsletter');
     const { enabled } = (await status.json()) as { enabled: boolean };

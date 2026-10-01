@@ -148,6 +148,12 @@ export const en: Catalog<typeof es> = {
   push: {
     channel: 'Shared lists',
   },
+  legal: {
+    privacy: 'Privacy policy',
+    privacyPath: '/privacy',
+    privacyTitle: 'Privacy',
+    privacyHint: 'What data we keep, why, and how to request a copy or delete your account.',
+  },
   update: {
     title: 'Update the app',
     current: 'You have version {{version}}',

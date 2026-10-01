@@ -6,7 +6,8 @@
 #
 # Configuración:
 #   Variables del REPOSITORIO (Settings → Secrets and variables → Actions → Variables):
-#     DEPLOY_ENABLED=true, y LANDING_IOS_URL / LANDING_ANDROID_URL (enlaces de las tiendas, opcionales).
+#     DEPLOY_ENABLED=true, y LANDING_IOS_URL / LANDING_ANDROID_URL (enlaces de las tiendas, opcionales)
+#     y LANDING_LEGAL_NAME / LANDING_LEGAL_ADDRESS / LANDING_PRIVACY_EMAIL (responsable en /privacidad).
 #     Deben ser del repositorio: las del entorno no se ven en los `if:` ni en la matriz.
 #   Entorno `production` (Settings → Environments):
 #     variable SITE_URL=https://tu-dominio
@@ -99,6 +100,9 @@ jobs:
             build_args: |
               LANDING_IOS_URL=${{ vars.LANDING_IOS_URL || '#descargar' }}
               LANDING_ANDROID_URL=${{ vars.LANDING_ANDROID_URL || '#descargar' }}
+              LANDING_LEGAL_NAME=${{ vars.LANDING_LEGAL_NAME }}
+              LANDING_LEGAL_ADDRESS=${{ vars.LANDING_LEGAL_ADDRESS }}
+              LANDING_PRIVACY_EMAIL=${{ vars.LANDING_PRIVACY_EMAIL }}
           - name: gateway
             file: infra/nginx/gateway/Dockerfile
             context: .

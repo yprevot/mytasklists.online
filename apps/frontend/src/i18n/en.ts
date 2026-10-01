@@ -142,6 +142,12 @@ export const en: Catalog<typeof es> = {
     sampleLate: 'overdue',
     sampleBatteries: 'AA batteries',
   },
+  legal: {
+    privacy: 'Privacy policy',
+    privacyUrl: '/privacy',
+    privacyTitle: 'Privacy',
+    privacyHint: 'What data we keep, why, and how to request a copy or delete your account.',
+  },
   layout: {
     mainNav: 'Main navigation',
     openMenu: 'Open menu',

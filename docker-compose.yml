@@ -218,6 +218,9 @@ services:
       args:
         LANDING_IOS_URL: ${LANDING_IOS_URL:-#}
         LANDING_ANDROID_URL: ${LANDING_ANDROID_URL:-#}
+        LANDING_LEGAL_NAME: ${LANDING_LEGAL_NAME:-}
+        LANDING_LEGAL_ADDRESS: ${LANDING_LEGAL_ADDRESS:-}
+        LANDING_PRIVACY_EMAIL: ${LANDING_PRIVACY_EMAIL:-}
     container_name: lc-landing
     restart: unless-stopped
     expose:

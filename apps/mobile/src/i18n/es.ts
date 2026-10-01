@@ -148,6 +148,12 @@ export const es = {
   push: {
     channel: 'Listas compartidas',
   },
+  legal: {
+    privacy: 'Política de privacidad',
+    privacyPath: '/privacidad',
+    privacyTitle: 'Privacidad',
+    privacyHint: 'Qué datos guardamos, para qué y cómo pedir una copia o borrar tu cuenta.',
+  },
   update: {
     title: 'Actualiza la app',
     current: 'Tienes la versión {{version}}',

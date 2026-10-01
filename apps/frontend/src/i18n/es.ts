@@ -141,6 +141,12 @@ export const es = {
     sampleLate: 'vencido',
     sampleBatteries: 'Pilas AA',
   },
+  legal: {
+    privacy: 'Política de privacidad',
+    privacyUrl: '/privacidad',
+    privacyTitle: 'Privacidad',
+    privacyHint: 'Qué datos guardamos, para qué y cómo pedir una copia o borrar tu cuenta.',
+  },
   layout: {
     mainNav: 'Navegación principal',
     openMenu: 'Abrir menú',

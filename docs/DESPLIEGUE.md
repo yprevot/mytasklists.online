@@ -98,9 +98,11 @@ Marca cada punto; el detalle paso a paso está en las secciones 5 a 8.
 **Google**
 - [ ] Proyecto, pantalla de consentimiento y cliente OAuth web (sección 7).
 - [ ] `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en Coolify.
-- [ ] **Páginas de privacidad y de términos** publicadas en el dominio: Google las pide en la pantalla de
-      consentimiento y hoy la landing **no las tiene**. Necesito los datos legales del responsable (nombre o razón
-      social y domicilio) para redactarlas o tu texto ya revisado.
+- [x] **Política de privacidad** en `/privacidad` (español) y `/privacy` (inglés), enlazada desde la landing, la app
+      web y la app móvil. Antes de publicar: variables del repositorio `LANDING_LEGAL_NAME` (nombre o razón social),
+      `LANDING_LEGAL_ADDRESS` (domicilio; sin él la línea no aparece) y `LANDING_PRIVACY_EMAIL` (por defecto
+      `privacidad@mytasklists.online`, buzón que hay que crear). Conviene que la revise un abogado.
+- [ ] **Condiciones del servicio**: Google también las pide en la pantalla de consentimiento y aún no existen.
 
 ## 5. Tokens, paso a paso
 
@@ -375,7 +377,10 @@ con restic. Redis solo guarda caché, sesiones y contadores: si se pierde, las p
 ## 9. Riesgos y pendientes
 
 - **Primer cliente real en VPS1**: el camino `imagenes` solo se ha probado con `yunitztech.com` en VPS2.
-- **Páginas legales** inexistentes (necesarias para la pantalla de consentimiento de Google y para la tienda).
+- **Condiciones del servicio** inexistentes (las pide la pantalla de consentimiento de Google).
+- **Borrado de cuenta**: la política lo ofrece por correo a `LANDING_PRIVACY_EMAIL` (plazo de 30 días, a mano). App Store
+  exige además poder iniciarlo **desde la app** (guía 5.1.1(v)) y Google Play pide una URL de borrado
+  (sirve `https://mytasklists.online/privacidad#eliminar`).
 - **Dominio y registrador**: confirma el dominio y dónde está su DNS (`manual` o `hostinger`).
 - **SMTP**: `mail.yunitztech.com` sirve a todos los clientes; el DMARC se sube a `reject` tras 2–4 semanas de informes limpios.
 - **Identificadores móviles nuevos** (`online.mytasklists.app`, esquema `mytasklists`): la carpeta nativa generada

@@ -209,6 +209,16 @@ export function SettingsPage() {
               <div className="form-text mt-2">{t('settings.languageHint')}</div>
             </div>
           </div>
+
+          <div className="card border-0 shadow-sm mt-4" data-testid="privacy-card">
+            <div className="card-body">
+              <h2 className="h5 mb-2">{t('legal.privacyTitle')}</h2>
+              <p className="text-muted small mb-2">{t('legal.privacyHint')}</p>
+              <a href={t('legal.privacyUrl')} className="fw-semibold" data-testid="settings-privacy-link">
+                {t('legal.privacy')}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
