@@ -23,7 +23,7 @@ export function Brand({ to, className = '' }: { to?: string; className?: string 
   const content = (
     <>
       <BrandMark />
-      <span>ListaDeCompras</span>
+      <span>MyTaskLists</span>
     </>
   );
   return to ? (

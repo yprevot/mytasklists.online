@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-#  ListaDeCompras · PRODUCCIÓN en Coolify (aplicación Docker Compose)
+#  MyTaskLists · PRODUCCIÓN en Coolify (aplicación Docker Compose)
 #
 #  Las imágenes las publica GitHub Actions en GHCR (.github/workflows/deploy.yml):
 #  el servidor solo las descarga y arranca, nunca compila. Coolify lee este
@@ -13,7 +13,7 @@
 #
 #  El entorno de desarrollo es docker-compose.yml (no se usa aquí).
 # ─────────────────────────────────────────────────────────────────────────────
-name: listadecompras
+name: mytasklists
 
 x-hardening: &hardening
   restart: unless-stopped
@@ -35,9 +35,12 @@ services:
       # Subred de la red de esta app donde está Traefik (docs/DESPLIEGUE.md, paso "TRUSTED_PROXY_CIDR")
       TRUSTED_PROXY_CIDR: ${TRUSTED_PROXY_CIDR:?Define la subred de Traefik}
       # Asociación con la app móvil (/.well-known); vacío = 404. Ver docs/DESPLIEGUE.md §7.4
-      IOS_APP_ID: ${IOS_APP_ID:-}                         # <TEAM_ID>.com.listadecompras.app
-      ANDROID_PACKAGE: ${ANDROID_PACKAGE:-com.listadecompras.app}
+      IOS_APP_ID: ${IOS_APP_ID:-}                         # <TEAM_ID>.online.mytasklists.app
+      ANDROID_PACKAGE: ${ANDROID_PACKAGE:-online.mytasklists.app}
       ANDROID_CERT_FINGERPRINTS: ${ANDROID_CERT_FINGERPRINTS:-}   # AA:BB:…,CC:DD:… (separadas por comas)
+      # Analítica con Umami en la landing y la app (vacío = sin analítica)
+      UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}             # https://stats.yunitztech.com/script.js
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
     depends_on:
       backend: { condition: service_healthy }
       frontend: { condition: service_started }
@@ -65,7 +68,7 @@ services:
       # Base de datos y caché (servicios de este mismo compose)
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_DB: ${POSTGRES_DB:-mytasklists}
       POSTGRES_USER: ${POSTGRES_USER:-lista}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
       REDIS_HOST: redis
@@ -98,7 +101,7 @@ services:
       SMTP_SECURE: ${SMTP_SECURE:-true}
       SMTP_USER: ${SMTP_USER:?Define SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD:?Define SMTP_PASSWORD}
-      MAIL_FROM: ${MAIL_FROM:?Define MAIL_FROM, p. ej. ListaDeCompras <no-reply@mytasklists.online>}
+      MAIL_FROM: ${MAIL_FROM:?Define MAIL_FROM, p. ej. MyTaskLists <no-reply@mytasklists.online>}
 
       # Inicio de sesión con Google (vacío = desactivado). Apple es opcional y se
       # agrega igual: APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY…
@@ -118,6 +121,10 @@ services:
       MOBILE_MIN_VERSION: ${MOBILE_MIN_VERSION:-1.0.0}
       MOBILE_STORE_URL_IOS: ${MOBILE_STORE_URL_IOS:-}
       MOBILE_STORE_URL_ANDROID: ${MOBILE_STORE_URL_ANDROID:-}
+
+      # Boletín en Listmonk (vacío = la landing no muestra el formulario)
+      LISTMONK_URL: ${LISTMONK_URL:-}                     # https://news.mytasklists.online
+      LISTMONK_LIST_UUID: ${LISTMONK_LIST_UUID:-}
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -160,7 +167,7 @@ services:
     mem_limit: 512m
     cpus: 1.0
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_DB: ${POSTGRES_DB:-mytasklists}
       POSTGRES_USER: ${POSTGRES_USER:-lista}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
       TZ: ${TZ:-America/Mexico_City}

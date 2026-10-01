@@ -1,4 +1,4 @@
-appId: com.listadecompras.app
+appId: online.mytasklists.app
 name: Listas · crear una lista, agregar un producto y comprarlo
 env:
   API_URL: http://localhost:8080/api

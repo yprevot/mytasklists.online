@@ -1,4 +1,4 @@
-name: listadecompras
+name: mytasklists
 
 # ─────────────────────────────────────────────────────────────
 #  Arquitectura:
@@ -30,7 +30,7 @@ services:
     container_name: lc-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_DB: ${POSTGRES_DB:-mytasklists}
       POSTGRES_USER: ${POSTGRES_USER:-lista}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lista_dev_password}
       TZ: ${TZ:-America/Mexico_City}
@@ -44,7 +44,7 @@ services:
       # Solo accesible desde esta máquina (herramientas de BD locales)
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lista} -d ${POSTGRES_DB:-listadecompras}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lista} -d ${POSTGRES_DB:-mytasklists}"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -107,7 +107,7 @@ services:
       TZ: ${TZ:-America/Mexico_City}
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_DB: ${POSTGRES_DB:-mytasklists}
       POSTGRES_USER: ${POSTGRES_USER:-lista}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lista_dev_password}
       REDIS_HOST: redis
@@ -141,7 +141,7 @@ services:
       SMTP_SECURE: ${SMTP_SECURE:-false}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      MAIL_FROM: ${MAIL_FROM:-ListaDeCompras <no-responder@listadecompras.local>}
+      MAIL_FROM: ${MAIL_FROM:-MyTaskLists <no-responder@mytasklists.local>}
       # Google / Apple
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}

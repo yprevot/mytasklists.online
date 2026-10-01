@@ -1,6 +1,6 @@
 # Catálogo de casos de prueba
 
-159 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app móvil).
+162 casos automatizados con Playwright, repartidos en cinco proyectos (uno por servicio y uno para la app móvil).
 
 Ejecución completa:
 
@@ -17,7 +17,7 @@ con un índice en `e2e/evidence/INDICE.md`.
 
 ## Servicio `backend` (API REST + WebSocket)
 
-**80 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
+**82 casos.** No aplica: es un servicio sin interfaz, se valida por peticiones HTTP y sockets.
 
 ### Servicio backend · salud e infraestructura
 
@@ -182,6 +182,15 @@ Archivo: `e2e/tests/backend/12-idiomas.spec.ts`
 | `CP-I18N-002` | El registro guarda el idioma y el perfil lo puede cambiar |
 | `CP-I18N-003` | Cada integrante recibe los avisos en su idioma |
 | `CP-I18N-004` | Los correos salen en el idioma de la persona |
+
+### Servicio backend · boletín
+
+Archivo: `e2e/tests/backend/13-boletin.spec.ts`
+
+| Caso | Qué se comprueba |
+| --- | --- |
+| `CP-NEWS-001` | Sin Listmonk configurado el boletín se anuncia desactivado |
+| `CP-NEWS-002` | El alta valida el correo y sin Listmonk responde 503 (en el idioma pedido) |
 
 ---
 
@@ -358,7 +367,7 @@ Archivo: `e2e/tests/dashboard/06-idiomas.spec.ts`
 
 ## Servicio `landing` (página pública de descargas)
 
-**7 casos.** Cada caso graba un video en `e2e/evidence/landing/`.
+**8 casos.** Cada caso graba un video en `e2e/evidence/landing/`.
 
 ### Landing · página pública de descargas
 
@@ -372,6 +381,7 @@ Archivo: `e2e/tests/landing/01-landing.spec.ts`
 | `CP-LAND-004` | Se explican la recurrencia, el tiempo real y los avisos |
 | `CP-LAND-005` | La página se adapta al móvil |
 | `CP-LAND-006` | El pie enlaza la app, el panel y la API |
+| `CP-LAND-008` | El formulario del boletín aparece solo si está disponible |
 
 ### Landing · idiomas
 

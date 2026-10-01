@@ -151,7 +151,7 @@ export const es = {
     liveOn: 'En vivo',
     liveOff: 'Sin conexión',
     logout: 'Cerrar sesión',
-    footer: 'ListaDeCompras · listas compartidas con productos recurrentes',
+    footer: 'MyTaskLists · listas compartidas con productos recurrentes',
     download: 'Descargar la app móvil',
   },
   lists: {

@@ -22,6 +22,7 @@ import { RecurrenceModule } from './modules/recurrence/recurrence.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { HealthModule } from './modules/health/health.module';
 import { CompatModule } from './modules/compat/compat.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { AppVersionGuard } from './common/guards/app-version.guard';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -86,6 +87,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
     AdminModule,
     HealthModule,
     CompatModule,
+    NewsletterModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AppThrottlerGuard },

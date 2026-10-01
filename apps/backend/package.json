@@ -2,7 +2,7 @@
   "name": "@lista/backend",
   "version": "1.0.0",
   "private": true,
-  "description": "API de ListaDeCompras (NestJS sobre Fastify)",
+  "description": "API de MyTaskLists (NestJS sobre Fastify)",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",

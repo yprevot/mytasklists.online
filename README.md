@@ -1,4 +1,4 @@
-# ListaDeCompras
+# MyTaskLists
 
 Sistema de **listas de compras compartidas con productos recurrentes** y sincronización en
 tiempo real. Monorepo con todos los servicios dockerizados, más una app móvil para iOS y
@@ -79,7 +79,7 @@ producción el backend se niega a ejecutarlo (son contraseñas públicas):
 | -------------------------- | ------------ | ----- |
 | `ana@example.com`          | `Demo12345`  | user  |
 | `carlos@example.com`       | `Demo12345`  | user  |
-| `admin@listadecompras.mx`  | `Admin12345` | admin |
+| `admin@mytasklists.online`  | `Admin12345` | admin |
 
 Ana y Carlos comparten la lista **Despensa quincenal**, que ya trae un producto recurrente al
 día, uno vencido, uno puntual y uno comprado. Inicia sesión con ambos en dos navegadores para
@@ -201,7 +201,7 @@ SMTP_HOST=smtp.proveedor.com
 SMTP_PORT=587
 SMTP_USER=...
 SMTP_PASSWORD=...
-MAIL_FROM=ListaDeCompras <no-responder@tudominio.com>
+MAIL_FROM=MyTaskLists <no-responder@tudominio.com>
 ```
 
 Configura SPF, DKIM y DMARC en tu dominio (tu proveedor te da los registros DNS) o los correos
@@ -219,8 +219,8 @@ verificando el `id_token` contra los JWKS de Google). Se activan en cuanto hay c
 2. En **Credenciales → Crear ID de cliente OAuth → Aplicación web** agrega la URI de
    redirección `https://TU_DOMINIO/api/auth/google/callback` (y
    `http://localhost:8080/api/auth/google/callback` para desarrollo).
-3. Para la app móvil crea también un ID de cliente **iOS** (bundle `com.listadecompras.app`) y
-   uno **Android** (paquete `com.listadecompras.app` + huella SHA-1 del keystore:
+3. Para la app móvil crea también un ID de cliente **iOS** (bundle `online.mytasklists.app`) y
+   uno **Android** (paquete `online.mytasklists.app` + huella SHA-1 del keystore:
    `npx eas credentials`).
 4. Variables:
 
@@ -250,12 +250,12 @@ vinculadas viven en `user_identities`, identificadas por el `sub` del proveedor.
 ### Con Apple
 
 ```dotenv
-APPLE_CLIENT_ID=com.listadecompras.app.service
+APPLE_CLIENT_ID=online.mytasklists.app.service
 APPLE_TEAM_ID=XXXXXXXXXX
 APPLE_KEY_ID=YYYYYYYYYY
 APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
 APPLE_CALLBACK_URL=https://TU_DOMINIO/api/auth/apple/callback
-APPLE_ALLOWED_AUDIENCES=com.listadecompras.app
+APPLE_ALLOWED_AUDIENCES=online.mytasklists.app
 ```
 
 `GET /api/auth/providers` indica qué proveedores están disponibles y la interfaz muestra u
@@ -359,13 +359,13 @@ sh infra/postgres/upgrade-16-to-18.sh
 ```
 
 El script vuelca la base con un PostgreSQL 16 temporal, la restaura en la 18 y deja el volcado
-como respaldo. Cuando compruebes que todo está bien: `docker volume rm listadecompras_postgres-data`.
+como respaldo. Cuando compruebes que todo está bien: `docker volume rm mytasklists_postgres-data`.
 
 ---
 
 ## Pruebas end-to-end con Playwright
 
-**159 casos** repartidos en cinco proyectos, uno por servicio más la app móvil.
+**162 casos** repartidos en cinco proyectos, uno por servicio más la app móvil.
 Todos los casos con interfaz **graban un video de evidencia**. Los de correo leen la bandeja
 de Mailpit (`E2E_MAILPIT_URL`, por defecto http://localhost:8025).
 
@@ -377,7 +377,7 @@ npm --prefix e2e install
 npm --prefix e2e run install:browsers
 
 # desde la raíz del repositorio
-npm run test:e2e                 # los 5 proyectos (159 casos)
+npm run test:e2e                 # los 5 proyectos (162 casos)
 npm run test:e2e:backend         # solo la API
 npm run test:e2e:frontend        # solo la app web
 npm run test:e2e:dashboard       # solo el panel
@@ -538,6 +538,6 @@ Eventos de WebSocket: `item:created`, `item:updated`, `item:purchased`, `item:re
 
 - [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) — modelo de datos, decisiones y flujos internos.
 - [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md) — desarrollo vs producción, qué llega al servidor, tokens, Coolify y Google.
-- [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 159 casos de prueba, uno por uno.
+- [`docs/CASOS-DE-PRUEBA.md`](docs/CASOS-DE-PRUEBA.md) — los 162 casos de prueba, uno por uno.
 - [`docs/COMPATIBILIDAD.md`](docs/COMPATIBILIDAD.md) — qué se puede desplegar sin miedo, contrato
   compartido, versión mínima de la app y workflows de CI/CD.

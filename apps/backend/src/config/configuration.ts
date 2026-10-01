@@ -19,6 +19,13 @@ export interface RateLimitConfig {
 }
 
 /** Compatibilidad con las apps de las tiendas (ver docs/COMPATIBILIDAD.md) */
+/** Boletín en Listmonk: la landing ofrece el alta solo si está configurado */
+export interface NewsletterConfig {
+  listmonkUrl: string;
+  listUuid: string;
+  enabled: boolean;
+}
+
 export interface MobileConfig {
   /** Las apps por debajo de esta versión reciben 426 y deben actualizarse */
   minVersion: string;
@@ -97,6 +104,7 @@ export interface AppConfig {
   recurrence: { cron: string };
   push: { expoAccessToken?: string };
   mobile: MobileConfig;
+  newsletter: NewsletterConfig;
 }
 
 export const DEV_DEFAULTS = {
@@ -154,7 +162,7 @@ export default (): AppConfig => {
       port: int(process.env.POSTGRES_PORT, 5432),
       username: process.env.POSTGRES_USER ?? 'lista',
       password: process.env.POSTGRES_PASSWORD ?? DEV_DEFAULTS.postgresPassword,
-      database: process.env.POSTGRES_DB ?? 'listadecompras',
+      database: process.env.POSTGRES_DB ?? 'mytasklists',
       runMigrations: bool(process.env.RUN_MIGRATIONS, true),
       runSeed: bool(process.env.RUN_SEED, false),
     },
@@ -185,7 +193,7 @@ export default (): AppConfig => {
       secure: bool(process.env.SMTP_SECURE, false),
       user: process.env.SMTP_USER || undefined,
       password: process.env.SMTP_PASSWORD || undefined,
-      from: process.env.MAIL_FROM ?? 'ListaDeCompras <no-responder@localhost>',
+      from: process.env.MAIL_FROM ?? 'MyTaskLists <no-responder@localhost>',
     },
     rateLimit: {
       enabled: bool(process.env.RATE_LIMIT_ENABLED, true),
@@ -223,6 +231,11 @@ export default (): AppConfig => {
         ios: process.env.MOBILE_STORE_URL_IOS || null,
         android: process.env.MOBILE_STORE_URL_ANDROID || null,
       },
+    },
+    newsletter: {
+      listmonkUrl: (process.env.LISTMONK_URL ?? '').replace(/\/+$/, ''),
+      listUuid: process.env.LISTMONK_LIST_UUID ?? '',
+      enabled: Boolean(process.env.LISTMONK_URL && process.env.LISTMONK_LIST_UUID),
     },
   };
 };

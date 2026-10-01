@@ -1,4 +1,4 @@
-appId: com.listadecompras.app
+appId: online.mytasklists.app
 name: Idioma · cambiar entre español e inglés
 ---
 - runFlow: ../subflows/abrir-sin-sesion.yaml

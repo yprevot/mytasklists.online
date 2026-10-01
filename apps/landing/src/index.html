@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f6c945" />
-    <title>ListaDeCompras · Listas compartidas con productos recurrentes</title>
+    <title>MyTaskLists · Listas compartidas con productos recurrentes</title>
     <meta
       name="description"
       content="Crea listas de compras, compártelas con quien quieras y deja que los productos que compras siempre se agreguen solos cada cierto tiempo. Disponible para iOS, Android y web."
     />
-    <meta property="og:title" content="ListaDeCompras" />
+    <meta property="og:title" content="MyTaskLists" />
     <meta
       property="og:description"
       content="Listas de compras compartidas, en tiempo real y con productos recurrentes."
@@ -30,7 +30,7 @@
             <path d="M8.5 16.8l4.7 4.6 9.3-9.6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
             <circle cx="24.5" cy="7.5" r="4.5" fill="#f6c945" stroke="#1d5b45" stroke-width="2" />
           </svg>
-          <span>ListaDeCompras</span>
+          <span>MyTaskLists</span>
         </a>
         <nav class="nav-links" aria-label="Principal">
           <a class="nav-text" href="#funciones" data-i18n="nav.features">Funciones</a>
@@ -320,11 +320,34 @@
           </div>
         </div>
       </section>
+      <!-- ── Boletín (solo si Listmonk está configurado: newsletter.js) ── -->
+      <section id="boletin" class="block newsletter" hidden data-newsletter>
+        <div class="wrap newsletter-grid">
+          <div class="section-head">
+            <h2 data-i18n="newsletter.title">Novedades, sin ruido</h2>
+            <p data-i18n="newsletter.text">
+              Te escribimos solo cuando haya algo nuevo en la app. Puedes darte de baja cuando quieras.
+            </p>
+          </div>
+
+          <form class="newsletter-form" novalidate data-testid="newsletter-form">
+            <label for="newsletter-email" data-i18n="newsletter.label">Correo electrónico</label>
+            <div class="newsletter-row">
+              <input id="newsletter-email" name="email" type="email" required autocomplete="email" inputmode="email" />
+              <button class="btn btn-primary" type="submit" data-i18n="newsletter.submit">Suscribirme</button>
+            </div>
+            <p class="newsletter-msg" role="status" aria-live="polite"></p>
+            <p hidden data-msg="ok" data-i18n="newsletter.ok">Listo: revisa tu correo para confirmar la suscripción.</p>
+            <p hidden data-msg="invalid" data-i18n="newsletter.invalid">Escribe un correo electrónico válido.</p>
+            <p hidden data-msg="error" data-i18n="newsletter.error">No se pudo completar la suscripción. Inténtalo más tarde.</p>
+          </form>
+        </div>
+      </section>
     </main>
 
     <footer>
       <div class="wrap">
-        <span data-i18n="footer.tagline">© __YEAR__ ListaDeCompras · Hecho para no volver a olvidar la leche.</span>
+        <span data-i18n="footer.tagline">© __YEAR__ MyTaskLists · Hecho para no volver a olvidar la leche.</span>
         <span>
           <a href="__APP_URL__" data-i18n="footer.app">App web</a> ·
           <a href="/dashboard/" data-i18n="footer.panel">Panel</a> ·
@@ -334,5 +357,6 @@
     </footer>
     <script src="./i18n.js"></script>
     <script src="./demo.js"></script>
+    <script src="./newsletter.js"></script>
   </body>
 </html>

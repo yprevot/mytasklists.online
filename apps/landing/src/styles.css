@@ -1,5 +1,5 @@
 /*
- * ListaDeCompras · landing.
+ * MyTaskLists · landing.
  *
  * Mundo: la etiqueta de precio de góndola. Amarillo de etiqueta de fondo para
  * abrir, verde pino (la marca) para cerrar, tinta verde casi negra para el texto.
@@ -747,5 +747,85 @@ footer a:hover {
   *::after {
     animation: none !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Boletín ────────────────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--pine);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--pine-press);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.newsletter {
+  padding-top: 0;
+}
+.newsletter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 4rem;
+  align-items: center;
+  padding-top: 3.5rem;
+  border-top: 1px solid var(--line-strong);
+}
+.newsletter-grid .section-head {
+  position: static;
+}
+.newsletter-form label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+.newsletter-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.newsletter-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.625rem;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  caret-color: var(--pine);
+}
+.newsletter-row input:focus {
+  outline: none;
+  border-color: var(--pine);
+  box-shadow: 0 0 0 3px rgb(29 91 69 / 0.2);
+}
+.newsletter-row .btn {
+  min-height: 3rem;
+}
+.newsletter-msg {
+  min-height: 1.5rem;
+  margin: 0.6rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.newsletter-msg[data-tone='ok'] {
+  color: var(--pine);
+}
+.newsletter-msg[data-tone='error'] {
+  color: var(--tomato);
+}
+@media (max-width: 960px) {
+  .newsletter-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .newsletter-row {
+    flex-direction: column;
   }
 }

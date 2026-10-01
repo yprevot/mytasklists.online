@@ -9,7 +9,7 @@
   const LANGUAGES = ['es', 'en'];
 
   const EN = {
-    'meta.title': 'ListaDeCompras · Shared lists with recurring items',
+    'meta.title': 'MyTaskLists · Shared lists with recurring items',
     'meta.description':
       'Create shopping lists, share them with anyone and let the items you always buy add themselves back every so often. Available for iOS, Android and the web.',
     'nav.features': 'Features',
@@ -68,7 +68,14 @@
     'cta.title': 'Download the app',
     'cta.text':
       'Available for iPhone and Android. Create your account with email, Google or Apple and start sharing your lists in under a minute.',
-    'footer.tagline': '© __YEAR__ ListaDeCompras · Made so you never forget the milk again.',
+    'newsletter.title': 'News, without the noise',
+    'newsletter.text': 'We only write when there is something new in the app. You can unsubscribe at any time.',
+    'newsletter.label': 'Email',
+    'newsletter.submit': 'Subscribe',
+    'newsletter.ok': 'Done: check your inbox to confirm your subscription.',
+    'newsletter.invalid': 'Enter a valid email address.',
+    'newsletter.error': 'The subscription could not be completed. Please try again later.',
+    'footer.tagline': '© __YEAR__ MyTaskLists · Made so you never forget the milk again.',
     'footer.app': 'Web app',
     'footer.panel': 'Admin panel',
   };

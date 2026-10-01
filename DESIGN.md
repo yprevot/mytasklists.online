@@ -1,4 +1,4 @@
-# Diseño · ListaDeCompras
+# Diseño · MyTaskLists
 
 Un solo sistema visual para la web, el panel, la landing y la app móvil.
 
@@ -42,6 +42,3 @@ Radios: 10 px controles, 14 px hojas. Sombras con desplazamiento y desenfoque su
 - Landing: `apps/landing/src/styles.css`.
 - Móvil: `apps/mobile/src/theme.ts` y `components/ui.tsx`.
 
-## Pendiente
-
-- El splash y el color de las notificaciones push de la app móvil siguen en `#2563eb` en `apps/mobile/app.json`. Cambiarlos a `#1d5b45` modifica el *fingerprint* de Expo (requiere una compilación nativa nueva, no llega por OTA).

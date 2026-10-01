@@ -18,7 +18,7 @@ export class MailService implements OnModuleDestroy {
   private readonly from: string;
 
   constructor(config: ConfigService) {
-    this.from = config.get<string>('mail.from', 'ListaDeCompras <no-responder@localhost>');
+    this.from = config.get<string>('mail.from', 'MyTaskLists <no-responder@localhost>');
     if (!config.get<boolean>('mail.enabled', false)) {
       this.transporter = null;
       this.logger.warn('SMTP_HOST no está definido: los correos solo se escribirán en el log');

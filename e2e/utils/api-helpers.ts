@@ -5,7 +5,7 @@ export const API_URL = process.env.E2E_API_URL ?? `${BASE_URL}/api`;
 
 /** Cuentas cargadas por el seed del backend */
 export const SEED = {
-  admin: { email: 'admin@listadecompras.mx', password: 'Admin12345' },
+  admin: { email: 'admin@mytasklists.online', password: 'Admin12345' },
   ana: { email: 'ana@example.com', password: 'Demo12345' },
   carlos: { email: 'carlos@example.com', password: 'Demo12345' },
 };

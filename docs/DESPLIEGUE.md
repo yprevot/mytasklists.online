@@ -74,20 +74,20 @@ puedes fusionar a `main` mientras terminas la configuración.
 
 Marca cada punto; el detalle paso a paso está en las secciones 5 a 8.
 
-**En GitHub** (`yprevot/mytasklists.online`, repositorio público)
+**En GitHub** (`yprevot/mytasklists.online`; repositorio e imágenes de GHCR **privados**)
 - [ ] Entorno `production` creado (Settings → Environments).
 - [ ] Variable del entorno `production`: `SITE_URL`.
 - [ ] Variables del **repositorio**: `LANDING_IOS_URL` y `LANDING_ANDROID_URL` (opcionales) y, al final, `DEPLOY_ENABLED=true`
       (deben ser del repositorio, no del entorno: GitHub no deja leer variables de entorno en los `if:` ni en la matriz).
 - [ ] Secretos del entorno `production`: `COOLIFY_WEBHOOK` y `COOLIFY_TOKEN` (los puede escribir Ansible, sección 5.3).
-- [ ] Token `github_token` de Ansible con acceso a este repositorio (sección 5.1).
-- [ ] Paquetes de GHCR en **público** tras la primera publicación (sección 5.2).
+- [ ] Token `github_token` de Ansible con acceso a este repositorio, incluida **Administration** (sección 5.1).
+- [ ] Token clásico `ghcr_pull_token` (solo `read:packages`) para que el servidor descargue las imágenes (sección 5.2).
 - [ ] Protección de `main`: exigir que pase el workflow **CI** antes de fusionar.
 
 **En Coolify / infra** (`infra-ionos-vps`)
-- [ ] Ficha `clientes/mytasklists.yml` (sección 6) y dominio elegido.
+- [x] Ficha `clientes/mytasklists.yml` (rama `cliente/mytasklists` de infra, sección 6).
 - [ ] Token de Coolify con permiso **solo `deploy`** (`coolify_deploy_token`, sección 5.3).
-- [ ] Ampliar el rol `cliente` con secretos propios de esta app (sección 6.2).
+- [x] El rol `cliente` genera los secretos de esta app (sección 6.2).
 - [ ] Subred de Traefik para `TRUSTED_PROXY_CIDR` (se mide tras el primer arranque, sección 6.3).
 - [ ] Decisión: esta app sería el **primer cliente real en VPS1**, un camino que `docs/ALTA-CLIENTE.md` marca como sin probar.
 
@@ -106,13 +106,15 @@ Marca cada punto; el detalle paso a paso está en las secciones 5 a 8.
 
 ### 5.1 Token de GitHub para Ansible (`github_token`)
 
-Sirve para que el playbook escriba los secretos y variables del entorno `production` en este repositorio.
+Sirve para que el playbook escriba los secretos y variables del entorno `production` en este repositorio y, como el
+repositorio es privado, para registrar la *deploy key* con la que Coolify lo lee.
 
 1. GitHub → tu foto → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens**.
 2. Si ya existe el token de `yunitztech.com`: ábrelo y pulsa **Edit**. Si no: **Generate new token**.
 3. **Resource owner:** `yprevot`. **Expiration:** 90 días o 1 año (anótalo en el calendario de `OPERACION.md`).
 4. **Repository access → Only select repositories:** marca `yprevot/yunitztech.com` **y** `yprevot/mytasklists.online`.
-5. **Repository permissions:** **Actions** → *Read and write*; **Environments** → *Read and write*; **Metadata** → *Read-only* (automático).
+5. **Repository permissions:** **Actions** → *Read and write*; **Environments** → *Read and write*; **Administration** →
+   *Read and write* (deploy key del repositorio privado); **Metadata** → *Read-only* (automático).
 6. **Generate token** (o **Update**) y copia el valor (solo se muestra una vez).
 7. Guárdalo en el vault de infra:
    ```bash
@@ -125,15 +127,18 @@ Sirve para que el playbook escriba los secretos y variables del entorno `product
      https://api.github.com/repos/yprevot/mytasklists.online/environments
    ```
 
-### 5.2 Publicar en GHCR (no necesita token tuyo)
+### 5.2 Imágenes privadas en GHCR (`ghcr_pull_token`)
 
-El workflow usa el `GITHUB_TOKEN` automático con permiso `packages: write`. Solo hay que hacer públicas las
-imágenes (Coolify las descarga sin credenciales):
+El workflow publica con el `GITHUB_TOKEN` automático (permiso `packages: write`): no necesita token tuyo. Las imágenes
+son **privadas**, así que el servidor tiene que autenticarse para descargarlas. El playbook hace `docker login ghcr.io`
+en VPS1 con `ghcr_pull_token`. GHCR no acepta tokens *fine-grained*: tiene que ser uno clásico.
 
-1. Ejecuta el workflow una vez (con `DEPLOY_ENABLED=true`). Crea los paquetes `mytasklists.online-backend`, `-frontend`,
-   `-dashboard`, `-landing` y `-gateway`.
-2. GitHub → tu perfil → **Packages** → abre cada paquete → **Package settings** → **Change package visibility** → **Public**.
-3. En los mismos ajustes, **Manage Actions access** → añade el repositorio `mytasklists.online` con rol *Write*.
+1. GitHub → **Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic)**.
+2. **Note:** `ghcr-pull-vps1`. **Expiration:** la misma política que `github_token`.
+3. **Scopes:** marca **solo** `read:packages`.
+4. **Generate token**, cópialo y guárdalo en el vault de infra como `ghcr_pull_token`.
+5. Tras la primera publicación, comprueba en GitHub → **Packages** que existen `mytasklists.online-backend`, `-frontend`,
+   `-dashboard`, `-landing` y `-gateway`, vinculados al repositorio (el workflow los crea así).
 
 Las imágenes no contienen secretos: toda la configuración entra por variables de Coolify al arrancar.
 
@@ -172,7 +177,7 @@ gh secret   set COOLIFY_WEBHOOK -R yprevot/mytasklists.online -e production   # 
 gh secret   set COOLIFY_TOKEN   -R yprevot/mytasklists.online -e production   # pega el token solo-deploy
 # variables del repositorio (sin -e). DEPLOY_ENABLED va al final, cuando Coolify ya tenga la app:
 gh variable set LANDING_IOS_URL     -R yprevot/mytasklists.online --body "https://apps.apple.com/…"
-gh variable set LANDING_ANDROID_URL -R yprevot/mytasklists.online --body "https://play.google.com/store/apps/details?id=com.listadecompras.app"
+gh variable set LANDING_ANDROID_URL -R yprevot/mytasklists.online --body "https://play.google.com/store/apps/details?id=online.mytasklists.app"
 gh variable set DEPLOY_ENABLED      -R yprevot/mytasklists.online --body true
 ```
 
@@ -183,78 +188,33 @@ y **Pruebas e2e** (workflow CI).
 
 ### 6.1 Ficha del cliente (`infra-ionos-vps/clientes/mytasklists.yml`)
 
-Propuesta, en modo `imagenes` igual que `yunitztech.com`. Ajusta el dominio si será otro:
+La ficha real está en la rama `cliente/mytasklists` de infra; esta sección resume lo que afecta a este repositorio:
 
-```yaml
-cliente_id: mytasklists
-cliente_nombre: "ListaDeCompras"
-cliente_dominio: mytasklists.online
-cliente_servidor: vps1            # producción de clientes
-cliente_dns: manual               # o hostinger si el dominio está allí
+- Modo `imagenes`: `/compose.prod.yml` de `main`, servicio `gateway` en el puerto 80, redirección `non-www`, servidor VPS1.
+- `cliente_repo_privado: true`: Coolify lee el repositorio con una *deploy key* y VPS1 descarga de GHCR con `ghcr_pull_token`.
+- `cliente_web_publicar: false` hasta que `compose.prod.yml` esté en `main` y los tres tokens estén en el vault.
+- Variables propias: `IMAGE_PREFIX`, `IMAGE_TAG`, `SITE_URL`, `TRUSTED_PROXY_CIDR` (provisional, sección 6.3) y `MOBILE_MIN_VERSION`.
+- El rol añade solo `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`, `LISTMONK_URL`,
+  `LISTMONK_LIST_UUID`, `UMAMI_SCRIPT_URL` y `UMAMI_WEBSITE_ID`, con los valores de las fases de correo, Listmonk y analítica.
+- Google y Apple (sección 7) y `/.well-known` (7.4) se añaden a la ficha cuando existan las credenciales.
 
-cliente_repo: yprevot/mytasklists.online
-cliente_rama: main
-cliente_web_modo: imagenes
-cliente_web_publicar: false       # true cuando las imágenes ya existan (sección 8)
-cliente_compose: /compose.prod.yml
-cliente_web_servicio: gateway     # el único servicio con dominio
-cliente_web_puerto: 80
-cliente_redirect: non-www
+### 6.2 Secretos de la app
 
-cliente_web_env:
-  IMAGE_PREFIX: ghcr.io/yprevot/mytasklists.online
-  IMAGE_TAG: main
-  SITE_URL: https://mytasklists.online
-  TRUSTED_PROXY_CIDR: SIMULADO    # subred de Traefik: sección 6.3
-  SMTP_HOST: mail.yunitztech.com
-  SMTP_PORT: "465"
-  SMTP_SECURE: "true"
-  SMTP_USER: no-reply@mytasklists.online
-  MAIL_FROM: "ListaDeCompras <no-reply@mytasklists.online>"
-  GOOGLE_CLIENT_ID: SIMULADO      # sección 7
-  MOBILE_MIN_VERSION: 1.0.0
-cliente_web_env_secretos:         # VARIABLE: nombre del secreto en ~/.ansible/secretos-clientes/mytasklists/
-  POSTGRES_PASSWORD: db
-  SMTP_PASSWORD: smtp_web
-  REDIS_PASSWORD: redis
-  JWT_ACCESS_SECRET: jwt_access
-  JWT_REFRESH_SECRET: jwt_refresh
-  APP_ENCRYPTION_KEY: app_key
-  GOOGLE_CLIENT_SECRET: google_client_secret
+El rol genera cada secreto que nombra `cliente_web_env_secretos` (32 caracteres alfanuméricos, distintos entre sí, en
+`~/.ansible/secretos-clientes/mytasklists/`): `POSTGRES_PASSWORD` (`db`), `REDIS_PASSWORD` (`redis`),
+`JWT_ACCESS_SECRET` (`jwt_access`), `JWT_REFRESH_SECRET` (`jwt_refresh`) y `APP_ENCRYPTION_KEY` (`app_key`). Cumplen
+lo que exige el backend en producción (≥ 32 caracteres y distintos).
 
-cliente_buzones:                  # el playbook exige al menos uno
-  - usuario: contacto
-    alias: [info, privacidad]
-    cuota_gb: 5
-cliente_dmarc: none
-cliente_listmonk: false           # esta app no usa newsletter
-cliente_analitica: false          # ni Umami
-```
-
-### 6.2 Cambio necesario en el rol `cliente` (infra)
-
-`roles/cliente/tasks/secretos.yml` genera una lista fija de secretos (`db`, `smtp_web`, `web_admin`…). Esta app necesita
-además `redis`, `jwt_access`, `jwt_refresh` y `app_key` (todos de ≥ 32 caracteres, distintos entre sí) y
-`google_client_secret`, que **no se genera**: lo entrega Google. Lo más limpio es una variable opcional
-`cliente_secretos_extra` (por defecto `[]`) que se sume a esa lista:
-
-```yaml
-# roles/cliente/tasks/secretos.yml → en el loop
-+ cliente_secretos_extra | default([])
-# clientes/mytasklists.yml
-cliente_secretos_extra: [redis, jwt_access, jwt_refresh, app_key, google_client_secret]
-```
-
-`lookup('password', archivo)` reutiliza el contenido si el archivo ya existe, así que para el secreto de Google basta
-crear antes `~/.ansible/secretos-clientes/mytasklists/google_client_secret` con el valor que te da Google (sin espacios).
-Sin ese cambio el playbook no puede poblar las variables de esta app.
+`GOOGLE_CLIENT_SECRET` es la excepción: lo entrega Google, no se genera. Cuando exista, crea antes
+`~/.ansible/secretos-clientes/mytasklists/google_client_secret` con ese valor (sin espacios) y añade a la ficha
+`GOOGLE_CLIENT_SECRET: google_client_secret` en `cliente_web_env_secretos` y `GOOGLE_CLIENT_ID` en `cliente_web_env`.
 
 ### 6.3 `TRUSTED_PROXY_CIDR` (tras el primer arranque)
 
 El `gateway` necesita saber de qué red le llega el tráfico de Traefik para leer la IP real del cliente; sin ello el
 rate limiting vería una sola IP para todos. Es el mismo procedimiento de `OPERACION.md` §4.3 (paso 4): medir la
-subred de la red de la app en la que está Traefik, ponerla en la ficha, `--tags web` y redesplegar. Mientras el valor
-sea `SIMULADO`, el despliegue queda detenido a propósito.
+subred de la red de la app en la que está Traefik, ponerla en la ficha, `--tags web` y redesplegar. Para el primer
+arranque la ficha usa `10.0.0.0/8` (todas las redes de Docker que Coolify crea), que hay que acotar a la `/24` medida.
 
 ### 6.4 Orden de las fases
 
@@ -265,7 +225,7 @@ ansible-playbook playbooks/cliente-alta.yml -e cliente=mytasklists --tags correo
 ansible-playbook playbooks/cliente-alta.yml -e cliente=mytasklists --tags web         # app en Coolify, variables y GitHub
 ```
 
-Después: ejecutar **Desplegar** en GitHub (paquetes públicos, 5.2), medir `TRUSTED_PROXY_CIDR` (6.3) y volver a desplegar.
+Después: ejecutar **Desplegar** en GitHub, medir `TRUSTED_PROXY_CIDR` (6.3) y volver a desplegar.
 
 ## 7. Inicio de sesión y registro con Google
 
@@ -277,9 +237,9 @@ confirma que el correo es suyo. Solo falta darlo de alta en Google.
 ### 7.1 Web (lo necesario para producción)
 
 1. Entra en https://console.cloud.google.com con la cuenta que será la propietaria del proyecto.
-2. Selector de proyectos → **Nuevo proyecto** → nombre `ListaDeCompras`.
+2. Selector de proyectos → **Nuevo proyecto** → nombre `MyTaskLists`.
 3. Menú → **APIs y servicios → Pantalla de consentimiento de OAuth** (en la interfaz nueva: **Google Auth Platform**).
-   - **Branding / Información de la aplicación:** nombre `ListaDeCompras`, correo de asistencia, logotipo (opcional).
+   - **Branding / Información de la aplicación:** nombre `MyTaskLists`, correo de asistencia, logotipo (opcional).
    - **Dominios de la aplicación:** página principal `https://mytasklists.online`, **política de privacidad** y **condiciones del servicio**
      (las páginas de la sección 4, punto «Google»).
    - **Dominios autorizados:** `mytasklists.online`.
@@ -289,7 +249,7 @@ confirma que el correo es suyo. Solo falta darlo de alta en Google.
 4. **Audiencia → Publicar aplicación** (estado «En producción»). Mientras esté en «Pruebas» solo entran los usuarios de
    prueba que añadas (máximo 100), y sus sesiones caducan a los 7 días.
 5. Menú → **Credenciales → Crear credenciales → ID de cliente de OAuth → Aplicación web**.
-   - **Nombre:** `ListaDeCompras web`.
+   - **Nombre:** `MyTaskLists web`.
    - **Orígenes autorizados de JavaScript:** `https://mytasklists.online` (y `http://localhost:8080` para desarrollo).
    - **URI de redireccionamiento autorizados:** `https://mytasklists.online/api/auth/google/callback` y
      `http://localhost:8080/api/auth/google/callback`. Deben coincidir **exactamente** (protocolo, dominio, ruta y sin `/` final).
@@ -318,8 +278,8 @@ registros del backend: «Google rechazó el intercambio de código»).
 La app móvil usa el inicio de sesión nativo de Google y envía un `id_token` que el backend valida contra los
 `GOOGLE_ALLOWED_AUDIENCES`. Hace falta un ID de cliente por plataforma:
 
-1. **iOS:** Credenciales → ID de cliente de OAuth → **iOS**, identificador de paquete `com.listadecompras.app`.
-2. **Android:** ID de cliente de OAuth → **Android**, nombre de paquete `com.listadecompras.app` y la huella **SHA-1** del
+1. **iOS:** Credenciales → ID de cliente de OAuth → **iOS**, identificador de paquete `online.mytasklists.app`.
+2. **Android:** ID de cliente de OAuth → **Android**, nombre de paquete `online.mytasklists.app` y la huella **SHA-1** del
    certificado de firma: la de EAS con `cd apps/mobile && npx eas credentials`, y **además** la de «firma de apps» de Google
    Play Console (Integridad de la app) una vez publicada.
 3. Backend: `GOOGLE_ALLOWED_AUDIENCES=<id-ios>,<id-android>` (separados por coma, sin espacios).
@@ -337,13 +297,12 @@ El gateway publica `/.well-known/apple-app-site-association` y `/.well-known/ass
 
 | Variable | Valor | Dónde se obtiene |
 |---|---|---|
-| `IOS_APP_ID` | `<TEAM_ID>.com.listadecompras.app` | developer.apple.com → Membership → Team ID |
-| `ANDROID_PACKAGE` | `com.listadecompras.app` (por defecto) | `apps/mobile/app.json` |
+| `IOS_APP_ID` | `<TEAM_ID>.online.mytasklists.app` | developer.apple.com → Membership → Team ID |
+| `ANDROID_PACKAGE` | `online.mytasklists.app` (por defecto) | `apps/mobile/app.json` |
 | `ANDROID_CERT_FINGERPRINTS` | huellas SHA-256 separadas por comas | `npx eas credentials` y Play Console → Integridad de la app |
 
 Hoy solo declaran **credenciales compartidas** (iOS y Android ofrecen la contraseña guardada del sitio en el login de la
-app). Para que funcione en iOS, `app.json` necesita además `ios.associatedDomains: ["webcredentials:mytasklists.online"]`
-(cambio nativo: entra en la próxima compilación de tienda). Abrir enlaces del dominio dentro de la app (*applinks*) queda
+app). En iOS lo completa `ios.associatedDomains: ["webcredentials:mytasklists.online"]`, ya incluido en `app.json`. Abrir enlaces del dominio dentro de la app (*applinks*) queda
 fuera a propósito: la app todavía no tiene pantallas para las rutas web (`/app/reset-password`, `/app/verify-email`…) y
 los enlaces de los correos dejarían de abrirse en el navegador.
 
@@ -366,15 +325,37 @@ Socket.IO sin `Origin` → 200; un origen ajeno no recibe cabeceras CORS.
 - Los ID de cliente de Google para la app van como variables del entorno `production` de EAS (`EXPO_PUBLIC_GOOGLE_*`);
   `eas update --environment production` las usa.
 
+### 7.7 Analítica (Umami) y boletín (Listmonk)
+
+Los dos los pone la plataforma de infra (`stats.yunitztech.com` y `news.mytasklists.online`); aquí solo se activan con
+variables de Coolify. Sin valores no se carga nada de terceros ni se muestra el formulario.
+
+| Variable | Servicio | Efecto |
+|---|---|---|
+| `UMAMI_SCRIPT_URL`, `UMAMI_WEBSITE_ID` | `gateway` | Inserta el script de Umami en la landing y en la app web (no en el panel) y añade su origen a la CSP (`script-src` y `connect-src`). Umami no usa cookies |
+| `LISTMONK_URL`, `LISTMONK_LIST_UUID` | `backend` | La landing muestra «Novedades, sin ruido» y el alta va por `POST /api/newsletter/subscribe` (limitada por IP); Listmonk envía el correo de confirmación |
+
+El alta pasa por el backend y no directamente a Listmonk para no depender de su CORS y para que el rate limiting la
+proteja. Comprobación tras configurarlo:
+
+```bash
+curl -s https://mytasklists.online/api/newsletter                           # {"enabled":true}
+curl -s https://mytasklists.online/ | grep -o 'data-website-id="[^"]*"'    # el script de Umami
+```
+
+La política de privacidad debe mencionar la analítica (sin cookies) y el boletín (doble opt-in, baja en cada correo).
+
 ## 8. Puesta en marcha, en orden
 
-1. Fusiona esta rama a `main` (todavía no despliega: falta `DEPLOY_ENABLED`).
-2. Sección 5.1 (token de GitHub) y 5.3 (token de Coolify) → vault de infra.
-3. Ficha (6.1) + cambio del rol (6.2). `--check` y luego `--tags correo,dns`.
-4. Crea el secreto de Google (7.1 y 6.2) y `--tags web` con `cliente_web_publicar: false` (prepara Coolify sin desplegar).
-5. Crea el entorno `production` y su configuración (5.4); al final pon `DEPLOY_ENABLED=true` (variable del repositorio).
-6. Ejecuta **Desplegar** a mano (Actions → Desplegar → Run workflow). Publica las imágenes; haz los paquetes públicos (5.2).
-7. Mide `TRUSTED_PROXY_CIDR` (6.3), actualiza la ficha, `--tags web` y vuelve a ejecutar **Desplegar**.
+1. Fusiona a `main` (no despliega: `DEPLOY_ENABLED` no existe todavía, así que `deploy.yml` solo verifica).
+2. Tokens al vault de infra: `github_token` con Administration (5.1), `ghcr_pull_token` (5.2) y `coolify_deploy_token` (5.3).
+3. Infra, en la rama `cliente/mytasklists`: `--check` y luego `--tags correo,dns`, `--tags listmonk` y `--tags analitica`.
+4. `--tags web` con `cliente_web_publicar: false`: crea la app en Coolify, la deploy key y el `docker login` en GHCR, sin desplegar.
+5. `cliente_web_publicar: true` y `--tags web` otra vez: el playbook crea el entorno `production` y guarda
+   `COOLIFY_WEBHOOK`, `COOLIFY_TOKEN` y `SITE_URL`. **Solo entonces** pon `DEPLOY_ENABLED=true` (variable del repositorio, 5.4).
+6. Ejecuta **Desplegar** (Actions → Desplegar → Run workflow, o `-e redeploy=true` en el playbook): publica las imágenes
+   privadas y Coolify las descarga con `ghcr_pull_token` (5.2).
+7. Mide `TRUSTED_PROXY_CIDR` (6.3), acótalo en la ficha, `--tags web` y vuelve a ejecutar **Desplegar**.
 8. Verifica:
    ```bash
    curl -s https://mytasklists.online/version.json                       # {"revision":"<sha de main>"}
@@ -397,5 +378,6 @@ con restic. Redis solo guarda caché, sesiones y contadores: si se pierde, las p
 - **Páginas legales** inexistentes (necesarias para la pantalla de consentimiento de Google y para la tienda).
 - **Dominio y registrador**: confirma el dominio y dónde está su DNS (`manual` o `hostinger`).
 - **SMTP**: `mail.yunitztech.com` sirve a todos los clientes; el DMARC se sube a `reject` tras 2–4 semanas de informes limpios.
-- **Splash y notificaciones de la app móvil** siguen en el azul anterior (`apps/mobile/app.json`); cambiarlos requiere build nativo.
+- **Identificadores móviles nuevos** (`online.mytasklists.app`, esquema `mytasklists`): la carpeta nativa generada
+  `apps/mobile/ios` (no versionada) hay que regenerarla con `npx expo prebuild --clean` antes de compilar en local.
 - Sin `REDIS_PASSWORD`, `JWT_*` o `APP_ENCRYPTION_KEY` el backend **no arranca** en producción: es intencional.

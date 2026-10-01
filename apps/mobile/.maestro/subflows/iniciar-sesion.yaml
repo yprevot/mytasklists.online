@@ -1,5 +1,5 @@
 # Entra con la cuenta que dejó scripts/crear-cuenta.js en output.cuenta
-appId: com.listadecompras.app
+appId: online.mytasklists.app
 ---
 - tapOn:
     id: login-email

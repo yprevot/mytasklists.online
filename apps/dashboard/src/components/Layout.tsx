@@ -31,7 +31,7 @@ export function Layout() {
         <div className="dash-brand">
           <BrandMark size={34} />
           <div className="min-w-0">
-            <div className="dash-brand-name">ListaDeCompras</div>
+            <div className="dash-brand-name">MyTaskLists</div>
             <div className="dash-brand-role">{t('auth.title')}</div>
           </div>
         </div>
