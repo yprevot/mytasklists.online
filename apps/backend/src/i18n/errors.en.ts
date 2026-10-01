@@ -36,6 +36,11 @@ export const ERRORS_EN: Record<string, string> = {
 
   // Verificación en dos pasos
   'El código no es correcto': 'The code is incorrect',
+  'Activa la verificación en dos pasos para usar el panel de administración':
+    'Turn on two-step verification to use the admin panel',
+  'Las cuentas de administración deben mantener la verificación en dos pasos':
+    'Admin accounts must keep two-step verification on',
+  'El token de notificaciones no es válido': 'The notification token is invalid',
   'Escribe tu contraseña para eliminar la cuenta': 'Enter your password to delete your account',
   'La contraseña no es correcta': 'The password is incorrect',
   'El código de verificación no es correcto': 'The verification code is incorrect',

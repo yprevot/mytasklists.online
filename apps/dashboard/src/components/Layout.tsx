@@ -1,8 +1,10 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BrandMark } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { ADMIN_MFA_REQUIRED_EVENT } from '../api/client';
 
 interface NavEntry {
   to: string;
@@ -24,6 +26,14 @@ const NAV: NavEntry[] = [
 export function Layout() {
   const { user, logout } = useAdminAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  // Sin 2FA la API corta el panel: se lleva a la persona a activarla
+  useEffect(() => {
+    const toSecurity = () => navigate('/security', { replace: true, state: { mfaRequired: true } });
+    window.addEventListener(ADMIN_MFA_REQUIRED_EVENT, toSecurity);
+    return () => window.removeEventListener(ADMIN_MFA_REQUIRED_EVENT, toSecurity);
+  }, [navigate]);
 
   return (
     <div className="dash-shell">

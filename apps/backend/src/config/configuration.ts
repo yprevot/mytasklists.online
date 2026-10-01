@@ -43,6 +43,8 @@ export interface AppConfig {
   trustProxy: boolean | number;
   bodyLimit: number;
   swaggerEnabled: boolean;
+  /** Las cuentas de administración necesitan 2FA activa para usar /admin */
+  adminRequireMfa: boolean;
   allowTimeTravel: boolean;
   database: {
     host: string;
@@ -159,6 +161,7 @@ export default (): AppConfig => {
     bodyLimit: int(process.env.BODY_LIMIT_BYTES, 1024 * 1024),
     swaggerEnabled: bool(process.env.SWAGGER_ENABLED, !isProduction),
     allowTimeTravel: bool(process.env.ALLOW_TIME_TRAVEL, !isProduction),
+    adminRequireMfa: bool(process.env.ADMIN_REQUIRE_MFA, isProduction),
     database: {
       host: process.env.POSTGRES_HOST ?? 'postgres',
       port: int(process.env.POSTGRES_PORT, 5432),

@@ -388,3 +388,7 @@ con restic. Redis solo guarda caché, sesiones y contadores: si se pierde, las p
 - **Identificadores móviles nuevos** (`online.mytasklists.app`, esquema `mytasklists`): la carpeta nativa generada
   `apps/mobile/ios` (no versionada) hay que regenerarla con `npx expo prebuild --clean` antes de compilar en local.
 - Sin `REDIS_PASSWORD`, `JWT_*` o `APP_ENCRYPTION_KEY` el backend **no arranca** en producción: es intencional.
+- **2FA obligatoria para administradores** (`ADMIN_REQUIRE_MFA=true` en `compose.prod.yml`): una cuenta admin sin 2FA
+  inicia sesión en el panel pero solo ve la página **Seguridad** hasta activarla, y no puede desactivarla después. Si
+  un admin pierde el teléfono y los códigos de recuperación, otro admin le restablece la 2FA desde **Usuarios**; si no
+  hay otro, se hace en la base: `update users set totp_enabled=false, totp_secret=null where email='…'`.

@@ -33,10 +33,16 @@ export const tokenStore = {
   },
 };
 
+/** La API responde con este código cuando la cuenta admin aún no tiene 2FA */
+export const ADMIN_MFA_REQUIRED = 'ADMIN_MFA_REQUIRED';
+/** Evento del navegador que el Layout escucha para llevar a la página de Seguridad */
+export const ADMIN_MFA_REQUIRED_EVENT = 'lc:admin-mfa-required';
+
 export class ApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
+    public readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -108,9 +114,11 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   const payload = text ? JSON.parse(text) : null;
   if (!response.ok) {
     const raw = payload?.message;
+    if (payload?.code === ADMIN_MFA_REQUIRED) window.dispatchEvent(new Event(ADMIN_MFA_REQUIRED_EVENT));
     throw new ApiError(
       Array.isArray(raw) ? raw.join('. ') : (raw ?? i18n.t('common.unexpectedError')),
       response.status,
+      payload?.code,
     );
   }
   return payload as T;

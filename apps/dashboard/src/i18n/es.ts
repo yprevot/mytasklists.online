@@ -140,5 +140,7 @@ export const es = {
     manual: 'O escribe esta clave a mano:',
     step2: '2. Escribe el código de 6 dígitos que muestra.',
     disableLabel: 'Para desactivarla escribe un código actual o de recuperación',
+    required:
+      'Para proteger los datos de las personas, el panel exige la verificación en dos pasos. Actívala para continuar.',
   },
 } as const;

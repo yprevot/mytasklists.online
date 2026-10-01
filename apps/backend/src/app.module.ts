@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import configuration, { RateLimitConfig } from './config/configuration';
 import { validateEnv } from './config/env.validation';
+import { SafeTypeOrmLogger } from './database/safe-typeorm.logger';
 import * as entities from './database/entities';
 import { MIGRATIONS } from './database/migrations';
 import type Redis from 'ioredis';
@@ -56,6 +57,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
         retryAttempts: 15,
         retryDelay: 3000,
         logging: ['error', 'warn'] as any,
+        logger: new SafeTypeOrmLogger(),
       }),
     }),
 

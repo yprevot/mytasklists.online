@@ -100,8 +100,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     if (auth?.token) return String(auth.token).replace(/^Bearer\s+/i, '');
     const header = client.handshake.headers?.authorization;
     if (header) return String(header).replace(/^Bearer\s+/i, '');
-    const query = client.handshake.query?.token;
-    if (query) return String(query);
+    // No se acepta en la query (`?token=`): acabaría en los logs de acceso de nginx y del proxy
     return undefined;
   }
 

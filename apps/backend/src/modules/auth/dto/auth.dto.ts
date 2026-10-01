@@ -132,6 +132,7 @@ export class RegisterDeviceDto implements RegisterDeviceRequest {
   @ApiProperty({ example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   token: string;
 
   @ApiProperty({ enum: DevicePlatform })
@@ -141,5 +142,6 @@ export class RegisterDeviceDto implements RegisterDeviceRequest {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(120)
   deviceName?: string;
 }

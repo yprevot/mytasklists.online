@@ -11,7 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcryptjs';
-import { AuthProvider, User } from '../../database/entities';
+import { AuthProvider, User, UserRole } from '../../database/entities';
 import { UsersService } from '../users/users.service';
 import { PublicUser, toPublicUser } from '../users/user.mapper';
 import { CacheService } from '../../redis/cache.service';
@@ -315,6 +315,12 @@ export class AuthService {
   }
 
   async mfaDisable(userId: string, code: string) {
+    const account = await this.users.findById(userId);
+    if (account.role === UserRole.ADMIN && this.config.get<boolean>('adminRequireMfa', true)) {
+      throw new BadRequestException(
+        'Las cuentas de administración deben mantener la verificación en dos pasos',
+      );
+    }
     if (!(await this.mfa.verifyCode(userId, code))) {
       throw new UnauthorizedException('El código no es correcto');
     }

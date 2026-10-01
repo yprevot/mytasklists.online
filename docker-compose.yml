@@ -124,6 +124,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-}
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-}
       ALLOW_TIME_TRAVEL: ${ALLOW_TIME_TRAVEL:-}
+      ADMIN_REQUIRE_MFA: ${ADMIN_REQUIRE_MFA:-}
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
       # Apagado por defecto: crea cuentas con contraseñas públicas (el .env de
       # desarrollo lo enciende para las pruebas e2e)

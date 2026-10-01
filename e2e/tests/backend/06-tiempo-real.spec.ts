@@ -182,4 +182,51 @@ test.describe('Servicio backend · sincronización en tiempo real', () => {
     });
     expect((await contador.json()).count).toBeGreaterThan(0);
   });
+
+  test('CP-RT-008 · list:join admite a integrantes y rechaza a quien no lo es', async ({ request }) => {
+    const ana = await registerUser(request, { fullName: 'Ana Sala' });
+    const intruso = await registerUser(request, { fullName: 'Intruso Sala' });
+    const list = await createList(request, ana.accessToken, 'Sala privada');
+
+    const anaSocket = await connect(ana.accessToken);
+    const intrusoSocket = await connect(intruso.accessToken);
+    sockets.push(anaSocket, intrusoSocket);
+
+    const propia = await anaSocket.timeout(5_000).emitWithAck('list:join', { listId: list.id });
+    expect(propia).toEqual({ ok: true, listId: list.id });
+
+    const ajena = await intrusoSocket.timeout(5_000).emitWithAck('list:join', { listId: list.id });
+    expect(ajena.ok).toBe(false);
+
+    // Aunque lo intentó, no recibe los cambios de esa lista
+    const recibidos: string[] = [];
+    intrusoSocket.onAny((event) => recibidos.push(event));
+    const llegaAAna = waitFor(anaSocket, 'item:created');
+    await createItem(request, ana.accessToken, list.id, { name: 'Solo para Ana' });
+    await llegaAAna;
+    expect(recibidos).not.toContain('item:created');
+  });
+
+  test('CP-RT-009 · el token no se acepta en la URL del WebSocket', async ({ request }) => {
+    const ana = await registerUser(request, { fullName: 'Ana Query' });
+    const attempt = new Promise((resolve, reject) => {
+      const socket = io(BASE_URL, {
+        path: '/socket.io',
+        transports: ['websocket'],
+        query: { token: ana.accessToken },
+        reconnection: false,
+      });
+      sockets.push(socket);
+      const timer = setTimeout(() => reject(new Error('timeout')), 15_000);
+      socket.on('connect', () => {
+        clearTimeout(timer);
+        resolve('conectado');
+      });
+      socket.on('connect_error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+    await expect(attempt).rejects.toThrow(/token/i);
+  });
 });
