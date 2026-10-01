@@ -26,7 +26,7 @@ if(!text.includes('productionDirect {'))text=text.replace('    signingConfigs {'
 text=text.replace(/(release\s*\{[\s\S]*?signingConfig\s*=\s*)signingConfigs.debug/,'$1signingConfigs.productionDirect');
 if(!text.includes('signingConfig = signingConfigs.productionDirect'))throw Error('Release signing could not be configured');
 await writeFile(gradle,text);await writeFile(join(mobile,'android/local.properties'),'sdk.dir='+sdk.replace(/ /g,'\\ ')+'\n');
-await run('./gradlew',['assembleRelease','--no-daemon','--console=plain'],join(mobile,'android'));
+await run('./gradlew',['assembleRelease','--no-daemon','--console=plain','--max-workers=2','-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=2048m'],join(mobile,'android'));
 const apk=join(mobile,'android/app/build/outputs/apk/release/app-release.apk');
 const version=JSON.parse(await readFile(join(mobile,'app.json'),'utf8')).expo.version;
 await run('node',[join(root,'scripts/publish-apk.mjs'),apk,version],root);
