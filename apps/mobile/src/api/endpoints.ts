@@ -1,4 +1,4 @@
-import type { UpdateProfileRequest } from '@lista/contracts';
+import type { DeleteAccountRequest, UpdateProfileRequest } from '@lista/contracts';
 import { api } from './client';
 import type {
   AppCompatibility,
@@ -17,6 +17,10 @@ export const compatApi = {
 
 export const usersApi = {
   updateProfile: (payload: UpdateProfileRequest) => api.patch<User>('/users/me', payload),
+  /** Perfil propio con `hasPassword`, que /auth/me no trae */
+  me: () => api.get<User>('/users/me'),
+  deleteAccount: (payload: DeleteAccountRequest) =>
+    api.delete<{ ok: true; appleRevoked: boolean }>('/users/me', payload),
 };
 
 export const authApi = {

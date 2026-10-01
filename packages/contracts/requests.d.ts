@@ -69,6 +69,17 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+/**
+ * Borra la cuenta y sus datos (DELETE /users/me). Pide la contraseña si la cuenta
+ * tiene una y el código de 2FA si está activa. En iOS, quien entró con Apple manda
+ * un `authorizationCode` recién emitido para que el servidor revoque sus tokens.
+ */
+export interface DeleteAccountRequest {
+  password?: string;
+  mfaCode?: string;
+  appleAuthorizationCode?: string;
+}
+
 // ── Listas ─────────────────────────────────────────────────────────────
 export interface CreateListRequest {
   name: string;

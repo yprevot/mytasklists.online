@@ -1,10 +1,11 @@
-import { Body, Controller, Patch, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Patch, Req, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service';
 import { AuthCookieService } from './auth-cookie.service';
 import { TokenService } from './token.service';
-import { ChangePasswordDto } from '../users/dto/update-profile.dto';
+import { ChangePasswordDto, DeleteAccountDto } from '../users/dto/update-profile.dto';
+import { AccountDeletionService } from './account-deletion.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { AuthThrottle } from '../../common/throttle/throttle-profiles';
@@ -22,6 +23,7 @@ export class AccountController {
     private readonly auth: AuthService,
     private readonly cookies: AuthCookieService,
     private readonly tokens: TokenService,
+    private readonly deletion: AccountDeletionService,
   ) {}
 
   @AuthThrottle()
@@ -41,5 +43,23 @@ export class AccountController {
     this.cookies.write(reply, client, session.refreshToken, this.tokens.refreshTtlSeconds);
     const { refreshToken: _omit, ...rest } = session;
     return { ok: true, ...rest };
+  }
+
+  @AuthThrottle()
+  @Delete('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Elimina la cuenta y sus datos, cierra todas las sesiones y revoca Sign in with Apple',
+  })
+  async deleteAccount(
+    @CurrentUser() current: AuthenticatedUser,
+    @Body() dto: DeleteAccountDto,
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
+    const result = await this.deletion.deleteAccount(current.id, dto ?? {});
+    const client = this.cookies.clientOf(request);
+    if (client) this.cookies.clear(reply, client);
+    return { ok: true, ...result };
   }
 }

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
+import { AccountDeletionService } from './account-deletion.service';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { AccountController } from './account.controller';
@@ -22,7 +23,7 @@ import { AuthCookieService } from './auth-cookie.service';
       }),
     }),
   ],
-  providers: [AuthService, TokenService, OAuthService, MfaService, AuthCookieService],
+  providers: [AuthService, TokenService, OAuthService, MfaService, AuthCookieService, AccountDeletionService],
   controllers: [AuthController, AccountController],
   exports: [AuthService, TokenService, MfaService, JwtModule],
 })

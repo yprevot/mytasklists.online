@@ -78,6 +78,8 @@
     'footer.tagline': '© __YEAR__ MyTaskLists · Made so you never forget the milk again.',
     'footer.app': 'Web app',
     'footer.panel': 'Admin panel',
+    'footer.privacy': 'Privacy',
+    'footer.terms': 'Terms',
   };
 
   const nodes = Array.from(document.querySelectorAll('[data-i18n]'));
@@ -111,6 +113,12 @@
     for (const node of nodes) {
       const key = node.getAttribute('data-i18n');
       node.innerHTML = english && EN[key] ? EN[key] : original.html.get(node);
+    }
+    for (const link of document.querySelectorAll('[data-privacy-link]')) {
+      link.setAttribute('href', english ? '/privacy' : '/privacidad');
+    }
+    for (const link of document.querySelectorAll('[data-terms-link]')) {
+      link.setAttribute('href', english ? '/terms' : '/terminos');
     }
     for (const button of document.querySelectorAll('[data-lang]')) {
       button.setAttribute('aria-pressed', String(button.getAttribute('data-lang') === language));

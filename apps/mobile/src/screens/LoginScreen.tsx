@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTranslation } from 'react-i18next';
+import { PrivacyLink, TermsLink } from '../components/PrivacyLink';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { BrandMark, Button, Field } from '../components/ui';
 import { GoogleSignInButton, googleConfigured } from '../components/GoogleSignInButton';
@@ -187,6 +188,9 @@ export function LoginScreen({ navigation }: any) {
             </Pressable>
           </>
         )}
+
+        <PrivacyLink style={{ marginTop: spacing.xl }} />
+        <TermsLink />
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -36,6 +36,8 @@ interface AuthContextValue {
   adoptSession: (result: AuthResponse) => void;
   refreshUser: () => Promise<void>;
   setUser: (user: User) => void;
+  /** Olvida la sesión local sin llamar al backend (p. ej. tras borrar la cuenta) */
+  forgetSession: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -160,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       adoptSession,
       refreshUser,
       setUser: setUserState,
+      forgetSession: clearSession,
     }),
     [
       user,
@@ -173,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       restoreSession,
       adoptSession,
       refreshUser,
+      clearSession,
     ],
   );
 

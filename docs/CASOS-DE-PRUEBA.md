@@ -192,6 +192,16 @@ Archivo: `e2e/tests/backend/13-boletin.spec.ts`
 | `CP-NEWS-001` | Sin Listmonk configurado el boletín se anuncia desactivado |
 | `CP-NEWS-002` | El alta valida el correo y sin Listmonk responde 503 (en el idioma pedido) |
 
+### Servicio backend · eliminar la cuenta
+
+Archivo: `e2e/tests/backend/14-borrado-cuenta.spec.ts`
+
+| Caso | Qué se comprueba |
+| --- | --- |
+| `CP-BAJA-001` | Exige la contraseña correcta |
+| `CP-BAJA-002` | Borra la cuenta, cierra las sesiones y no deja volver a entrar |
+| `CP-BAJA-003` | Sus listas desaparecen y en las ajenas solo sale ella |
+
 ---
 
 ## Servicio `frontend` (aplicación web de usuarios)
@@ -382,6 +392,8 @@ Archivo: `e2e/tests/landing/01-landing.spec.ts`
 | `CP-LAND-005` | La página se adapta al móvil |
 | `CP-LAND-006` | El pie enlaza la app, el panel y la API |
 | `CP-LAND-008` | El formulario del boletín aparece solo si está disponible |
+| `CP-LAND-009` | La política de privacidad se publica en español y en inglés |
+| `CP-LAND-010` | Las condiciones del servicio se publican en español y en inglés |
 
 ### Landing · idiomas
 

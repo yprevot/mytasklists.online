@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { useTranslation } from 'react-i18next';
 import { Button, Field } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { PrivacyLink, TermsLink } from '../components/PrivacyLink';
 import { ApiError } from '../api/client';
 import { colors, spacing } from '../theme';
 
@@ -103,6 +104,9 @@ export function RegisterScreen({ navigation }: any) {
         <Pressable onPress={() => navigation.goBack()} testID="go-login">
           <Text style={styles.link}>{t('register.login')}</Text>
         </Pressable>
+
+        <PrivacyLink style={{ marginTop: spacing.lg }} />
+        <TermsLink />
       </ScrollView>
     </KeyboardAvoidingView>
   );

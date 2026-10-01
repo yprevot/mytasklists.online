@@ -205,10 +205,26 @@ h3 {
     background-color 0.16s var(--ease),
     color 0.16s var(--ease);
 }
-.lang button:hover {
+.lang a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.25rem;
+  padding: 0 0.6rem;
+  border-radius: 0.45rem;
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.lang button:hover,
+.lang a:hover {
   color: var(--ink);
 }
-.lang button[aria-pressed='true'] {
+.lang button[aria-pressed='true'],
+.lang a[aria-current='page'] {
   background: var(--surface);
   color: var(--ink);
   box-shadow: 0 1px 2px rgb(21 32 26 / 0.16);
@@ -650,6 +666,127 @@ h3 {
 }
 .cta :focus-visible {
   outline-color: var(--tag);
+}
+
+/* ── Páginas legales ───────────────────────────────────────────────── */
+.legal {
+  padding: 3.5rem 0 4.5rem;
+}
+.legal-wrap {
+  max-width: 46rem;
+}
+.legal-head h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+.legal-date {
+  margin: 0.75rem 0 0;
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+}
+.legal-lede {
+  margin: 1.5rem 0 0;
+  font-size: 1.0625rem;
+}
+.legal a {
+  color: var(--pine);
+  text-underline-offset: 0.2em;
+}
+.legal-toc {
+  margin: 2.5rem 0 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+.legal-toc h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.legal-toc ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  columns: 2 14rem;
+  column-gap: 2rem;
+}
+.legal-toc li {
+  padding: 0.15rem 0;
+  break-inside: avoid;
+}
+.legal-toc a {
+  text-decoration: none;
+}
+.legal-toc a:hover {
+  text-decoration: underline;
+}
+.legal section {
+  padding-top: 1.5rem;
+}
+.legal section h2 {
+  margin: 1rem 0 0.75rem;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+.legal section h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.0625rem;
+}
+.legal p,
+.legal li,
+.legal dd {
+  overflow-wrap: anywhere;
+}
+.legal ul {
+  padding-left: 1.25rem;
+}
+.legal li + li {
+  margin-top: 0.35rem;
+}
+.legal-list dt {
+  margin-top: 1rem;
+  font-weight: 700;
+}
+.legal-list dd {
+  margin: 0.25rem 0 0;
+  color: var(--ink-2);
+}
+.legal-list dd ul {
+  margin: 0.5rem 0;
+}
+.legal code {
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.3rem;
+  background: var(--pine-50);
+  font-size: 0.875em;
+}
+.legal-table {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+}
+.legal-table table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+.legal-table th,
+.legal-table td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.legal-table th {
+  background: var(--pine-50);
+  font-family: var(--font-display);
+}
+.legal-table tr:last-child td {
+  border-bottom: 0;
 }
 
 /* ── Pie ────────────────────────────────────────────────────────────── */

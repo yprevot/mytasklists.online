@@ -11,6 +11,7 @@ import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { ListsScreen } from '../screens/ListsScreen';
 import { ListDetailScreen } from '../screens/ListDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { DeleteAccountScreen } from '../screens/DeleteAccountScreen';
 import { colors } from '../theme';
 
 const initials = (name: string): string =>
@@ -84,6 +85,11 @@ export function RootNavigator() {
               options={({ route }: any) => ({ title: route.params?.name ?? t('nav.list') })}
             />
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.account') }} />
+            <Stack.Screen
+              name="DeleteAccount"
+              component={DeleteAccountScreen}
+              options={{ title: t('deleteAccount.title') }}
+            />
           </>
         ) : (
           <>
