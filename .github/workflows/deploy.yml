@@ -48,6 +48,13 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck --workspaces --if-present
       - run: npm run build --workspaces --if-present
+      - name: Validar fase de coordinación móvil
+        env:
+          MOBILE_ROLLOUT_PHASE: ${{ vars.MOBILE_ROLLOUT_PHASE || 'bridge' }}
+          MOBILE_MIN_VERSION: ${{ vars.MOBILE_MIN_VERSION || '1.0.0' }}
+          MOBILE_RELEASE_READY_VERSION: ${{ vars.MOBILE_RELEASE_READY_VERSION }}
+        run: npm run release:check -- --static
+
 
       # Los cambios que rompen a las apps publicadas no se despliegan solos: hay que
       # publicar antes la app nueva y subir MOBILE_MIN_VERSION (docs/COMPATIBILIDAD.md).
@@ -98,6 +105,8 @@ jobs:
             file: apps/landing/Dockerfile
             context: apps/landing
             build_args: |
+              LANDING_PUBLIC_URL=${{ vars.LANDING_PUBLIC_URL || 'https://mytasklists.online' }}
+              LANDING_NOINDEX=${{ vars.LANDING_NOINDEX || 'false' }}
               LANDING_IOS_URL=${{ vars.LANDING_IOS_URL || '#descargar' }}
               LANDING_ANDROID_URL=${{ vars.LANDING_ANDROID_URL || '#descargar' }}
               LANDING_LEGAL_NAME=${{ vars.LANDING_LEGAL_NAME }}
@@ -143,6 +152,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Comprobar disponibilidad antes del corte
+        if: vars.MOBILE_ROLLOUT_PHASE == 'enforced'
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          MOBILE_ROLLOUT_PHASE: ${{ vars.MOBILE_ROLLOUT_PHASE }}
+          MOBILE_MIN_VERSION: ${{ vars.MOBILE_MIN_VERSION }}
+          MOBILE_RELEASE_READY_VERSION: ${{ vars.MOBILE_RELEASE_READY_VERSION }}
+        run: node scripts/mobile-rollout.mjs --before
+
       # Mientras la app no exista en Coolify (sin secretos) se publican las imágenes
       # pero no se despliega: el job avisa y termina sin error.
       - name: ¿Coolify está configurado?
@@ -192,3 +214,12 @@ jobs:
             fi
             sleep 10
           done
+
+      - name: Comprobar coordinación efectiva del servidor
+        if: steps.coolify.outputs.listo == 'true'
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          MOBILE_ROLLOUT_PHASE: ${{ vars.MOBILE_ROLLOUT_PHASE || 'bridge' }}
+          MOBILE_MIN_VERSION: ${{ vars.MOBILE_MIN_VERSION || '1.0.0' }}
+          MOBILE_RELEASE_READY_VERSION: ${{ vars.MOBILE_RELEASE_READY_VERSION }}
+        run: node scripts/mobile-rollout.mjs

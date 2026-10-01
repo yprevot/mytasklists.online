@@ -150,6 +150,7 @@ export const es = {
     termsUrl: '/terminos',
   },
   layout: {
+    myPlan: 'Mi plan',
     mainNav: 'Navegación principal',
     openMenu: 'Abrir menú',
     lists: 'Mis listas',

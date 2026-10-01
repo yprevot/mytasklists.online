@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { DEV_DEFAULTS } from './configuration';
-import { parseVersion } from '../common/version';
+import { REGISTRATION_MIN_VERSION } from '../common/mobile-rollout';
+import { compareVersions, parseVersion } from '../common/version';
 
 const MIN_SECRET_LENGTH = 32;
 
@@ -17,6 +18,18 @@ export function validateEnv(env: Record<string, unknown>): Record<string, unknow
   if (minVersion && !parseVersion(minVersion)) {
     throw new Error(`MOBILE_MIN_VERSION debe tener la forma x.y.z (recibido: "${minVersion}")`);
   }
+
+  const phase = value('MOBILE_ROLLOUT_PHASE') || 'bridge';
+  const minimum = parseVersion(minVersion || '1.0.0')!;
+  const registrationMinimum = parseVersion(REGISTRATION_MIN_VERSION)!;
+  const readyText = value('MOBILE_RELEASE_READY_VERSION');
+  const ready = parseVersion(readyText);
+  if (!['bridge', 'enforced'].includes(phase)) throw new Error('MOBILE_ROLLOUT_PHASE debe ser bridge o enforced');
+  if (readyText && !ready) throw new Error('MOBILE_RELEASE_READY_VERSION debe tener la forma x.y.z');
+  if (phase === 'bridge' && compareVersions(minimum, registrationMinimum) >= 0)
+    throw new Error('En bridge conserva MOBILE_MIN_VERSION por debajo de 2.0.0; el corte requiere enforced');
+  if (phase === 'enforced' && (compareVersions(minimum, registrationMinimum) < 0 || !ready || compareVersions(ready, minimum) < 0))
+    throw new Error('El corte requiere MOBILE_MIN_VERSION >= 2.0.0 y MOBILE_RELEASE_READY_VERSION >= MOBILE_MIN_VERSION');
 
   if (value('NODE_ENV') !== 'production') return env;
 

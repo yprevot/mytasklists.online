@@ -17,12 +17,10 @@ export const authApi = {
     api.post<LoginResponse>('/auth/login', { email, password }, { auth: false }),
   verifyMfa: (mfaToken: string, code: string) =>
     api.post<AuthResponse>('/auth/mfa/verify', { mfaToken, code }, { auth: false }),
-  register: (payload: {
-    fullName: string;
-    email: string;
-    whatsapp: string;
-    password: string;
-  }) => api.post<AuthResponse>('/auth/register', payload, { auth: false }),
+  requestRegistration: (email: string) => api.post<{ok:true;cooldownSeconds:number}>('/auth/registration/request', {email}, {auth:false}),
+  validateRegistration: (token: string) => api.post<{email:string}>('/auth/registration/validate', {token}, {auth:false}),
+  completeRegistration: (payload: import('@lista/contracts').CompleteRegistrationRequest) => api.post<AuthResponse>('/auth/registration/complete', payload, {auth:false}),
+  register: (payload: import('@lista/contracts').CompleteRegistrationRequest) => api.post<AuthResponse>('/auth/registration/complete', payload, {auth:false}),
   me: () => api.get<User>('/auth/me'),
   logout: () => api.post('/auth/logout', {}),
   verifyEmail: (token: string) =>
@@ -94,4 +92,12 @@ export const notificationsApi = {
   unreadCount: () => api.get<{ count: number }>('/notifications/unread-count'),
   markRead: (id: string) => api.patch<{ ok: boolean }>(`/notifications/${id}/read`),
   markAllRead: () => api.patch<{ ok: boolean }>('/notifications/read-all'),
+};
+
+export const billingApi = {
+ plans:()=>api.get<import('@lista/contracts').BillingPlans>('/billing/plans',{auth:false}),
+ me:()=>api.get<import('@lista/contracts').BillingState>('/billing/me'),
+ promotion:(code:string)=>api.post<import('@lista/contracts').PromotionQuote>('/billing/promotion',{code}),
+ checkout:(payload:import('@lista/contracts').CheckoutRequest)=>api.post<{url:string}>('/billing/checkout',payload),
+ portal:()=>api.post<{url:string}>('/billing/portal',{}),
 };

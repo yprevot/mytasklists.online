@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: 20% discount quotes 400 cents and preserves duration
+ok 1 - 20% discount quotes 400 cents and preserves duration
+  ---
+  duration_ms: 1.483375
+  type: 'test'
+  ...
+# Subtest: fixed discount never produces negative amount
+ok 2 - fixed discount never produces negative amount
+  ---
+  duration_ms: 0.201875
+  type: 'test'
+  ...
+# Subtest: expired, wrong currency and product restrictions reject
+ok 3 - expired, wrong currency and product restrictions reject
+  ---
+  duration_ms: 0.418709
+  type: 'test'
+  ...
+# Subtest: changed promotion expires old checkout before creating discounted session
+ok 4 - changed promotion expires old checkout before creating discounted session
+  ---
+  duration_ms: 0.434334
+  type: 'test'
+  ...
+# Subtest: unconfirmed changed price cannot reuse pending checkout
+ok 5 - unconfirmed changed price cannot reuse pending checkout
+  ---
+  duration_ms: 0.205709
+  type: 'test'
+  ...
+# Subtest: same offer reuses open checkout and cannot create a second charge session
+ok 6 - same offer reuses open checkout and cannot create a second charge session
+  ---
+  duration_ms: 0.114833
+  type: 'test'
+  ...
+# Subtest: expired validation and consumed completion never create a user
+ok 7 - expired validation and consumed completion never create a user
+  ---
+  duration_ms: 201.532417
+  type: 'test'
+  ...
+# Subtest: SMTP failure never rotates the previous registration token
+ok 8 - SMTP failure never rotates the previous registration token
+  ---
+  duration_ms: 1500.724458
+  type: 'test'
+  ...
+# Subtest: promotion persistence failure deactivates the external promotion
+ok 9 - promotion persistence failure deactivates the external promotion
+  ---
+  duration_ms: 1.177417
+  type: 'test'
+  ...
+# Subtest: promotion expiry in the past is rejected before provider mutation
+ok 10 - promotion expiry in the past is rejected before provider mutation
+  ---
+  duration_ms: 0.412125
+  type: 'test'
+  ...
+# Subtest: live price cannot open checkout in test mode
+ok 11 - live price cannot open checkout in test mode
+  ---
+  duration_ms: 0.249291
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2015.109125

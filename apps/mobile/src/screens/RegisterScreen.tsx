@@ -1,121 +1,24 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button, Field } from '../components/ui';
-import { useAuth } from '../context/AuthContext';
+import { authApi, compatApi } from '../api/endpoints';
 import { PrivacyLink, TermsLink } from '../components/PrivacyLink';
-import { ApiError } from '../api/client';
 import { colors, spacing } from '../theme';
-
 export function RegisterScreen({ navigation }: any) {
-  const { register } = useAuth();
-  const { t } = useTranslation();
-  const [form, setForm] = useState({ fullName: '', email: '', whatsapp: '', password: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const update = (key: keyof typeof form) => (value: string) =>
-    setForm((current) => ({ ...current, [key]: value }));
-
-  const validate = (): boolean => {
-    const next: Record<string, string> = {};
-    if (form.fullName.trim().length < 3) next.fullName = t('register.errors.fullName');
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) next.email = t('register.errors.email');
-    if (!/^\+?[0-9]{8,20}$/.test(form.whatsapp.trim()))
-      next.whatsapp = t('register.errors.whatsapp');
-    if (form.password.length < 8) next.password = t('register.errors.password');
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
-
-  const submit = async () => {
-    setError(null);
-    if (!validate()) return;
-    setLoading(true);
-    try {
-      await register({
-        fullName: form.fullName.trim(),
-        email: form.email.trim().toLowerCase(),
-        whatsapp: form.whatsapp.trim(),
-        password: form.password,
-      });
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('register.failed'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1, backgroundColor: colors.bg }}
-    >
-      <ScrollView contentContainerStyle={styles.container} testID="register-screen">
-        <Text style={styles.title}>{t('register.title')}</Text>
-        <Text style={styles.subtitle}>{t('register.subtitle')}</Text>
-
-        <Field
-          label={t('register.fullName')}
-          testID="register-fullname"
-          value={form.fullName}
-          onChangeText={update('fullName')}
-          error={errors.fullName}
-          placeholder={t('register.namePlaceholder')}
-        />
-        <Field
-          label={t('common.email')}
-          testID="register-email"
-          value={form.email}
-          onChangeText={update('email')}
-          error={errors.email}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholder={t('register.emailPlaceholder')}
-        />
-        <Field
-          label={t('register.whatsapp')}
-          testID="register-whatsapp"
-          value={form.whatsapp}
-          onChangeText={update('whatsapp')}
-          error={errors.whatsapp}
-          keyboardType="phone-pad"
-          placeholder={t('register.whatsappPlaceholder')}
-        />
-        <Field
-          label={t('common.password')}
-          testID="register-password"
-          value={form.password}
-          onChangeText={update('password')}
-          error={errors.password}
-          secureTextEntry
-          placeholder={t('register.passwordPlaceholder')}
-        />
-
-        {error ? (
-          <Text style={styles.error} testID="register-error">
-            {error}
-          </Text>
-        ) : null}
-
-        <Button title={t('register.submit')} onPress={submit} loading={loading} testID="register-submit" />
-
-        <Pressable onPress={() => navigation.goBack()} testID="go-login">
-          <Text style={styles.link}>{t('register.login')}</Text>
-        </Pressable>
-
-        <PrivacyLink style={{ marginTop: spacing.lg }} />
-        <TermsLink />
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+  const { i18n } = useTranslation();const en=i18n.language.startsWith('en');
+  const [email,setEmail]=useState('');const [sent,setSent]=useState(false);const [busy,setBusy]=useState(false);
+  const [error,setError]=useState('');const [seconds,setSeconds]=useState(0);
+  useEffect(()=>{if(!seconds)return;const timer=setTimeout(()=>setSeconds(seconds-1),1000);return ()=>clearTimeout(timer);},[seconds]);
+  async function submit(){setBusy(true);setError('');try{const compatibility=await compatApi.check();if((compatibility.registrationFlow||0)<2)throw new Error(en?'Email registration is not available on this server yet. Please try again later.':'El registro por correo todavía no está disponible en este servidor. Inténtalo más tarde.');const r=await authApi.requestRegistration(email.trim().toLowerCase());setSent(true);setSeconds(r.cooldownSeconds);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+  return <ScrollView contentContainerStyle={{padding:spacing.xl,flexGrow:1,justifyContent:'center'}} testID="register-screen">
+    <Text style={{fontSize:28,fontWeight:'800',color:colors.ink}}>{en?'Create your account':'Crea tu cuenta'}</Text>
+    <Text style={{color:colors.inkSoft,marginVertical:spacing.lg}}>{en?'Verify your email first. Complete your details using the link in your browser, then sign in here.':'Primero valida tu correo. Completa tus datos con el enlace en tu navegador y después ingresa aquí.'}</Text>
+    <Field label={en?'Email':'Correo electrónico'} value={email} onChangeText={v=>{setEmail(v);setSent(false);}} keyboardType="email-address" autoCapitalize="none" testID="register-email"/>
+    {sent && <Text accessibilityLiveRegion="polite" testID="registration-sent" style={{color:colors.ink,marginBottom:spacing.lg}}>{en?'If you can register with this address, you will receive a link. Already have an account? Sign in or reset your password.':'Si puedes registrarte con este correo, recibirás un enlace. ¿Ya tienes cuenta? Ingresa o recupera tu contraseña.'}</Text>}
+    {error && <Text accessibilityRole="alert" style={{color:colors.danger,marginBottom:spacing.md}} testID="register-error">{error}</Text>}
+    <Button title={seconds?`${en?'Resend in':'Reenviar en'} ${seconds}s`:en?'Send link':'Enviar enlace'} onPress={submit} disabled={seconds>0||!email.trim()} loading={busy} testID="register-submit"/>
+    <Pressable onPress={()=>navigation.goBack()} testID="go-login"><Text style={{color:colors.brand,padding:spacing.lg,textAlign:'center'}}>{en?'Sign in':'Ingresar'}</Text></Pressable>
+    <PrivacyLink/><TermsLink/>
+  </ScrollView>;
 }
-
-const styles = StyleSheet.create({
-  container: { padding: spacing.xl, flexGrow: 1, justifyContent: 'center' },
-  title: { fontSize: 28, fontWeight: '800', color: colors.ink, letterSpacing: -0.7 },
-  subtitle: { fontSize: 15, color: colors.inkSoft, marginTop: 4, marginBottom: spacing.xl },
-  error: { color: colors.danger, marginBottom: spacing.md, fontSize: 13 },
-  link: { textAlign: 'center', color: colors.brand, marginTop: spacing.lg, fontWeight: '700', fontSize: 15, paddingVertical: 6 },
-});

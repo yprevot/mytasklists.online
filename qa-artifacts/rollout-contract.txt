@@ -1,0 +1,7 @@
+npm notice run mytasklists@1.0.0 contract:check
+npm notice run node scripts/contract-check.mjs
+Cambios incompatibles con origin/main:
+  - registrationFlow: el registro directo exige actualizar clientes al flujo de correo previo
+
+Aprobado por la versión mayor 1.0.0 → 2.0.0.
+Registro: backend en bridge primero, despues binario movil; enforced y MOBILE_MIN_VERSION solo tras confirmar su disponibilidad.

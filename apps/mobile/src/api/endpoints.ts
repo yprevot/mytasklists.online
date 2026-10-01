@@ -24,6 +24,7 @@ export const usersApi = {
 };
 
 export const authApi = {
+  requestRegistration: (email: string) => api.post<{ok:true;cooldownSeconds:number}>('/auth/registration/request', {email}, false),
   providers: () =>
     api
       .get<{ local: boolean; google: boolean; apple: boolean }>('/auth/providers')
@@ -35,8 +36,6 @@ export const authApi = {
   forgotPassword: (email: string) =>
     api.post<{ ok: true; message: string }>('/auth/forgot-password', { email }, false),
   resendVerification: () => api.post<{ ok: true }>('/auth/verify-email/resend'),
-  register: (payload: { fullName: string; email: string; whatsapp: string; password: string }) =>
-    api.post<AuthResponse>('/auth/register', payload, false),
   google: (token: string, whatsapp?: string) =>
     api.post<LoginResponse>('/auth/google/token', { token, whatsapp }, false),
   apple: (token: string, fullName?: string, whatsapp?: string) =>
@@ -72,4 +71,15 @@ export const devicesApi = {
   register: (token: string, platform: 'ios' | 'android' | 'web', deviceName?: string) =>
     api.post<{ id: string }>('/notifications/devices', { token, platform, deviceName }),
   unregister: (token: string) => api.delete<{ ok: boolean }>(`/notifications/devices/${token}`),
+};
+
+export const billingApi = {
+ plans:()=>api.get<import('@lista/contracts').BillingPlans>('/billing/plans'),
+ me:()=>api.get<import('@lista/contracts').BillingState>('/billing/me'),
+ checkout:()=>api.post<{url:string}>('/billing/checkout',{}),
+ portal:()=>api.post<{url:string}>('/billing/portal',{}),
+ verify:(payload:import('@lista/contracts').StorePurchaseRequest)=>api.post<{ok:true}>('/billing/store/verify',payload),
+ nativePromotion:(code:string)=>api.post<{offerId:string}>('/billing/native-promotion',{code}),
+ promotion:(code:string)=>api.post<import('@lista/contracts').PromotionQuote>('/billing/promotion',{code}),
+ discountedCheckout:(code:string,expectedTotal:number)=>api.post<{url:string}>('/billing/checkout',{code,expectedTotal}),
 };

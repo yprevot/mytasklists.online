@@ -1,3 +1,4 @@
+import { BillingService } from '../billing/billing.service';
 import type { ServerEvents } from '@lista/contracts';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -36,6 +37,7 @@ export class ItemsService {
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(ActivityLog) private readonly activity: Repository<ActivityLog>,
     private readonly listsService: ListsService,
+    private readonly billing: BillingService,
     private readonly realtime: RealtimeGateway,
     private readonly notifications: NotificationsService,
   ) {}
@@ -84,14 +86,17 @@ export class ItemsService {
     }
 
     const now = new Date();
-    const maxOrder = await this.items
+    const item = await this.items.manager.transaction(async manager=>{
+      await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))',['capacity:items:'+listId]);
+      await this.billing.assertCapacity(list.ownerId,'items',await manager.count(ListItem,{where:{listId}}));
+    const maxOrder = await manager.getRepository(ListItem)
       .createQueryBuilder('item')
       .select('COALESCE(MAX(item.sortOrder), 0)', 'max')
       .where('item.listId = :listId', { listId })
       .getRawOne<{ max: string }>();
 
-    const item = await this.items.save(
-      this.items.create({
+    return manager.save(
+      manager.create(ListItem, {
         listId,
         name: dto.name.trim(),
         quantity: dto.quantity ?? 1,
@@ -109,6 +114,8 @@ export class ItemsService {
         sortOrder: parseInt(maxOrder?.max ?? '0', 10) + 1,
       }),
     );
+
+    });
 
     const view = toItemView(await this.loadItem(item.id));
     await this.afterChange(listId, RT.ITEM_CREATED, { item: view, actorId: userId });

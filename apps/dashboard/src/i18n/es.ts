@@ -32,6 +32,7 @@ export const es = {
     submitting: 'Entrando…',
   },
   nav: {
+    promotions: 'Promociones',
     overview: 'Resumen',
     users: 'Usuarios',
     lists: 'Listas',

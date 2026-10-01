@@ -1,3 +1,4 @@
+import UNITS from '../../../../packages/ui-data/units.json';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +16,9 @@ interface Props {
 
 /** Producto comprado: se muestra tachado y se quita con la "x" */
 export function PurchasedRow({ item, onRestore, onClose, disabled, first }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const knownUnit=UNITS.find(u=>u.value===item.unit);
+  const unitLabel=knownUnit?(i18n.language.startsWith('en')?knownUnit.en:knownUnit.es):item.unit;
   return (
     <View style={[styles.row, !first && styles.divided]} testID="purchased-item">
       <Pressable
@@ -32,6 +35,7 @@ export function PurchasedRow({ item, onRestore, onClose, disabled, first }: Prop
         <Text style={styles.name} testID="purchased-name" numberOfLines={1}>
           {item.name}
         </Text>
+        {(Number(item.quantity)!==1||item.unit!=='pza')&&<Text style={styles.meta} testID="purchased-quantity">{Number(item.quantity)} {unitLabel}</Text>}
         <View style={styles.metaRow}>
           {item.purchasedByName ? <Text style={styles.meta}>{item.purchasedByName}</Text> : null}
           {item.isRecurring && item.daysUntilReactivation !== null && (

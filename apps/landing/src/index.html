@@ -7,7 +7,7 @@
     <title>MyTaskLists · Listas compartidas con productos recurrentes</title>
     <meta
       name="description"
-      content="Crea listas de compras, compártelas con quien quieras y deja que los productos que compras siempre se agreguen solos cada cierto tiempo. Disponible para iOS, Android y web."
+      content="Crea listas de compras, compártelas con quien quieras y deja que los productos que compras siempre se agreguen solos cada cierto tiempo. Organiza tus compras desde el navegador y comparte tus listas en tiempo real."
     />
     <meta property="og:title" content="MyTaskLists" />
     <meta
@@ -35,11 +35,12 @@
         <nav class="nav-links" aria-label="Principal">
           <a class="nav-text" href="#funciones" data-i18n="nav.features">Funciones</a>
           <a class="nav-text" href="#como-funciona" data-i18n="nav.how">Cómo funciona</a>
-          <a class="nav-text" href="#descargar" data-testid="nav-download" data-i18n="nav.download">Descargar</a>
-          <a class="btn btn-ghost" href="__APP_URL__" data-testid="open-web-app" data-i18n="nav.openApp">Abrir app web</a>
+          <a class="nav-text" href="__PRICING_URL__">Precios</a>
+          <a class="nav-text" href="__DOWNLOAD_URL__" data-testid="nav-download" data-i18n="nav.download">Descargar</a>
+          <a class="btn btn-ghost" href="__LOGIN_URL__" data-testid="open-web-app" data-i18n="nav.openApp">Ingresar</a>
           <div class="lang" role="group" aria-label="Idioma / Language" data-testid="language-switcher">
-            <button type="button" data-lang="es" data-testid="language-es" lang="es" title="Español">ES</button>
-            <button type="button" data-lang="en" data-testid="language-en" lang="en" title="English">EN</button>
+            <a href="/" data-lang="es" data-testid="language-es" lang="es">ES</a>
+            <a href="/en/" data-lang="en" data-testid="language-en" lang="en">EN</a>
           </div>
         </nav>
       </div>
@@ -51,7 +52,7 @@
         <div class="wrap hero-grid">
           <div class="hero-copy">
             <h1 data-i18n="hero.title">
-              Tu despensa, siempre al día.
+              Listas de compras compartidas.
               <span class="hl">Sin volver a olvidar el pan.</span>
             </h1>
 
@@ -62,23 +63,23 @@
             </p>
 
             <div class="store-buttons" id="descargar-hero">
-              <a class="store-btn" href="__IOS_URL__" data-testid="download-ios">
+              <a class="store-btn" href="__DOWNLOAD_URL__#ios" data-testid="download-ios">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.3-2.4 1.3-2.5 0 0-2.5-1-2.5-3.4zM14.2 5.9c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z" />
                 </svg>
                 <span>
-                  <small data-i18n="store.iosSmall">Descargar en el</small>
-                  <strong>App Store</strong>
+                  <small data-i18n="store.iosSmall">Usar en</small>
+                  <strong>iPhone y iPad</strong>
                 </span>
               </a>
 
-              <a class="store-btn" href="__ANDROID_URL__" data-testid="download-android">
+              <a class="store-btn" href="__DOWNLOAD_URL__#android" data-testid="download-android">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.6 2.2 13.1 12 3.6 21.8c-.3-.2-.5-.6-.5-1.1V3.3c0-.5.2-.9.5-1.1zm11 10.6 2.6 2.6-9.6 5.4 7-8zm3.9-1.9 2.5 1.4c.7.4.7 1.4 0 1.8l-2.5 1.4-2.8-2.3 2.8-2.3zM7.6 2.9l9.6 5.4-2.6 2.6-7-8z" />
                 </svg>
                 <span>
-                  <small data-i18n="store.androidSmall">Disponible en</small>
-                  <strong>Google Play</strong>
+                  <small data-i18n="store.androidSmall">Usar en</small>
+                  <strong>Android</strong>
                 </span>
               </a>
             </div>
@@ -291,13 +292,13 @@
             <div class="cta-copy">
               <h2 data-i18n="cta.title">Descarga la app</h2>
               <p data-i18n="cta.text">
-                Disponible para iPhone y Android. Crea tu cuenta con correo, Google o Apple y empieza
+                Úsala desde el navegador en iPhone y Android. Crea tu cuenta con correo, Google o Apple y empieza
                 a compartir tus listas en menos de un minuto.
               </p>
             </div>
 
             <div class="store-buttons">
-              <a class="store-btn" href="__IOS_URL__" data-testid="download-ios-cta">
+              <a class="store-btn" href="__DOWNLOAD_URL__#ios" data-testid="download-ios-cta">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.3-2.4 1.3-2.5 0 0-2.5-1-2.5-3.4zM14.2 5.9c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z" />
                 </svg>
@@ -307,7 +308,7 @@
                 </span>
               </a>
 
-              <a class="store-btn" href="__ANDROID_URL__" data-testid="download-android-cta">
+              <a class="store-btn" href="__DOWNLOAD_URL__#android" data-testid="download-android-cta">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.6 2.2 13.1 12 3.6 21.8c-.3-.2-.5-.6-.5-1.1V3.3c0-.5.2-.9.5-1.1zm11 10.6 2.6 2.6-9.6 5.4 7-8zm3.9-1.9 2.5 1.4c.7.4.7 1.4 0 1.8l-2.5 1.4-2.8-2.3 2.8-2.3zM7.6 2.9l9.6 5.4-2.6 2.6-7-8z" />
                 </svg>
@@ -353,7 +354,7 @@
           <a href="/dashboard/" data-i18n="footer.panel">Panel</a> ·
           <a href="/privacidad" data-privacy-link data-testid="footer-privacy" data-i18n="footer.privacy">Privacidad</a> ·
           <a href="/terminos" data-terms-link data-testid="footer-terms" data-i18n="footer.terms">Condiciones</a> ·
-          <a href="/api/docs">API</a>
+          <a href="__PRICING_URL__">Precios</a> · <a href="__DOWNLOAD_URL__">Descargar</a>
         </span>
       </div>
     </footer>

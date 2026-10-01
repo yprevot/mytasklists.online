@@ -22,12 +22,6 @@ interface Value {
   loading: boolean;
   login: (email: string, password: string) => Promise<LoginStep>;
   verifyMfa: (mfaToken: string, code: string) => Promise<void>;
-  register: (payload: {
-    fullName: string;
-    email: string;
-    whatsapp: string;
-    password: string;
-  }) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<LoginStep>;
   loginWithApple: (identityToken: string, fullName?: string) => Promise<LoginStep>;
   refreshUser: () => Promise<void>;
@@ -109,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       login: async (email, password) => handle(await authApi.login(email, password)),
       verifyMfa: async (mfaToken, code) => adopt(await authApi.verifyMfa(mfaToken, code)),
-      register: async (payload) => adopt(await authApi.register(payload)),
       loginWithGoogle: async (idToken) => handle(await authApi.google(idToken)),
       loginWithApple: async (identityToken, fullName) =>
         handle(await authApi.apple(identityToken, fullName)),

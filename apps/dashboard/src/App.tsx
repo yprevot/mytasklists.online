@@ -1,3 +1,4 @@
+import { PromotionsPage } from './pages/PromotionsPage';
 import type { ReactElement } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAdminAuth } from './context/AdminAuthContext';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/users" element={<UsersPage />} />
         <Route path="/lists" element={<ListsPage />} />
         <Route path="/activity" element={<ActivityPage />} />
+        <Route path="/promotions" element={<PromotionsPage />}/>
         <Route path="/security" element={<SecurityPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

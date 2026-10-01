@@ -1,5 +1,7 @@
 {
-  "cli": { "version": ">= 5.9.0" },
+  "cli": {
+    "version": ">= 5.9.0"
+  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -8,12 +10,27 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
-      "channel": "preview"
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_BILLING_CHANNEL": "direct"
+      }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production"
+    },
+    "direct": {
+      "extends": "production",
+      "channel": "direct",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_BILLING_CHANNEL": "direct"
+      }
     }
   },
   "submit": {

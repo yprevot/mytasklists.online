@@ -47,7 +47,7 @@ export function AuthCallbackPage() {
     }
     restoreSession()
       .then((ok) => {
-        if (ok) navigate('/', { replace: true });
+        if (ok) navigate(sessionStorage.getItem('lc.plan')==='premium'?'/billing':'/', { replace: true });
         else setError(t('callback.sessionFailed'));
       })
       .catch(() => setError(t('callback.sessionFailed')));
@@ -62,7 +62,7 @@ export function AuthCallbackPage() {
         <MfaCodeForm
           onSubmit={async (code) => {
             await verifyMfa(mfaToken, code);
-            navigate('/', { replace: true });
+            navigate(sessionStorage.getItem('lc.plan')==='premium'?'/billing':'/', { replace: true });
           }}
           onCancel={() => navigate('/login', { replace: true })}
         />

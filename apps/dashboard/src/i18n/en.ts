@@ -33,6 +33,7 @@ export const en: Catalog<typeof es> = {
     submitting: 'Signing in…',
   },
   nav: {
+    promotions: 'Promotions',
     overview: 'Overview',
     users: 'Users',
     lists: 'Lists',

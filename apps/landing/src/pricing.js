@@ -1,0 +1,1 @@
+(async()=>{try{const r=await fetch('/api/billing/plans');if(!r.ok)return;const p=await r.json();document.querySelector('#premium-benefits').textContent=document.documentElement.lang==='en'?p.benefits.en:p.benefits.es;}catch{}})();

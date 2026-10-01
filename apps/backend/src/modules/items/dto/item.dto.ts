@@ -1,6 +1,6 @@
 import type { CreateItemRequest, ReorderItemsRequest, UpdateItemRequest } from '@lista/contracts';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -32,6 +32,7 @@ export class CreateItemDto implements CreateItemRequest {
   @ApiPropertyOptional({ example: 'pza' })
   @IsOptional()
   @IsString()
+  @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
   @Length(1, 20)
   unit?: string;
 
@@ -82,6 +83,7 @@ export class UpdateItemDto implements UpdateItemRequest {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
   @Length(1, 20)
   unit?: string;
 

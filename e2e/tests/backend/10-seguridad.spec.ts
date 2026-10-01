@@ -13,32 +13,10 @@ import { tokenFromEmail, waitForEmail } from '../../utils/mailpit';
 import { totp } from '../../utils/totp';
 
 test.describe('Servicio backend · seguridad de la cuenta', () => {
-  test('CP-SEC-001 · el registro envía un correo de verificación y el enlace confirma la cuenta', async ({
-    request,
-  }) => {
-    const user = await registerUser(request);
-    const me = await (await request.get(`${API_URL}/auth/me`, { headers: auth(user.accessToken) })).json();
-    expect(me.emailVerified).toBe(false);
-
-    const email = await waitForEmail(request, user.email, 'Confirma tu correo');
-    const token = tokenFromEmail(email, '/app/verify-email');
-
-    const verify = await request.post(`${API_URL}/auth/verify-email`, { data: { token } });
-    expect(verify.status()).toBe(200);
-    expect((await verify.json()).email).toBe(user.email);
-
-    const after = await (await request.get(`${API_URL}/auth/me`, { headers: auth(user.accessToken) })).json();
-    expect(after.emailVerified).toBe(true);
-
-    // El enlace es de un solo uso
-    const reuse = await request.post(`${API_URL}/auth/verify-email`, { data: { token } });
-    expect(reuse.status()).toBe(400);
-
-    // Ya verificado: no tiene sentido reenviar
-    const resend = await request.post(`${API_URL}/auth/verify-email/resend`, {
-      headers: auth(user.accessToken),
-    });
-    expect(resend.status()).toBe(400);
+  test('CP-SEC-001 · registro verificado no permite reenviar la verificación antigua',async({request})=>{
+    const user=await registerUser(request);const me=await request.get(`${API_URL}/auth/me`,{headers:auth(user.accessToken)});
+    expect((await me.json()).emailVerified).toBe(true);
+    const resend=await request.post(`${API_URL}/auth/verify-email/resend`,{headers:auth(user.accessToken)});expect(resend.status()).toBe(400);
   });
 
   test('CP-SEC-002 · recuperar la contraseña cambia la clave y cierra todas las sesiones', async ({

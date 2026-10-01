@@ -35,6 +35,7 @@ export function SettingsScreen({ navigation }: any) {
       contentContainerStyle={{ padding: spacing.lg }}
       testID="settings-screen"
     >
+      <Button title="Premium" variant="ghost" onPress={()=>navigation.navigate("Billing")} testID="my-plan"/>
       <Card>
         <Text style={styles.name}>{user.fullName}</Text>
         <Text style={styles.meta}>{user.email}</Text>

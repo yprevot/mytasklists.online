@@ -1,0 +1,9 @@
+import {expect,test} from '@playwright/test';
+for(const [path,lang] of [['/','es'],['/en/','en'],['/precios/','es'],['/en/pricing/','en'],['/descargar/','es'],['/en/download/','en']])test(`SEO-01/02/05 · HTML indexable ${path}`,async({request,page})=>{
+ const r=await request.get(path);expect(r.status()).toBe(200);const html=await r.text();expect(html).toContain(`lang="${lang}"`);expect(html).toContain('rel="canonical"');expect(html).toContain('hreflang="es"');expect(html).toContain('hreflang="en"');expect(html).not.toContain('__APP_URL__');
+ await page.goto(path);await expect(page.locator('h1')).toHaveCount(1);expect(await page.locator('script[type="application/ld+json"]').count()).toBeGreaterThan(0);
+});
+test('SEO-03/04 · sitemap, robots y 404 reales',async({request})=>{const s=await request.get('/sitemap.xml');expect(s.status()).toBe(200);expect(await s.text()).not.toContain('/app/');expect(await s.text()).toContain('/precios/');expect((await request.get('/robots.txt')).status()).toBe(200);expect((await request.get('/not-a-page-987')).status()).toBe(404);expect((await request.get('/downloads/not-published.apk')).status()).toBe(404);});
+test('PAY-01/DES-01 · precios y alternativas utilizables en teléfono',async({page})=>{await page.setViewportSize({width:390,height:844});await page.goto('/precios/');await expect(page.getByText('5',{exact:false}).first()).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.goto('/descargar/');await expect(page.locator('#android-status')).toContainText('todavía no está disponible');await expect(page.getByRole('link',{name:'Usar app web'}).first()).toBeVisible();await expect(page.locator('#ios')).toContainText('Añadir a pantalla de inicio');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

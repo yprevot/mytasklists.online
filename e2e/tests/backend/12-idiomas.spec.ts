@@ -1,3 +1,4 @@
+import { requestRegistration } from '../../utils/registration';
 import { expect, test } from '@playwright/test';
 import {
   API_URL,
@@ -54,14 +55,10 @@ test.describe('Servicio backend · idiomas', () => {
   });
 
   test('CP-I18N-002 · el registro guarda el idioma y el perfil lo puede cambiar', async ({ request }) => {
-    const registered = await request.post(`${API_URL}/auth/register`, {
+    const email=uniqueEmail('english');const {token}=await requestRegistration(request,email,'en');
+    const registered = await request.post(`${API_URL}/auth/registration/complete`, {
       headers: { 'Accept-Language': 'en-US,en;q=0.9' },
-      data: {
-        fullName: 'English Speaker',
-        email: uniqueEmail('english'),
-        whatsapp: uniqueWhatsapp(),
-        password: DEFAULT_PASSWORD,
-      },
+      data: {token,fullName:'English Speaker',whatsapp:uniqueWhatsapp(),password:DEFAULT_PASSWORD,passwordConfirmation:DEFAULT_PASSWORD},
     });
     expect(registered.ok()).toBeTruthy();
     const { accessToken, user } = await registered.json();

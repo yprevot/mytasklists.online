@@ -97,17 +97,10 @@ export class AuthService {
 
   // ── Registro y sesión con correo/contraseña ─────────────────────────
   async register(dto: RegisterDto, locale?: Locale): Promise<AuthResult> {
-    const user = await this.users.create({
-      locale,
-      fullName: dto.fullName,
-      email: dto.email,
-      whatsapp: dto.whatsapp,
-      password: dto.password,
-      provider: AuthProvider.LOCAL,
-    });
-    await this.sendVerificationEmail(user);
-    return this.issueSession(user);
+    throw new HttpException({code:'REGISTRATION_REQUIRED',message:'El registro requiere validar tu correo. Solicita un enlace desde Crear cuenta.',details:{continueUrl:this.config.get<string>('publicUrl')+'/app/register'}}, 426);
   }
+
+  async issueRegistrationSession(user: User): Promise<AuthResult> { return this.issueSession(user); }
 
   async login(dto: LoginDto): Promise<LoginOutcome> {
     const lockMs = this.config.get<number>('rateLimit.loginLockMs', 15 * 60_000);

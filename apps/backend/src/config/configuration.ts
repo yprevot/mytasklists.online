@@ -29,6 +29,10 @@ export interface NewsletterConfig {
 export interface MobileConfig {
   /** Las apps por debajo de esta versión reciben 426 y deben actualizarse */
   minVersion: string;
+  rolloutPhase: 'bridge' | 'enforced';
+  releaseReadyVersion: string | null;
+  downloadUrl: string;
+  webUrl: string;
   storeUrls: { ios: string | null; android: string | null };
 }
 
@@ -233,6 +237,10 @@ export default (): AppConfig => {
     push: { expoAccessToken: process.env.EXPO_ACCESS_TOKEN || undefined },
     mobile: {
       minVersion: process.env.MOBILE_MIN_VERSION || '1.0.0',
+      rolloutPhase: (process.env.MOBILE_ROLLOUT_PHASE || 'bridge') as 'bridge' | 'enforced',
+      releaseReadyVersion: process.env.MOBILE_RELEASE_READY_VERSION || null,
+      downloadUrl: (process.env.PUBLIC_URL || 'http://localhost:8080').replace(/\/$/,'') + '/descargar/',
+      webUrl: (process.env.PUBLIC_URL || 'http://localhost:8080').replace(/\/$/,'') + '/app/',
       storeUrls: {
         ios: process.env.MOBILE_STORE_URL_IOS || null,
         android: process.env.MOBILE_STORE_URL_ANDROID || null,

@@ -226,3 +226,9 @@ export function accountDeletedTemplate(locale: Locale, name: string): MailConten
     ),
   };
 }
+
+export function registrationTemplate(locale: Locale, url: string, minutes: number): MailContent {
+  const title = locale === 'en' ? 'Complete your registration' : 'Completa tu registro';
+  const text = locale === 'en' ? `Verify your email to create your account. This link expires in ${minutes} minutes.` : `Valida tu correo para crear tu cuenta. Este enlace vence en ${minutes} minutos.`;
+  return { subject: title + ' · MyTaskLists', text: `${text}\n\n${url}`, html: layout(locale, title, `<p>${text}</p>`, { label: title, url }) };
+}

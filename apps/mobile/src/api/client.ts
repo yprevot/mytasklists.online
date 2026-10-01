@@ -78,6 +78,8 @@ export const onSessionExpired = (listener: () => void): (() => void) => {
 };
 
 export interface UpdateRequired {
+  downloadUrl?: string;
+  webUrl?: string;
   message: string;
   minVersion: string;
   storeUrl: string | null;
@@ -158,6 +160,8 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
       message: String(problem?.message ?? i18n.t('common.updateRequired')),
       minVersion: problem?.details?.minVersion ?? '',
       storeUrl: problem?.details?.storeUrl ?? null,
+      downloadUrl: problem?.details?.downloadUrl,
+      webUrl: problem?.details?.webUrl,
     };
     updateListeners.forEach((listener) => listener(info));
   }

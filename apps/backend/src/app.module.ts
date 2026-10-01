@@ -1,3 +1,4 @@
+import { BillingModule } from './modules/billing/billing.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -90,6 +91,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
     HealthModule,
     CompatModule,
     NewsletterModule,
+    BillingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AppThrottlerGuard },

@@ -23,12 +23,7 @@ interface AuthContextValue {
   accessToken: string | null;
   login: (email: string, password: string) => Promise<LoginStep>;
   verifyMfa: (mfaToken: string, code: string) => Promise<void>;
-  register: (payload: {
-    fullName: string;
-    email: string;
-    whatsapp: string;
-    password: string;
-  }) => Promise<void>;
+  register: (payload: import('@lista/contracts').CompleteRegistrationRequest) => Promise<void>;
   logout: () => Promise<void>;
   /** Recupera la sesión desde la cookie (vuelta de Google/Apple o recarga) */
   restoreSession: () => Promise<boolean>;
@@ -129,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (payload: { fullName: string; email: string; whatsapp: string; password: string }) => {
+    async (payload: import('@lista/contracts').CompleteRegistrationRequest) => {
       adoptSession(await authApi.register(payload));
     },
     [adoptSession],

@@ -1,3 +1,4 @@
+import UNITS from '../../../../packages/ui-data/units.json';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +20,7 @@ interface Props {
  * gris (una sola vez), etiqueta amarilla (recurrente al día) y rojo (vencido).
  */
 export function ItemRow({ item, onPurchase, onLongPress, disabled, first }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <Pressable
@@ -49,7 +50,7 @@ export function ItemRow({ item, onPurchase, onLongPress, disabled, first }: Prop
         </Text>
         <View style={styles.metaRow}>
           <Text style={styles.meta}>
-            {item.quantity} {item.unit}
+            {item.quantity} {UNITS.find(u=>u.value===item.unit)?.[i18n.language.startsWith('en')?'en':'es'] || item.unit}
           </Text>
           {item.isRecurring && (
             <Badge

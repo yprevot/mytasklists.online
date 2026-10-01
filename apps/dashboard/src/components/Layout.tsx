@@ -8,7 +8,7 @@ import { ADMIN_MFA_REQUIRED_EVENT } from '../api/client';
 
 interface NavEntry {
   to: string;
-  key: 'overview' | 'users' | 'lists' | 'activity' | 'security';
+  key: 'overview' | 'users' | 'lists' | 'activity' | 'security' | 'promotions';
   /** No depende del idioma: las pruebas e2e lo usan en los dos */
   testId: string;
   icon: string;
@@ -20,6 +20,7 @@ const NAV: NavEntry[] = [
   { to: '/users', key: 'users', testId: 'usuarios', icon: 'bi-people' },
   { to: '/lists', key: 'lists', testId: 'listas', icon: 'bi-card-checklist' },
   { to: '/activity', key: 'activity', testId: 'bitacora', icon: 'bi-clock-history' },
+  { to: '/promotions', key: 'promotions', testId: 'promociones', icon: 'bi-tag' },
   { to: '/security', key: 'security', testId: 'seguridad', icon: 'bi-shield-lock' },
 ];
 

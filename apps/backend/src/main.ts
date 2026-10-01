@@ -24,7 +24,7 @@ async function bootstrap(): Promise<void> {
     // trustProxy: solo nginx (1 salto) puede fijar X-Forwarded-For; así la IP que
     // usa el rate limiting no se puede falsear desde el cliente.
     new FastifyAdapter({ trustProxy, bodyLimit: early.bodyLimit }),
-    { bufferLogs: false },
+    { bufferLogs: false, rawBody: true },
   );
 
   const config = app.get(ConfigService);

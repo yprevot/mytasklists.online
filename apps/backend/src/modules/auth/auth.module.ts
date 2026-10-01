@@ -1,3 +1,4 @@
+import { RegistrationService } from './registration.service';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -23,7 +24,7 @@ import { AuthCookieService } from './auth-cookie.service';
       }),
     }),
   ],
-  providers: [AuthService, TokenService, OAuthService, MfaService, AuthCookieService, AccountDeletionService],
+  providers: [RegistrationService, AuthService, TokenService, OAuthService, MfaService, AuthCookieService, AccountDeletionService],
   controllers: [AuthController, AccountController],
   exports: [AuthService, TokenService, MfaService, JwtModule],
 })

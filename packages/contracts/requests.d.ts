@@ -131,3 +131,6 @@ export interface UpdateItemRequest {
 export interface ReorderItemsRequest {
   itemIds: string[];
 }
+
+export interface RegistrationRequest { email: string; }
+export interface CompleteRegistrationRequest { token: string; fullName: string; whatsapp: string; password: string; passwordConfirmation: string; }

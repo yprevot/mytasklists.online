@@ -74,6 +74,12 @@ export function checkContract(base = 'origin/main') {
     const oldTypes = exportedTypes(oldDir);
     const newTypes = exportedTypes(newDir);
     const breaking = [];
+    const behavioralFile=path.join(newDir,'behavior.json');
+    if(fs.existsSync(behavioralFile)) {
+      const next=JSON.parse(fs.readFileSync(behavioralFile,'utf8'));
+      const previous=fs.existsSync(path.join(oldDir,'behavior.json'))?JSON.parse(fs.readFileSync(path.join(oldDir,'behavior.json'),'utf8')):{};
+      if(next.registrationFlow !== previous.registrationFlow) breaking.push({name:'registrationFlow',reason:'el registro directo exige actualizar clientes al flujo de correo previo'});
+    }
     const lines = [
       "import type * as Old from './old/index';",
       "import type * as New from './new/index';",
@@ -155,7 +161,9 @@ if (isMain) {
   if (result.approved) {
     console.log(
       `\nAprobado por la versión mayor ${result.oldVersion} → ${result.newVersion}.` +
-        '\nAntes de desplegar el backend, publica la app que ya no depende de lo retirado y sube MOBILE_MIN_VERSION.',
+        (result.breaking.some(change=>change.name==='registrationFlow')
+          ? '\nRegistro: backend en bridge primero, despues binario movil; enforced y MOBILE_MIN_VERSION solo tras confirmar su disponibilidad.'
+          : '\nAntes de desplegar el backend, publica la app que ya no depende de lo retirado y sube MOBILE_MIN_VERSION.'),
     );
     process.exit(0);
   }

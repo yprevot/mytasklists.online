@@ -97,9 +97,9 @@ test.describe('Frontend web · lista estilo check', () => {
     await page.getByTestId('item-name-input').fill('Leche entera');
     await page.getByTestId('toggle-item-options').click();
     await page.getByTestId('item-quantity-input').fill('2');
-    await page.getByTestId('item-unit-input').fill('l');
+    await page.getByTestId('item-unit-input').selectOption('l');
     await page.getByTestId('add-item-button').click();
 
-    await expect(pendingItem(page, 'Leche entera').getByTestId('item-quantity')).toHaveText('2 l');
+    await expect(pendingItem(page, 'Leche entera').getByTestId('item-quantity')).toHaveText('2 Litros');
   });
 });

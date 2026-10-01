@@ -1,3 +1,4 @@
+import { RegistrationBilling1731000000000 } from './1731000000000-RegistrationBilling';
 import { InitialSchema1710000000000 } from './1710000000000-InitialSchema';
 import { AuthHardening1727000000000 } from './1727000000000-AuthHardening';
 import { UserLocale1730000000000 } from './1730000000000-UserLocale';
@@ -7,4 +8,5 @@ export const MIGRATIONS = [
   InitialSchema1710000000000,
   AuthHardening1727000000000,
   UserLocale1730000000000,
+  RegistrationBilling1731000000000,
 ];

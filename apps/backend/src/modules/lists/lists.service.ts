@@ -1,3 +1,4 @@
+import { BillingService } from '../billing/billing.service';
 import {
   BadRequestException,
   ForbiddenException,
@@ -46,6 +47,7 @@ export class ListsService {
     private readonly realtime: RealtimeGateway,
     private readonly notifications: NotificationsService,
     private readonly dataSource: DataSource,
+    private readonly billing: BillingService,
   ) {}
 
   // ── Permisos ────────────────────────────────────────────────────────
@@ -150,6 +152,8 @@ export class ListsService {
   // ── Escritura ───────────────────────────────────────────────────────
   async create(userId: string, dto: CreateListDto): Promise<ListDetailView> {
     const list = await this.dataSource.transaction(async (manager) => {
+      await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))',['capacity:lists:'+userId]);
+      await this.billing.assertCapacity(userId,'lists',await manager.count(ShoppingList,{where:{ownerId:userId}}));
       const created = await manager.save(
         manager.create(ShoppingList, {
           name: dto.name.trim(),
