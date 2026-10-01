@@ -38,6 +38,16 @@ server {
         return 200 '{"revision":"${RELEASE_SHA}"}';
     }
 
+    # ── Asociación con la app móvil ─────────────────────────────────
+    # 15-well-known.sh genera los archivos al arrancar si hay valores (IOS_APP_ID,
+    # ANDROID_CERT_FINGERPRINTS); si no, 404. El reto ACME lo atiende Traefik antes.
+    location /.well-known/ {
+        root /usr/share/nginx/well-known;
+        default_type application/json;
+        add_header Cache-Control "public, max-age=3600";
+        try_files $uri =404;
+    }
+
     # Login, registro, 2FA y recuperación: ráfagas cortas y nada más
     location /api/auth/ {
         limit_req zone=auth_zone burst=10 nodelay;

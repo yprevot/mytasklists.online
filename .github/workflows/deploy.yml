@@ -139,13 +139,28 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      # Mientras la app no exista en Coolify (sin secretos) se publican las imágenes
+      # pero no se despliega: el job avisa y termina sin error.
+      - name: ¿Coolify está configurado?
+        id: coolify
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -n "$COOLIFY_WEBHOOK" ] && [ -n "$COOLIFY_TOKEN" ] && [ -n "$SITE_URL" ]; then
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Imágenes publicadas, pero no se despliega: faltan COOLIFY_WEBHOOK, COOLIFY_TOKEN o SITE_URL en el entorno production (docs/DESPLIEGUE.md §5)."
+          fi
+
       - name: Pedir el despliegue a Coolify
+        if: steps.coolify.outputs.listo == 'true'
         env:
           COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
-          test -n "$COOLIFY_WEBHOOK"
-          test -n "$COOLIFY_TOKEN"
           # Coolify (4.3.x) solo despliega con POST
           curl --fail-with-body --silent --show-error --retry 3 --max-time 60 \
             --request POST --header "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
@@ -153,6 +168,7 @@ jobs:
       # Cada redespliegue corta el sitio ~1 minuto (Coolify para y arranca los
       # contenedores): se espera a que /version.json sirva el commit nuevo.
       - name: Comprobar que la versión nueva ya sirve
+        if: steps.coolify.outputs.listo == 'true'
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           EXPECTED_SHA: ${{ github.sha }}

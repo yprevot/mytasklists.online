@@ -330,6 +330,42 @@ La app móvil usa el inicio de sesión nativo de Google y envía un `id_token` q
    inverso de cada ID de cliente (`com.googleusercontent.apps.<id>`); de ser así es un cambio nativo (compilación de tienda).
 6. Se necesita un *development build* o el build de tienda: no funciona en Expo Go.
 
+### 7.4 Asociación del dominio con la app (`/.well-known`)
+
+El gateway publica `/.well-known/apple-app-site-association` y `/.well-known/assetlinks.json` cuando tienen valores
+(si no, responde 404). Se configuran como variables de la app en Coolify, sin tocar código:
+
+| Variable | Valor | Dónde se obtiene |
+|---|---|---|
+| `IOS_APP_ID` | `<TEAM_ID>.com.listadecompras.app` | developer.apple.com → Membership → Team ID |
+| `ANDROID_PACKAGE` | `com.listadecompras.app` (por defecto) | `apps/mobile/app.json` |
+| `ANDROID_CERT_FINGERPRINTS` | huellas SHA-256 separadas por comas | `npx eas credentials` y Play Console → Integridad de la app |
+
+Hoy solo declaran **credenciales compartidas** (iOS y Android ofrecen la contraseña guardada del sitio en el login de la
+app). Para que funcione en iOS, `app.json` necesita además `ios.associatedDomains: ["webcredentials:mytasklists.online"]`
+(cambio nativo: entra en la próxima compilación de tienda). Abrir enlaces del dominio dentro de la app (*applinks*) queda
+fuera a propósito: la app todavía no tiene pantallas para las rutas web (`/app/reset-password`, `/app/verify-email`…) y
+los enlaces de los correos dejarían de abrirse en el navegador.
+
+### 7.5 CORS y apps nativas (comprobado)
+
+`CORS_ORIGINS` solo admite `SITE_URL`, y eso no afecta a la app móvil: las peticiones nativas no envían `Origin`, y el
+backend las acepta (REST y Socket.IO). Sin la cabecera `X-Auth-Client`, el login, el refresh y los inicios con Google y
+Apple por `id_token` devuelven los tokens en el cuerpo, sin cookies. Comprobado contra la pila local:
+login → `accessToken` y `refreshToken` en el cuerpo; refresh por cuerpo → 200; API con `Bearer` y sin `Origin` → 200;
+Socket.IO sin `Origin` → 200; un origen ajeno no recibe cabeceras CORS.
+
+### 7.6 Publicación de la app móvil (`mobile.yml`)
+
+- GitHub solo necesita la variable de repositorio `EAS_ENABLED=true` y el secreto `EXPO_TOKEN` (expo.dev → Access tokens).
+- Las credenciales de Apple (certificados, *provisioning*, clave de App Store Connect) y de Google Play (cuenta de servicio)
+  **no van en GitHub**: las guarda EAS (`npx eas credentials`). El workflow compila con `--no-wait` y no envía a las tiendas;
+  el envío se hace con `eas submit` cuando se configure `submit.production` en `eas.json`.
+- Falta vincular el proyecto: `apps/mobile/app.json` tiene `projectId: 00000000-…`. Hay que ejecutar, con tu cuenta de Expo,
+  `cd apps/mobile && npx eas init && npx eas update:configure` y hacer commit del resultado.
+- Los ID de cliente de Google para la app van como variables del entorno `production` de EAS (`EXPO_PUBLIC_GOOGLE_*`);
+  `eas update --environment production` las usa.
+
 ## 8. Puesta en marcha, en orden
 
 1. Fusiona esta rama a `main` (todavía no despliega: falta `DEPLOY_ENABLED`).

@@ -34,6 +34,10 @@ services:
     environment:
       # Subred de la red de esta app donde está Traefik (docs/DESPLIEGUE.md, paso "TRUSTED_PROXY_CIDR")
       TRUSTED_PROXY_CIDR: ${TRUSTED_PROXY_CIDR:?Define la subred de Traefik}
+      # Asociación con la app móvil (/.well-known); vacío = 404. Ver docs/DESPLIEGUE.md §7.4
+      IOS_APP_ID: ${IOS_APP_ID:-}                         # <TEAM_ID>.com.listadecompras.app
+      ANDROID_PACKAGE: ${ANDROID_PACKAGE:-com.listadecompras.app}
+      ANDROID_CERT_FINGERPRINTS: ${ANDROID_CERT_FINGERPRINTS:-}   # AA:BB:…,CC:DD:… (separadas por comas)
     depends_on:
       backend: { condition: service_healthy }
       frontend: { condition: service_started }

@@ -12,5 +12,6 @@ ENV RELEASE_SHA=${RELEASE_SHA} \
 COPY infra/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY infra/nginx/snippets/ /etc/nginx/snippets/
 COPY infra/nginx/gateway/default.conf.template /etc/nginx/templates/default.conf.template
+COPY --chmod=755 infra/nginx/gateway/15-well-known.sh /docker-entrypoint.d/15-well-known.sh
 
 EXPOSE 80
