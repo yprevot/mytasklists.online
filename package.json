@@ -1,5 +1,5 @@
 {
-  "name": "lista-de-compras",
+  "name": "mytasklists",
   "version": "1.0.0",
   "private": true,
   "description": "Sistema de listas de compras compartidas con productos recurrentes y sincronización en tiempo real",

@@ -1,28 +1,41 @@
 {
   "expo": {
-    "name": "ListaDeCompras",
-    "slug": "listadecompras",
+    "name": "MyTaskLists",
+    "slug": "mytasklists",
     "version": "1.0.0",
-    "runtimeVersion": { "policy": "fingerprint" },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
     "orientation": "portrait",
-    "scheme": "listadecompras",
+    "scheme": "mytasklists",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.listadecompras.app",
+      "bundleIdentifier": "online.mytasklists.app",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"],
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
         "NSUserTrackingUsageDescription": "Solo usamos identificadores para entregar tus notificaciones."
-      }
+      },
+      "associatedDomains": [
+        "webcredentials:mytasklists.online"
+      ]
     },
     "android": {
-      "package": "com.listadecompras.app",
+      "package": "online.mytasklists.app",
       "adaptiveIcon": {
-        "backgroundColor": "#2563eb"
+        "backgroundColor": "#1d5b45"
       },
-      "permissions": ["NOTIFICATIONS", "POST_NOTIFICATIONS", "INTERNET"]
+      "permissions": [
+        "NOTIFICATIONS",
+        "POST_NOTIFICATIONS",
+        "INTERNET"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,14 +47,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#2563eb",
+          "backgroundColor": "#1d5b45",
           "resizeMode": "contain"
         }
       ],
       [
         "expo-notifications",
         {
-          "color": "#2563eb"
+          "color": "#1d5b45"
         }
       ]
     ],

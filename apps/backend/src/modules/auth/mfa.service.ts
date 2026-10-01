@@ -18,7 +18,7 @@ import {
 const SETUP_TTL_SECONDS = 10 * 60;
 const CHALLENGE_TTL_SECONDS = 5 * 60;
 const CHALLENGE_MAX_ATTEMPTS = 5;
-const ISSUER = 'ListaDeCompras';
+const ISSUER = 'MyTaskLists';
 
 interface ChallengeState {
   userId: string;

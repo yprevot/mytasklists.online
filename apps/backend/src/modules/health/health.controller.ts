@@ -26,7 +26,7 @@ export class HealthController {
     ]);
     return {
       status: database && redis ? 'ok' : 'degraded',
-      service: 'listadecompras-backend',
+      service: 'mytasklists-backend',
       database,
       redis,
       uptime: Math.round(process.uptime()),

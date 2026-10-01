@@ -8,7 +8,7 @@ export const buildDataSourceOptions = (): DataSourceOptions => ({
   port: parseInt(process.env.POSTGRES_PORT ?? '5432', 10),
   username: process.env.POSTGRES_USER ?? 'lista',
   password: process.env.POSTGRES_PASSWORD ?? 'lista_dev_password',
-  database: process.env.POSTGRES_DB ?? 'listadecompras',
+  database: process.env.POSTGRES_DB ?? 'mytasklists',
   entities: Object.values(entities).filter((value) => typeof value === 'function') as any[],
   migrations: MIGRATIONS,
   synchronize: false,

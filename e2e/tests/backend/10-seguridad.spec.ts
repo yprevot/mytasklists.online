@@ -82,7 +82,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     });
     expect(again.status()).toBe(400);
 
-    await waitForEmail(request, user.email, 'Tu contraseña de ListaDeCompras cambió');
+    await waitForEmail(request, user.email, 'Tu contraseña de MyTaskLists cambió');
   });
 
   test('CP-SEC-003 · recuperar contraseña no revela si el correo existe', async ({ request }) => {

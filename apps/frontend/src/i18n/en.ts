@@ -152,7 +152,7 @@ export const en: Catalog<typeof es> = {
     liveOn: 'Live',
     liveOff: 'Offline',
     logout: 'Sign out',
-    footer: 'ListaDeCompras · shared lists with recurring items',
+    footer: 'MyTaskLists · shared lists with recurring items',
     download: 'Download the mobile app',
   },
   lists: {

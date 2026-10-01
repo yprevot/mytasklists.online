@@ -19,11 +19,11 @@ const escape = (value: string): string =>
 const LAYOUT = {
   es: {
     fallback: 'Si el botón no funciona, copia este enlace en tu navegador:',
-    footer: 'Si no fuiste tú, ignora este correo. ListaDeCompras nunca te pedirá tu contraseña por correo.',
+    footer: 'Si no fuiste tú, ignora este correo. MyTaskLists nunca te pedirá tu contraseña por correo.',
   },
   en: {
     fallback: 'If the button does not work, copy this link into your browser:',
-    footer: 'If this was not you, ignore this email. ListaDeCompras will never ask for your password by email.',
+    footer: 'If this was not you, ignore this email. MyTaskLists will never ask for your password by email.',
   },
 } satisfies Record<Locale, unknown>;
 
@@ -60,7 +60,7 @@ const layout = (
 export function verifyEmailTemplate(locale: Locale, name: string, url: string, hours: number): MailContent {
   if (locale === 'en') {
     return {
-      subject: 'Confirm your email on ListaDeCompras',
+      subject: 'Confirm your email on MyTaskLists',
       text:
         `Hi ${name},\n\nConfirm your email by opening this link (it expires in ${hours} hours):\n${url}\n\n` +
         'If you did not create an account, ignore this message.',
@@ -73,7 +73,7 @@ export function verifyEmailTemplate(locale: Locale, name: string, url: string, h
     };
   }
   return {
-    subject: 'Confirma tu correo en ListaDeCompras',
+    subject: 'Confirma tu correo en MyTaskLists',
     text:
       `Hola ${name}:\n\nConfirma tu correo abriendo este enlace (vence en ${hours} horas):\n${url}\n\n` +
       'Si no creaste una cuenta, ignora este mensaje.',
@@ -89,7 +89,7 @@ export function verifyEmailTemplate(locale: Locale, name: string, url: string, h
 export function resetPasswordTemplate(locale: Locale, name: string, url: string, minutes: number): MailContent {
   if (locale === 'en') {
     return {
-      subject: 'Reset your ListaDeCompras password',
+      subject: 'Reset your MyTaskLists password',
       text:
         `Hi ${name},\n\nWe received a request to change your password. Open this link (it expires in ${minutes} minutes):\n${url}\n\n` +
         'If you did not ask for it, ignore this email: your current password still works.',
@@ -102,7 +102,7 @@ export function resetPasswordTemplate(locale: Locale, name: string, url: string,
     };
   }
   return {
-    subject: 'Restablece tu contraseña de ListaDeCompras',
+    subject: 'Restablece tu contraseña de MyTaskLists',
     text:
       `Hola ${name}:\n\nRecibimos una solicitud para cambiar tu contraseña. Abre este enlace (vence en ${minutes} minutos):\n${url}\n\n` +
       'Si no la pediste tú, ignora este correo: tu contraseña actual sigue funcionando.',
@@ -118,7 +118,7 @@ export function resetPasswordTemplate(locale: Locale, name: string, url: string,
 export function passwordChangedTemplate(locale: Locale, name: string, loginUrl: string): MailContent {
   if (locale === 'en') {
     return {
-      subject: 'Your ListaDeCompras password changed',
+      subject: 'Your MyTaskLists password changed',
       text:
         `Hi ${name},\n\nYour password was just changed and we signed you out of every session.\n` +
         `If this was not you, recover your account at ${loginUrl}`,
@@ -126,12 +126,12 @@ export function passwordChangedTemplate(locale: Locale, name: string, loginUrl: 
         locale,
         'Your password changed',
         `<p>Hi ${escape(name)},</p><p>Your password was just changed and we signed you out of every session.</p><p>If this was not you, recover your account right away.</p>`,
-        { label: 'Go to ListaDeCompras', url: loginUrl },
+        { label: 'Go to MyTaskLists', url: loginUrl },
       ),
     };
   }
   return {
-    subject: 'Tu contraseña de ListaDeCompras cambió',
+    subject: 'Tu contraseña de MyTaskLists cambió',
     text:
       `Hola ${name}:\n\nTu contraseña se acaba de cambiar y cerramos todas tus sesiones abiertas.\n` +
       `Si no fuiste tú, recupera tu cuenta desde ${loginUrl}`,
@@ -139,7 +139,7 @@ export function passwordChangedTemplate(locale: Locale, name: string, loginUrl: 
       locale,
       'Tu contraseña cambio',
       `<p>Hola ${escape(name)}:</p><p>Tu contraseña se acaba de cambiar y cerramos todas tus sesiones abiertas.</p><p>Si no fuiste tú, recupera tu cuenta de inmediato.</p>`,
-      { label: 'Ir a ListaDeCompras', url: loginUrl },
+      { label: 'Ir a MyTaskLists', url: loginUrl },
     ),
   };
 }

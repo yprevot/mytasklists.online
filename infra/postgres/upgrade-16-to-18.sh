@@ -5,15 +5,15 @@
 #  Solo hace falta si ya tenías datos con la versión anterior del
 #  docker-compose (volumen `<proyecto>_postgres-data`). El volumen viejo no se
 #  toca: cuando compruebes que todo está bien lo puedes borrar con
-#  `docker volume rm listadecompras_postgres-data`.
+#  `docker volume rm mytasklists_postgres-data`.
 #
 #  Uso (desde la raíz del repositorio):  sh infra/postgres/upgrade-16-to-18.sh
 # ─────────────────────────────────────────────────────────────
 set -eu
 
-PROJECT="${COMPOSE_PROJECT_NAME:-listadecompras}"
+PROJECT="${COMPOSE_PROJECT_NAME:-mytasklists}"
 OLD_VOLUME="${PROJECT}_postgres-data"
-DB="${POSTGRES_DB:-listadecompras}"
+DB="${POSTGRES_DB:-mytasklists}"
 DB_USER="${POSTGRES_USER:-lista}"
 DUMP="pg16-dump-$(date +%Y%m%d%H%M%S).sql"
 EXPORTER="lc-pg16-export"

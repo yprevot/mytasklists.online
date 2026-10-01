@@ -6,7 +6,7 @@ test.describe('Landing · página pública de descargas', () => {
   });
 
   test('CP-LAND-001 · el hero explica la propuesta y ofrece las dos descargas', async ({ page }) => {
-    await expect(page).toHaveTitle(/ListaDeCompras/);
+    await expect(page).toHaveTitle(/MyTaskLists/);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Tu despensa');
 
     const ios = page.getByTestId('download-ios');
@@ -72,5 +72,12 @@ test.describe('Landing · página pública de descargas', () => {
     await expect(footer.getByRole('link', { name: 'App web' })).toHaveAttribute('href', '/app/');
     await expect(footer.getByRole('link', { name: 'Panel' })).toHaveAttribute('href', '/dashboard/');
     await expect(footer.getByRole('link', { name: 'API' })).toHaveAttribute('href', '/api/docs');
+  });
+
+  test('CP-LAND-008 · el formulario del boletín aparece solo si está disponible', async ({ page }) => {
+    const status = await page.request.get('/api/newsletter');
+    const { enabled } = (await status.json()) as { enabled: boolean };
+    // La sección se muestra solo cuando la API la anuncia como disponible
+    await expect(page.locator('#boletin')).toBeVisible({ visible: enabled });
   });
 });

@@ -16,7 +16,7 @@ const DAY = 86400000;
 const days = (n: number): Date => new Date(Date.now() + n * DAY);
 
 export const SEED_ACCOUNTS = {
-  admin: { email: 'admin@listadecompras.mx', password: 'Admin12345', fullName: 'Administración' },
+  admin: { email: 'admin@mytasklists.online', password: 'Admin12345', fullName: 'Administración' },
   ana: { email: 'ana@example.com', password: 'Demo12345', fullName: 'Ana López García' },
   carlos: { email: 'carlos@example.com', password: 'Demo12345', fullName: 'Carlos Ramírez Diaz' },
 };

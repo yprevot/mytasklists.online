@@ -117,7 +117,7 @@ test.describe('Servicio backend · idiomas', () => {
       'If the email is registered, we sent you a link to reset your password.',
     );
 
-    const email = await waitForEmail(request, user.email, 'Reset your ListaDeCompras password');
+    const email = await waitForEmail(request, user.email, 'Reset your MyTaskLists password');
     expect(email.text).toContain('Hi Mail Reader,');
     expect(email.html).toContain('lang="en"');
   });

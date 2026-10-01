@@ -1,4 +1,4 @@
-appId: com.listadecompras.app
+appId: online.mytasklists.app
 name: Acceso · credenciales inválidas e inicio de sesión
 env:
   API_URL: http://localhost:8080/api

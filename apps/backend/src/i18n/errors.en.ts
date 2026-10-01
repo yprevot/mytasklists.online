@@ -99,4 +99,6 @@ export const ERRORS_EN: Record<string, string> = {
   // Respuestas correctas con texto
   'Si el correo está registrado te enviamos un enlace para restablecer la contraseña.':
     'If the email is registered, we sent you a link to reset your password.',
+  'La suscripción al boletín no está disponible': 'The newsletter is not available',
+  'No se pudo completar la suscripción. Inténtalo más tarde.': 'The subscription could not be completed. Please try again later.',
 };

@@ -172,7 +172,7 @@ gh secret   set COOLIFY_WEBHOOK -R yprevot/mytasklists.online -e production   # 
 gh secret   set COOLIFY_TOKEN   -R yprevot/mytasklists.online -e production   # pega el token solo-deploy
 # variables del repositorio (sin -e). DEPLOY_ENABLED va al final, cuando Coolify ya tenga la app:
 gh variable set LANDING_IOS_URL     -R yprevot/mytasklists.online --body "https://apps.apple.com/…"
-gh variable set LANDING_ANDROID_URL -R yprevot/mytasklists.online --body "https://play.google.com/store/apps/details?id=com.listadecompras.app"
+gh variable set LANDING_ANDROID_URL -R yprevot/mytasklists.online --body "https://play.google.com/store/apps/details?id=online.mytasklists.app"
 gh variable set DEPLOY_ENABLED      -R yprevot/mytasklists.online --body true
 ```
 
@@ -187,7 +187,7 @@ Propuesta, en modo `imagenes` igual que `yunitztech.com`. Ajusta el dominio si s
 
 ```yaml
 cliente_id: mytasklists
-cliente_nombre: "ListaDeCompras"
+cliente_nombre: "MyTaskLists"
 cliente_dominio: mytasklists.online
 cliente_servidor: vps1            # producción de clientes
 cliente_dns: manual               # o hostinger si el dominio está allí
@@ -210,9 +210,14 @@ cliente_web_env:
   SMTP_PORT: "465"
   SMTP_SECURE: "true"
   SMTP_USER: no-reply@mytasklists.online
-  MAIL_FROM: "ListaDeCompras <no-reply@mytasklists.online>"
+  MAIL_FROM: "MyTaskLists <no-reply@mytasklists.online>"
   GOOGLE_CLIENT_ID: SIMULADO      # sección 7
   MOBILE_MIN_VERSION: 1.0.0
+  # Analítica y boletín (los valores salen de las fases analitica y listmonk del playbook)
+  UMAMI_SCRIPT_URL: https://stats.yunitztech.com/script.js
+  UMAMI_WEBSITE_ID: SIMULADO      # UUID de la web en Umami
+  LISTMONK_URL: https://news.mytasklists.online
+  LISTMONK_LIST_UUID: SIMULADO    # UUID de la lista con doble opt-in
 cliente_web_env_secretos:         # VARIABLE: nombre del secreto en ~/.ansible/secretos-clientes/mytasklists/
   POSTGRES_PASSWORD: db
   SMTP_PASSWORD: smtp_web
@@ -227,8 +232,9 @@ cliente_buzones:                  # el playbook exige al menos uno
     alias: [info, privacidad]
     cuota_gb: 5
 cliente_dmarc: none
-cliente_listmonk: false           # esta app no usa newsletter
-cliente_analitica: false          # ni Umami
+cliente_listmonk: true            # boletín: formulario en la landing (sección 7.7)
+cliente_listmonk_sub: news
+cliente_analitica: true           # Umami en la landing y la app web (sección 7.7)
 ```
 
 ### 6.2 Cambio necesario en el rol `cliente` (infra)
@@ -277,9 +283,9 @@ confirma que el correo es suyo. Solo falta darlo de alta en Google.
 ### 7.1 Web (lo necesario para producción)
 
 1. Entra en https://console.cloud.google.com con la cuenta que será la propietaria del proyecto.
-2. Selector de proyectos → **Nuevo proyecto** → nombre `ListaDeCompras`.
+2. Selector de proyectos → **Nuevo proyecto** → nombre `MyTaskLists`.
 3. Menú → **APIs y servicios → Pantalla de consentimiento de OAuth** (en la interfaz nueva: **Google Auth Platform**).
-   - **Branding / Información de la aplicación:** nombre `ListaDeCompras`, correo de asistencia, logotipo (opcional).
+   - **Branding / Información de la aplicación:** nombre `MyTaskLists`, correo de asistencia, logotipo (opcional).
    - **Dominios de la aplicación:** página principal `https://mytasklists.online`, **política de privacidad** y **condiciones del servicio**
      (las páginas de la sección 4, punto «Google»).
    - **Dominios autorizados:** `mytasklists.online`.
@@ -289,7 +295,7 @@ confirma que el correo es suyo. Solo falta darlo de alta en Google.
 4. **Audiencia → Publicar aplicación** (estado «En producción»). Mientras esté en «Pruebas» solo entran los usuarios de
    prueba que añadas (máximo 100), y sus sesiones caducan a los 7 días.
 5. Menú → **Credenciales → Crear credenciales → ID de cliente de OAuth → Aplicación web**.
-   - **Nombre:** `ListaDeCompras web`.
+   - **Nombre:** `MyTaskLists web`.
    - **Orígenes autorizados de JavaScript:** `https://mytasklists.online` (y `http://localhost:8080` para desarrollo).
    - **URI de redireccionamiento autorizados:** `https://mytasklists.online/api/auth/google/callback` y
      `http://localhost:8080/api/auth/google/callback`. Deben coincidir **exactamente** (protocolo, dominio, ruta y sin `/` final).
@@ -318,8 +324,8 @@ registros del backend: «Google rechazó el intercambio de código»).
 La app móvil usa el inicio de sesión nativo de Google y envía un `id_token` que el backend valida contra los
 `GOOGLE_ALLOWED_AUDIENCES`. Hace falta un ID de cliente por plataforma:
 
-1. **iOS:** Credenciales → ID de cliente de OAuth → **iOS**, identificador de paquete `com.listadecompras.app`.
-2. **Android:** ID de cliente de OAuth → **Android**, nombre de paquete `com.listadecompras.app` y la huella **SHA-1** del
+1. **iOS:** Credenciales → ID de cliente de OAuth → **iOS**, identificador de paquete `online.mytasklists.app`.
+2. **Android:** ID de cliente de OAuth → **Android**, nombre de paquete `online.mytasklists.app` y la huella **SHA-1** del
    certificado de firma: la de EAS con `cd apps/mobile && npx eas credentials`, y **además** la de «firma de apps» de Google
    Play Console (Integridad de la app) una vez publicada.
 3. Backend: `GOOGLE_ALLOWED_AUDIENCES=<id-ios>,<id-android>` (separados por coma, sin espacios).
@@ -337,13 +343,12 @@ El gateway publica `/.well-known/apple-app-site-association` y `/.well-known/ass
 
 | Variable | Valor | Dónde se obtiene |
 |---|---|---|
-| `IOS_APP_ID` | `<TEAM_ID>.com.listadecompras.app` | developer.apple.com → Membership → Team ID |
-| `ANDROID_PACKAGE` | `com.listadecompras.app` (por defecto) | `apps/mobile/app.json` |
+| `IOS_APP_ID` | `<TEAM_ID>.online.mytasklists.app` | developer.apple.com → Membership → Team ID |
+| `ANDROID_PACKAGE` | `online.mytasklists.app` (por defecto) | `apps/mobile/app.json` |
 | `ANDROID_CERT_FINGERPRINTS` | huellas SHA-256 separadas por comas | `npx eas credentials` y Play Console → Integridad de la app |
 
 Hoy solo declaran **credenciales compartidas** (iOS y Android ofrecen la contraseña guardada del sitio en el login de la
-app). Para que funcione en iOS, `app.json` necesita además `ios.associatedDomains: ["webcredentials:mytasklists.online"]`
-(cambio nativo: entra en la próxima compilación de tienda). Abrir enlaces del dominio dentro de la app (*applinks*) queda
+app). En iOS lo completa `ios.associatedDomains: ["webcredentials:mytasklists.online"]`, ya incluido en `app.json`. Abrir enlaces del dominio dentro de la app (*applinks*) queda
 fuera a propósito: la app todavía no tiene pantallas para las rutas web (`/app/reset-password`, `/app/verify-email`…) y
 los enlaces de los correos dejarían de abrirse en el navegador.
 
@@ -365,6 +370,26 @@ Socket.IO sin `Origin` → 200; un origen ajeno no recibe cabeceras CORS.
   `cd apps/mobile && npx eas init && npx eas update:configure` y hacer commit del resultado.
 - Los ID de cliente de Google para la app van como variables del entorno `production` de EAS (`EXPO_PUBLIC_GOOGLE_*`);
   `eas update --environment production` las usa.
+
+### 7.7 Analítica (Umami) y boletín (Listmonk)
+
+Los dos los pone la plataforma de infra (`stats.yunitztech.com` y `news.mytasklists.online`); aquí solo se activan con
+variables de Coolify. Sin valores no se carga nada de terceros ni se muestra el formulario.
+
+| Variable | Servicio | Efecto |
+|---|---|---|
+| `UMAMI_SCRIPT_URL`, `UMAMI_WEBSITE_ID` | `gateway` | Inserta el script de Umami en la landing y en la app web (no en el panel) y añade su origen a la CSP (`script-src` y `connect-src`). Umami no usa cookies |
+| `LISTMONK_URL`, `LISTMONK_LIST_UUID` | `backend` | La landing muestra «Novedades, sin ruido» y el alta va por `POST /api/newsletter/subscribe` (limitada por IP); Listmonk envía el correo de confirmación |
+
+El alta pasa por el backend y no directamente a Listmonk para no depender de su CORS y para que el rate limiting la
+proteja. Comprobación tras configurarlo:
+
+```bash
+curl -s https://mytasklists.online/api/newsletter                           # {"enabled":true}
+curl -s https://mytasklists.online/ | grep -o 'data-website-id="[^"]*"'    # el script de Umami
+```
+
+La política de privacidad debe mencionar la analítica (sin cookies) y el boletín (doble opt-in, baja en cada correo).
 
 ## 8. Puesta en marcha, en orden
 
@@ -397,5 +422,6 @@ con restic. Redis solo guarda caché, sesiones y contadores: si se pierde, las p
 - **Páginas legales** inexistentes (necesarias para la pantalla de consentimiento de Google y para la tienda).
 - **Dominio y registrador**: confirma el dominio y dónde está su DNS (`manual` o `hostinger`).
 - **SMTP**: `mail.yunitztech.com` sirve a todos los clientes; el DMARC se sube a `reject` tras 2–4 semanas de informes limpios.
-- **Splash y notificaciones de la app móvil** siguen en el azul anterior (`apps/mobile/app.json`); cambiarlos requiere build nativo.
+- **Identificadores móviles nuevos** (`online.mytasklists.app`, esquema `mytasklists`): la carpeta nativa generada
+  `apps/mobile/ios` (no versionada) hay que regenerarla con `npx expo prebuild --clean` antes de compilar en local.
 - Sin `REDIS_PASSWORD`, `JWT_*` o `APP_ENCRYPTION_KEY` el backend **no arranca** en producción: es intencional.

@@ -8,7 +8,7 @@ test.describe('Servicio backend · salud e infraestructura', () => {
 
     const body = await response.json();
     expect(body.status).toBe('ok');
-    expect(body.service).toBe('listadecompras-backend');
+    expect(body.service).toBe('mytasklists-backend');
     expect(body.database, 'PostgreSQL debe responder').toBe(true);
     expect(body.redis, 'Redis debe responder').toBe(true);
     expect(body.uptime).toBeGreaterThanOrEqual(0);
@@ -19,7 +19,7 @@ test.describe('Servicio backend · salud e infraestructura', () => {
     expect(response.ok()).toBeTruthy();
 
     const document = await response.json();
-    expect(document.info.title).toBe('ListaDeCompras API');
+    expect(document.info.title).toBe('MyTaskLists API');
     expect(Object.keys(document.paths)).toEqual(
       expect.arrayContaining(['/api/auth/login', '/api/lists', '/api/lists/{listId}/items']),
     );

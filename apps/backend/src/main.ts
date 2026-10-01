@@ -85,7 +85,7 @@ async function bootstrap(): Promise<void> {
   // ── Documentación OpenAPI (desactivada por defecto en producción) ────
   if (swaggerEnabled) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('ListaDeCompras API')
+      .setTitle('MyTaskLists API')
       .setDescription(
         'API de listas de compras compartidas con productos recurrentes y sincronización en tiempo real.',
       )

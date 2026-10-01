@@ -153,6 +153,6 @@ export const en: Catalog<typeof es> = {
     current: 'You have version {{version}}',
     needed: ' and version {{version}} or later is required.',
     store: 'Go to the store',
-    searchStore: 'Search for ListaDeCompras in your phone’s app store.',
+    searchStore: 'Search for MyTaskLists in your phone’s app store.',
   },
 };

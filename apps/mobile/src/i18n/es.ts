@@ -153,6 +153,6 @@ export const es = {
     current: 'Tienes la versión {{version}}',
     needed: ' y se necesita la {{version}} o posterior.',
     store: 'Ir a la tienda',
-    searchStore: 'Busca ListaDeCompras en la tienda de tu teléfono.',
+    searchStore: 'Busca MyTaskLists en la tienda de tu teléfono.',
   },
 } as const;

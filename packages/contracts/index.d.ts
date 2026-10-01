@@ -1,5 +1,5 @@
 /**
- * Contrato de la API de ListaDeCompras.
+ * Contrato de la API de MyTaskLists.
  *
  * Todo lo que viaja por la red entre el backend y sus clientes (web, panel y app
  * móvil) se declara aquí una sola vez. El backend lo implementa y los clientes lo
