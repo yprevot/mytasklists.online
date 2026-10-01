@@ -2,9 +2,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
+import '@fontsource-variable/archivo';
+import '@fontsource-variable/figtree';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import './styles/theme.css';
 import './styles/dashboard.css';
+import './i18n';
 
 import App from './App';
 import { AdminAuthProvider } from './context/AdminAuthContext';

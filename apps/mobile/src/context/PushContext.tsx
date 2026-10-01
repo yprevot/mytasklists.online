@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import i18n from '../i18n';
 import { devicesApi } from '../api/endpoints';
 import { useAuth } from './AuthContext';
 
@@ -39,7 +40,7 @@ export function PushProvider({ children }: { children: ReactNode }) {
       try {
         if (Platform.OS === 'android') {
           await Notifications.setNotificationChannelAsync('listas', {
-            name: 'Listas compartidas',
+            name: i18n.t('push.channel'),
             importance: Notifications.AndroidImportance.HIGH,
             vibrationPattern: [0, 250, 250, 250],
             lightColor: '#2563eb',

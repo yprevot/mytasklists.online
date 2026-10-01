@@ -8,8 +8,8 @@ import {
   shareList,
 } from '../../utils/api-helpers';
 
-test.describe('Servicio backend · avisos y dispositivos moviles', () => {
-  test('CP-NOT-001 · registrar y dar de baja el token push del telefono', async ({ request }) => {
+test.describe('Servicio backend · avisos y dispositivos móviles', () => {
+  test('CP-NOT-001 · registrar y dar de baja el token push del teléfono', async ({ request }) => {
     const user = await registerUser(request);
     const token = `ExponentPushToken[e2e-${Date.now()}]`;
 
@@ -37,11 +37,11 @@ test.describe('Servicio backend · avisos y dispositivos moviles', () => {
     expect(response.status()).toBe(400);
   });
 
-  test('CP-NOT-003 · marcar avisos como leidos', async ({ request }) => {
+  test('CP-NOT-003 · marcar avisos como leídos', async ({ request }) => {
     const ana = await registerUser(request, { fullName: 'Ana Lectora' });
     const carlos = await registerUser(request, { fullName: 'Carlos Lector' });
 
-    const list = await createList(request, ana.accessToken, 'Avisos leidos');
+    const list = await createList(request, ana.accessToken, 'Avisos leídos');
     await shareList(request, ana.accessToken, list.id, carlos.email);
     await createItem(request, ana.accessToken, list.id, { name: 'Galletas' });
 

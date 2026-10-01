@@ -2,16 +2,16 @@ import { expect, test } from '@playwright/test';
 import { API_URL, auth, registerUser, SEED } from '../../utils/api-helpers';
 
 /**
- * Las apps de las tiendas se actualizan cuando cada persona quiere. La app movil
- * manda su version en `X-App-Version` y la API corta a las que ya no son
+ * Las apps de las tiendas se actualizan cuando cada persona quiere. La app móvil
+ * manda su versión en `X-App-Version` y la API corta a las que ya no son
  * compatibles con 426 (docs/COMPATIBILIDAD.md). En el compose de desarrollo la
- * version minima es la 1.0.0.
+ * versión mínima es la 1.0.0.
  */
 const oldApp = { 'X-App-Version': '0.9.0', 'X-App-Platform': 'ios' };
 const currentApp = { 'X-App-Version': '1.0.0', 'X-App-Platform': 'android' };
 
 test.describe('Servicio backend · compatibilidad con versiones de la app', () => {
-  test('CP-COMPAT-001 · la API publica la version minima de la app movil', async ({ request }) => {
+  test('CP-COMPAT-001 · la API publica la versión mínima de la app móvil', async ({ request }) => {
     const response = await request.get(`${API_URL}/app/compatibility`);
     expect(response.status()).toBe(200);
 
@@ -21,7 +21,7 @@ test.describe('Servicio backend · compatibilidad con versiones de la app', () =
     expect(body.storeUrls).toHaveProperty('android');
   });
 
-  test('CP-COMPAT-002 · una app por debajo de la minima recibe 426 con un codigo estable', async ({ request }) => {
+  test('CP-COMPAT-002 · una app por debajo de la mínima recibe 426 con un código estable', async ({ request }) => {
     const response = await request.get(`${API_URL}/app/compatibility`, { headers: oldApp });
     expect(response.status()).toBe(426);
 
@@ -29,16 +29,16 @@ test.describe('Servicio backend · compatibilidad con versiones de la app', () =
     expect(body.code).toBe('APP_UPDATE_REQUIRED');
     expect(body.details.minVersion).toMatch(/^\d+\.\d+\.\d+$/);
     expect(body.details).toHaveProperty('storeUrl');
-    expect(body.message).toContain('Actualiza');
+    expect(body.message).toContain('Actualízala');
   });
 
-  test('CP-COMPAT-003 · el corte ocurre antes que la sesion: una app vieja no se manda al login', async ({
+  test('CP-COMPAT-003 · el corte ocurre antes que la sesión: una app vieja no se manda al login', async ({
     request,
   }) => {
     const user = await registerUser(request);
 
     const withoutToken = await request.get(`${API_URL}/lists`, { headers: oldApp });
-    expect(withoutToken.status(), 'debe pedir actualizar, no iniciar sesion').toBe(426);
+    expect(withoutToken.status(), 'debe pedir actualizar, no iniciar sesión').toBe(426);
 
     const withToken = await request.get(`${API_URL}/lists`, {
       headers: { ...oldApp, ...auth(user.accessToken) },
@@ -52,7 +52,7 @@ test.describe('Servicio backend · compatibilidad con versiones de la app', () =
     expect(login.status()).toBe(426);
   });
 
-  test('CP-COMPAT-004 · la version minima, las posteriores y la web sin cabecera se atienden', async ({
+  test('CP-COMPAT-004 · la versión mínima, las posteriores y la web sin cabecera se atienden', async ({
     request,
   }) => {
     const user = await registerUser(request);

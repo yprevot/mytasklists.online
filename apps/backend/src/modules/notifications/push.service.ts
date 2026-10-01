@@ -6,9 +6,9 @@ import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 import { DevicePlatform, DeviceToken } from '../../database/entities';
 
 /**
- * Envio de notificaciones push a las apps de iOS y Android mediante Expo.
+ * Envío de notificaciones push a las apps de iOS y Android mediante Expo.
  * Si no hay dispositivos registrados (o no hay token de Expo configurado) la
- * llamada simplemente no hace nada: la notificacion web por WebSocket ya salio.
+ * llamada simplemente no hace nada: la notificación web por WebSocket ya salió.
  */
 @Injectable()
 export class PushService {

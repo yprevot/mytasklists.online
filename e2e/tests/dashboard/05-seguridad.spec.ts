@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { SEED, loginUser } from '../../utils/api-helpers';
 import { useSession } from '../../utils/ui-helpers';
 
-test.describe('Dashboard · seguridad de la cuenta de administracion', () => {
-  test('CP-DASH-014 · la pagina de seguridad muestra el estado de 2FA y genera el QR', async ({
+test.describe('Dashboard · seguridad de la cuenta de administración', () => {
+  test('CP-DASH-014 · la página de seguridad muestra el estado de 2FA y genera el QR', async ({
     page,
     request,
   }) => {
@@ -14,7 +14,7 @@ test.describe('Dashboard · seguridad de la cuenta de administracion', () => {
     await expect(page.getByTestId('security-page')).toBeVisible();
     await expect(page.getByTestId('mfa-status')).toHaveText('inactiva');
 
-    // Solo se genera el QR: sin confirmar el codigo la cuenta sigue igual
+    // Solo se genera el QR: sin confirmar el código la cuenta sigue igual
     await page.getByTestId('mfa-start').click();
     await expect(page.getByTestId('mfa-setup-form')).toBeVisible();
     await expect(page.getByRole('img', { name: /QR/ })).toBeVisible();

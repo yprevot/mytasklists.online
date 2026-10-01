@@ -3,10 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6c945" />
     <title>ListaDeCompras · Listas compartidas con productos recurrentes</title>
     <meta
       name="description"
-      content="Crea listas de compras, compartelas con quien quieras y deja que los productos que compras siempre se agreguen solos cada cierto tiempo. Disponible para iOS, Android y web."
+      content="Crea listas de compras, compártelas con quien quieras y deja que los productos que compras siempre se agreguen solos cada cierto tiempo. Disponible para iOS, Android y web."
     />
     <meta property="og:title" content="ListaDeCompras" />
     <meta
@@ -14,23 +15,32 @@
       content="Listas de compras compartidas, en tiempo real y con productos recurrentes."
     />
     <meta property="og:type" content="website" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preload" href="./fonts/archivo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
   </head>
 
   <body>
-    <!-- ── Navegacion ────────────────────────────────────────────────── -->
+    <!-- ── Navegación ────────────────────────────────────────────────── -->
     <header class="nav">
       <div class="wrap">
         <a class="brand" href="#top">
-          <span aria-hidden="true">🛒</span>
-          ListaDeCompras
+          <svg class="brand-mark" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="#1d5b45" />
+            <path d="M8.5 16.8l4.7 4.6 9.3-9.6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="24.5" cy="7.5" r="4.5" fill="#f6c945" stroke="#1d5b45" stroke-width="2" />
+          </svg>
+          <span>ListaDeCompras</span>
         </a>
-        <nav class="nav-links">
-          <a href="#funciones">Funciones</a>
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#descargar" data-testid="nav-download">Descargar</a>
-          <a class="btn btn-ghost" href="__APP_URL__" data-testid="open-web-app">Abrir app web</a>
+        <nav class="nav-links" aria-label="Principal">
+          <a class="nav-text" href="#funciones" data-i18n="nav.features">Funciones</a>
+          <a class="nav-text" href="#como-funciona" data-i18n="nav.how">Cómo funciona</a>
+          <a class="nav-text" href="#descargar" data-testid="nav-download" data-i18n="nav.download">Descargar</a>
+          <a class="btn btn-ghost" href="__APP_URL__" data-testid="open-web-app" data-i18n="nav.openApp">Abrir app web</a>
+          <div class="lang" role="group" aria-label="Idioma / Language" data-testid="language-switcher">
+            <button type="button" data-lang="es" data-testid="language-es" lang="es" title="Español">ES</button>
+            <button type="button" data-lang="en" data-testid="language-en" lang="en" title="English">EN</button>
+          </div>
         </nav>
       </div>
     </header>
@@ -38,86 +48,93 @@
     <!-- ── Hero ──────────────────────────────────────────────────────── -->
     <main id="top">
       <section class="hero">
-        <div class="wrap">
-          <div>
-            <span class="eyebrow">
-              <span aria-hidden="true">🔄</span>
-              Productos que se vuelven a agregar solos
-            </span>
-
-            <h1>
-              Tu despensa, siempre al dia.
-              <span class="grad">Sin volver a olvidar el pan.</span>
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <h1 data-i18n="hero.title">
+              Tu despensa, siempre al día.
+              <span class="hl">Sin volver a olvidar el pan.</span>
             </h1>
 
-            <p class="lede">
-              Crea listas de compras, compartelas con tu familia y marca lo que ya compraste. Los
-              productos recurrentes vuelven solos a la lista cuando toca, y si alguien mas la edita
+            <p class="lede" data-i18n="hero.lede">
+              Crea listas de compras, compártelas con tu familia y marca lo que ya compraste. Los
+              productos recurrentes vuelven solos a la lista cuando toca, y si alguien más la edita
               lo ves al instante.
             </p>
 
             <div class="store-buttons" id="descargar-hero">
               <a class="store-btn" href="__IOS_URL__" data-testid="download-ios">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.3-2.4 1.3-2.5 0 0-2.5-1-2.5-3.4zM14.2 5.9c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z" />
                 </svg>
                 <span>
-                  <small>Descargar en el</small>
+                  <small data-i18n="store.iosSmall">Descargar en el</small>
                   <strong>App Store</strong>
                 </span>
               </a>
 
               <a class="store-btn" href="__ANDROID_URL__" data-testid="download-android">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.6 2.2 13.1 12 3.6 21.8c-.3-.2-.5-.6-.5-1.1V3.3c0-.5.2-.9.5-1.1zm11 10.6 2.6 2.6-9.6 5.4 7-8zm3.9-1.9 2.5 1.4c.7.4.7 1.4 0 1.8l-2.5 1.4-2.8-2.3 2.8-2.3zM7.6 2.9l9.6 5.4-2.6 2.6-7-8z" />
                 </svg>
                 <span>
-                  <small>Disponible en</small>
+                  <small data-i18n="store.androidSmall">Disponible en</small>
                   <strong>Google Play</strong>
                 </span>
               </a>
             </div>
 
-            <p class="hero-note">
-              Tambien puedes usarla desde el navegador ·
-              <a href="__APP_URL__">abrir la version web</a>
+            <p class="hero-note" data-i18n="hero.note">
+              También puedes usarla desde el navegador ·
+              <a href="__APP_URL__">abrir la versión web</a>
             </p>
           </div>
 
-          <!-- Mockup: reproduce el comportamiento real de la lista -->
+          <!-- Demostración: la lista real, marcando el pan como comprado -->
           <div class="phone" aria-hidden="true">
             <div class="phone-screen">
               <div class="phone-top">
-                <div class="title">🛒 Despensa quincenal</div>
-                <div class="sub">Ana y Carlos · en vivo</div>
+                <div class="title" data-i18n="mock.list">Despensa quincenal</div>
+                <div class="sub">
+                  <span class="live-dot"></span>
+                  <span data-i18n="mock.live">Ana y Carlos · en vivo</span>
+                </div>
               </div>
               <div class="phone-body">
-                <p class="section-label">Por comprar</p>
+                <p class="section-label" data-i18n="mock.pending">Por comprar</p>
 
-                <div class="row-item rec">
-                  <span class="box"></span>
-                  <span class="name">Pan de caja</span>
-                  <span class="pill">cada 14 d</span>
-                </div>
+                <ul class="rows">
+                  <li class="row" data-demo-row>
+                    <span class="box"></span>
+                    <span class="name" data-i18n="mock.bread">Pan de caja</span>
+                    <span class="chip tag">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg>
+                      <span class="swap">
+                        <span class="swap-a" data-i18n="mock.every">cada 14 d</span>
+                        <span class="swap-b" data-i18n="mock.returns">vuelve en 14 d</span>
+                      </span>
+                    </span>
+                  </li>
 
-                <div class="row-item late">
-                  <span class="box"></span>
-                  <span class="name">Leche entera</span>
-                  <span class="pill danger">vencido</span>
-                </div>
+                  <li class="row late">
+                    <span class="box"></span>
+                    <span class="name" data-i18n="mock.milk">Leche entera</span>
+                    <span class="chip danger" data-i18n="mock.overdue">vencido</span>
+                  </li>
 
-                <div class="row-item">
-                  <span class="box"></span>
-                  <span class="name">Pilas AA</span>
-                </div>
+                  <li class="row">
+                    <span class="box"></span>
+                    <span class="name" data-i18n="mock.batteries">Pilas AA</span>
+                  </li>
+                </ul>
 
-                <p class="section-label">Comprados</p>
+                <p class="section-label" data-i18n="mock.bought">Comprados</p>
 
-                <div class="row-item done">
-                  <span class="box"></span>
-                  <span class="name">Cafe molido</span>
-                  <span class="x">×</span>
-                </div>
+                <ul class="rows">
+                  <li class="row done">
+                    <span class="box"></span>
+                    <span class="name" data-i18n="mock.coffee">Café molido</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -125,117 +142,141 @@
       </section>
 
       <!-- ── Funciones ───────────────────────────────────────────────── -->
-      <section id="funciones">
-        <div class="wrap">
+      <section id="funciones" class="block">
+        <div class="wrap split">
           <div class="section-head">
-            <h2>Pensada para lo que de verdad se compra cada semana</h2>
-            <p>
+            <h2 data-i18n="features.title">Pensada para lo que de verdad se compra cada semana</h2>
+            <p data-i18n="features.text">
               No es otra lista de tareas: sabe que hay cosas que compras una vez y otras que compras
               siempre.
             </p>
           </div>
 
-          <div class="grid">
-            <article class="card">
-              <div class="icon" aria-hidden="true">🔄</div>
-              <h3>Productos recurrentes</h3>
-              <p>
-                Agrega "Pan de caja" con recurrencia de 14 dias. Al marcarlo como comprado, el reloj
-                arranca desde ese momento y el producto vuelve solo a la lista.
-              </p>
-            </article>
+          <ul class="features">
+            <li class="feature">
+              <span class="f-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg>
+              </span>
+              <div>
+                <h3 data-i18n="features.recurring.title">Productos recurrentes</h3>
+                <p data-i18n="features.recurring.text">
+                  Agrega "Pan de caja" con recurrencia de 14 días. Al marcarlo como comprado, el reloj
+                  arranca desde ese momento y el producto vuelve solo a la lista.
+                </p>
+              </div>
+            </li>
 
-            <article class="card">
-              <div class="icon" aria-hidden="true">🎨</div>
-              <h3>Avisos por color</h3>
-              <p>
-                Si un producto recurrente se queda sin comprar y se pasa su plazo, cambia de color
-                para que salte a la vista sin tener que buscarlo.
-              </p>
-            </article>
+            <li class="feature">
+              <span class="f-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg>
+              </span>
+              <div>
+                <h3 data-i18n="features.color.title">Avisos por color</h3>
+                <p data-i18n="features.color.text">
+                  Si un producto recurrente se queda sin comprar y se pasa su plazo, cambia de color
+                  para que salte a la vista sin tener que buscarlo.
+                </p>
+              </div>
+            </li>
 
-            <article class="card">
-              <div class="icon" aria-hidden="true">✅</div>
-              <h3>Estilo check</h3>
-              <p>
-                Lo comprado baja a una segunda lista, tachado. Se queda ahi hasta que tu lo cierras
-                con la "x", como en las listas de Google.
-              </p>
-            </article>
+            <li class="feature">
+              <span class="f-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+              </span>
+              <div>
+                <h3 data-i18n="features.check.title">Estilo check</h3>
+                <p data-i18n="features.check.text">
+                  Lo comprado baja a una segunda lista, tachado. Se queda ahí hasta que tú lo cierras
+                  con la "x", como en las listas de Google.
+                </p>
+              </div>
+            </li>
 
-            <article class="card">
-              <div class="icon" aria-hidden="true">👥</div>
-              <h3>Listas compartidas</h3>
-              <p>
-                Invita a quien quieras por correo. Todos pueden agregar productos y marcar lo que ya
-                compraron.
-              </p>
-            </article>
+            <li class="feature">
+              <span class="f-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              </span>
+              <div>
+                <h3 data-i18n="features.shared.title">Listas compartidas</h3>
+                <p data-i18n="features.shared.text">
+                  Invita a quien quieras por correo. Todos pueden agregar productos y marcar lo que ya
+                  compraron.
+                </p>
+              </div>
+            </li>
 
-            <article class="card">
-              <div class="icon" aria-hidden="true">⚡</div>
-              <h3>Tiempo real</h3>
-              <p>
-                Si tu pareja marca la leche en el super, tu lista se actualiza al instante. Nada de
-                comprar dos veces lo mismo.
-              </p>
-            </article>
+            <li class="feature">
+              <span class="f-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></svg>
+              </span>
+              <div>
+                <h3 data-i18n="features.realtime.title">Tiempo real</h3>
+                <p data-i18n="features.realtime.text">
+                  Si tu pareja marca la leche en el super, tu lista se actualiza al instante. Nada de
+                  comprar dos veces lo mismo.
+                </p>
+              </div>
+            </li>
 
-            <article class="card">
-              <div class="icon" aria-hidden="true">🔔</div>
-              <h3>Avisos a tu gusto</h3>
-              <p>
-                Cada persona decide si quiere enterarse: pop-up en la web y notificacion push en iOS
-                y Android.
-              </p>
-            </article>
-          </div>
+            <li class="feature">
+              <span class="f-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg>
+              </span>
+              <div>
+                <h3 data-i18n="features.alerts.title">Avisos a tu gusto</h3>
+                <p data-i18n="features.alerts.text">
+                  Cada persona decide si quiere enterarse: pop-up en la web y notificación push en iOS
+                  y Android.
+                </p>
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
-      <!-- ── Como funciona ───────────────────────────────────────────── -->
-      <section id="como-funciona" style="background: #fff; border-block: 1px solid var(--line)">
-        <div class="wrap">
+      <!-- ── Cómo funciona ───────────────────────────────────────────── -->
+      <section id="como-funciona" class="block band">
+        <div class="wrap split">
           <div class="section-head">
-            <h2>Un ejemplo: el pan de caja</h2>
-            <p>Asi funciona la recurrencia, contada con un caso real.</p>
+            <h2 data-i18n="how.title">Un ejemplo: el pan de caja</h2>
+            <p data-i18n="how.text">Así funciona la recurrencia, contada con un caso real.</p>
           </div>
 
           <div class="steps">
             <div class="step">
-              <span class="num"></span>
+              <span class="node" aria-hidden="true"></span>
               <div>
-                <h3>El lunes agregas "Pan de caja" con recurrencia de 14 dias</h3>
-                <p>Entra a la lista de pendientes y empieza a correr su plazo.</p>
+                <h3 data-i18n="how.step1.title">El lunes agregas "Pan de caja" con recurrencia de 14 días</h3>
+                <p data-i18n="how.step1.text">Entra a la lista de pendientes y empieza a correr su plazo.</p>
               </div>
             </div>
 
             <div class="step">
-              <span class="num"></span>
+              <span class="node" aria-hidden="true"></span>
               <div>
-                <h3>El viernes vas al super y lo marcas como comprado</h3>
-                <p>
-                  Baja tachado a la lista de comprados. La cuenta de 14 dias arranca desde ese
+                <h3 data-i18n="how.step2.title">El viernes vas al super y lo marcas como comprado</h3>
+                <p data-i18n="how.step2.text">
+                  Baja tachado a la lista de comprados. La cuenta de 14 días arranca desde ese
                   viernes, no desde el lunes.
                 </p>
               </div>
             </div>
 
             <div class="step">
-              <span class="num"></span>
+              <span class="node" aria-hidden="true"></span>
               <div>
-                <h3>Catorce dias despues vuelve solo a "Por comprar"</h3>
-                <p>Y con el, un aviso para que no te agarre por sorpresa. Asi, ciclo tras ciclo.</p>
+                <h3 data-i18n="how.step3.title">Catorce días después vuelve solo a "Por comprar"</h3>
+                <p data-i18n="how.step3.text">Y con él, un aviso para que no te agarre por sorpresa. Así, ciclo tras ciclo.</p>
               </div>
             </div>
 
-            <div class="step">
-              <span class="num"></span>
+            <div class="step step-late">
+              <span class="node" aria-hidden="true"></span>
               <div>
-                <h3>¿Se te paso comprarlo?</h3>
-                <p>
+                <h3 data-i18n="how.step4.title">¿Se te pasó comprarlo?</h3>
+                <p data-i18n="how.step4.text">
                   El producto se queda en la lista pero cambia de color para avisarte de que ya
-                  vencio su plazo.
+                  venció su plazo.
                 </p>
               </div>
             </div>
@@ -244,32 +285,34 @@
       </section>
 
       <!-- ── Descarga ────────────────────────────────────────────────── -->
-      <section id="descargar">
+      <section id="descargar" class="block">
         <div class="wrap">
           <div class="cta">
-            <h2>Descarga la app</h2>
-            <p>
-              Disponible para iPhone y Android. Crea tu cuenta con correo, Google o Apple y empieza
-              a compartir tus listas en menos de un minuto.
-            </p>
+            <div class="cta-copy">
+              <h2 data-i18n="cta.title">Descarga la app</h2>
+              <p data-i18n="cta.text">
+                Disponible para iPhone y Android. Crea tu cuenta con correo, Google o Apple y empieza
+                a compartir tus listas en menos de un minuto.
+              </p>
+            </div>
 
             <div class="store-buttons">
               <a class="store-btn" href="__IOS_URL__" data-testid="download-ios-cta">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.9-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.2 1.3-2.4 1.3-2.5 0 0-2.5-1-2.5-3.4zM14.2 5.9c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z" />
                 </svg>
                 <span>
-                  <small>Descargar para</small>
-                  <strong>iPhone y iPad</strong>
+                  <small data-i18n="store.for">Descargar para</small>
+                  <strong data-i18n="store.iphone">iPhone y iPad</strong>
                 </span>
               </a>
 
               <a class="store-btn" href="__ANDROID_URL__" data-testid="download-android-cta">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M3.6 2.2 13.1 12 3.6 21.8c-.3-.2-.5-.6-.5-1.1V3.3c0-.5.2-.9.5-1.1zm11 10.6 2.6 2.6-9.6 5.4 7-8zm3.9-1.9 2.5 1.4c.7.4.7 1.4 0 1.8l-2.5 1.4-2.8-2.3 2.8-2.3zM7.6 2.9l9.6 5.4-2.6 2.6-7-8z" />
                 </svg>
                 <span>
-                  <small>Descargar para</small>
+                  <small data-i18n="store.for">Descargar para</small>
                   <strong>Android</strong>
                 </span>
               </a>
@@ -281,13 +324,15 @@
 
     <footer>
       <div class="wrap">
-        <span>© __YEAR__ ListaDeCompras · Hecho para no volver a olvidar la leche.</span>
+        <span data-i18n="footer.tagline">© __YEAR__ ListaDeCompras · Hecho para no volver a olvidar la leche.</span>
         <span>
-          <a href="__APP_URL__">App web</a> ·
-          <a href="/dashboard/">Panel</a> ·
+          <a href="__APP_URL__" data-i18n="footer.app">App web</a> ·
+          <a href="/dashboard/" data-i18n="footer.panel">Panel</a> ·
           <a href="/api/docs">API</a>
         </span>
       </div>
     </footer>
+    <script src="./i18n.js"></script>
+    <script src="./demo.js"></script>
   </body>
 </html>

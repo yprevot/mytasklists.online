@@ -1,0 +1,205 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  ListaDeCompras · PRODUCCIÓN en Coolify (aplicación Docker Compose)
+#
+#  Las imágenes las publica GitHub Actions en GHCR (.github/workflows/deploy.yml):
+#  el servidor solo las descarga y arranca, nunca compila. Coolify lee este
+#  archivo del repositorio y su Traefik pone el dominio y el certificado.
+#
+#  - Dominio: SOLO al servicio `gateway`, puerto 80 (docs/DESPLIEGUE.md).
+#  - Sin puertos publicados en el host: solo el gateway es alcanzable, y solo
+#    desde Traefik.
+#  - Postgres y Redis viven en una red interna, sin salida a internet ni al gateway.
+#  - Todo lo que termina en `:?` es obligatorio: si falta, el despliegue se detiene.
+#
+#  El entorno de desarrollo es docker-compose.yml (no se usa aquí).
+# ─────────────────────────────────────────────────────────────────────────────
+name: listadecompras
+
+x-hardening: &hardening
+  restart: unless-stopped
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+
+services:
+  gateway:
+    <<: *hardening
+    image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX, p. ej. ghcr.io/yprevot/mytasklists.online}-gateway:${IMAGE_TAG:-main}
+    # nginx necesita estas capacidades para arrancar como root y bajar a su usuario
+    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
+    mem_limit: 128m
+    cpus: 0.5
+    environment:
+      # Subred de la red de esta app donde está Traefik (docs/DESPLIEGUE.md, paso "TRUSTED_PROXY_CIDR")
+      TRUSTED_PROXY_CIDR: ${TRUSTED_PROXY_CIDR:?Define la subred de Traefik}
+      # Asociación con la app móvil (/.well-known); vacío = 404. Ver docs/DESPLIEGUE.md §7.4
+      IOS_APP_ID: ${IOS_APP_ID:-}                         # <TEAM_ID>.com.listadecompras.app
+      ANDROID_PACKAGE: ${ANDROID_PACKAGE:-com.listadecompras.app}
+      ANDROID_CERT_FINGERPRINTS: ${ANDROID_CERT_FINGERPRINTS:-}   # AA:BB:…,CC:DD:… (separadas por comas)
+    depends_on:
+      backend: { condition: service_healthy }
+      frontend: { condition: service_started }
+      dashboard: { condition: service_started }
+      landing: { condition: service_started }
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [frontend]
+
+  backend:
+    <<: *hardening
+    image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX}-backend:${IMAGE_TAG:-main}
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      API_PREFIX: api
+      TZ: ${TZ:-America/Mexico_City}
+      NODE_OPTIONS: --max-old-space-size=384
+
+      # Base de datos y caché (servicios de este mismo compose)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_USER: ${POSTGRES_USER:-lista}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Define REDIS_PASSWORD}
+
+      # Secretos de firma y cifrado (mínimo 32 caracteres, distintos entre sí)
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Define JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Define JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-30d}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?Define APP_ENCRYPTION_KEY}
+
+      # URL pública (HTTPS): enlaces de los correos, CORS y cookies Secure
+      PUBLIC_URL: ${SITE_URL:?Define SITE_URL, p. ej. https://mytasklists.online}
+      CORS_ORIGINS: ${SITE_URL}
+      # Saltos de proxy de confianza: solo el gateway (él ya resuelve la IP real de Traefik)
+      TRUST_PROXY: 1
+      RUN_MIGRATIONS: "true"
+      RUN_SEED: "false"
+      SWAGGER_ENABLED: "false"
+      ALLOW_TIME_TRAVEL: "false"
+      RECURRENCE_CRON: ${RECURRENCE_CRON:-0 */5 * * * *}
+      RATE_LIMIT_ENABLED: "true"
+      LOGIN_MAX_FAILURES: ${LOGIN_MAX_FAILURES:-10}
+
+      # Correo (SMTP del servidor de correo de la plataforma)
+      SMTP_HOST: ${SMTP_HOST:?Define SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER:?Define SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?Define SMTP_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM:?Define MAIL_FROM, p. ej. ListaDeCompras <no-reply@mytasklists.online>}
+
+      # Inicio de sesión con Google (vacío = desactivado). Apple es opcional y se
+      # agrega igual: APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY…
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${SITE_URL}/api/auth/google/callback
+      GOOGLE_ALLOWED_AUDIENCES: ${GOOGLE_ALLOWED_AUDIENCES:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      APPLE_CALLBACK_URL: ${SITE_URL}/api/auth/apple/callback
+      APPLE_ALLOWED_AUDIENCES: ${APPLE_ALLOWED_AUDIENCES:-}
+
+      # App móvil y notificaciones push
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+      MOBILE_MIN_VERSION: ${MOBILE_MIN_VERSION:-1.0.0}
+      MOBILE_STORE_URL_IOS: ${MOBILE_STORE_URL_IOS:-}
+      MOBILE_STORE_URL_ANDROID: ${MOBILE_STORE_URL_ANDROID:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks: [frontend, backend]
+
+  frontend:
+    <<: *hardening
+    image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX}-frontend:${IMAGE_TAG:-main}
+    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
+    mem_limit: 64m
+    cpus: 0.25
+    networks: [frontend]
+
+  dashboard:
+    <<: *hardening
+    image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX}-dashboard:${IMAGE_TAG:-main}
+    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
+    mem_limit: 64m
+    cpus: 0.25
+    networks: [frontend]
+
+  landing:
+    <<: *hardening
+    image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX}-landing:${IMAGE_TAG:-main}
+    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
+    mem_limit: 64m
+    cpus: 0.25
+    networks: [frontend]
+
+  postgres:
+    restart: unless-stopped
+    image: postgres:18-alpine
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-listadecompras}
+      POSTGRES_USER: ${POSTGRES_USER:-lista}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      TZ: ${TZ:-America/Mexico_City}
+    volumes:
+      # PostgreSQL 18: el volumen se monta en /var/lib/postgresql
+      - postgres18-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+
+  redis:
+    restart: unless-stopped
+    image: redis:8-alpine
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    cpus: 0.25
+    command: >
+      sh -c 'redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Define REDIS_PASSWORD}
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+volumes:
+  postgres18-data:
+  redis-data:
+
+networks:
+  frontend:
+  # Sin salida a internet ni acceso desde el gateway: solo backend ↔ postgres/redis
+  backend:
+    internal: true

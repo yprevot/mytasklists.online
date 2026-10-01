@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { usersApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 export function SettingsPage() {
   const { user, setUser, adoptSession } = useAuth();
   const { show } = useToast();
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -34,11 +37,11 @@ export function SettingsPage() {
         notificationsEnabled,
       });
       setUser(updated);
-      show({ title: 'Perfil actualizado', body: 'Tus datos quedaron guardados', variant: 'success' });
+      show({ title: t('settings.saved'), body: t('settings.savedBody'), variant: 'success' });
     } catch (err) {
       show({
-        title: 'No se pudo guardar',
-        body: err instanceof ApiError ? err.message : 'Intentalo de nuevo',
+        title: t('settings.saveFailed'),
+        body: err instanceof ApiError ? err.message : t('common.tryAgain'),
         variant: 'danger',
       });
     } finally {
@@ -50,20 +53,20 @@ export function SettingsPage() {
     event.preventDefault();
     setChanging(true);
     try {
-      // El backend cierra las demas sesiones y devuelve un par nuevo para esta
+      // El backend cierra las demás sesiones y devuelve un par nuevo para esta
       const session = await usersApi.changePassword(currentPassword, newPassword);
       adoptSession({ ...session, user: { ...session.user, hasPassword: true } });
       setCurrentPassword('');
       setNewPassword('');
       show({
-        title: 'Contrasena actualizada',
-        body: 'Cerramos tus sesiones en otros dispositivos',
+        title: t('settings.passwordChanged'),
+        body: t('settings.passwordChangedBody'),
         variant: 'success',
       });
     } catch (err) {
       show({
-        title: 'No se pudo cambiar',
-        body: err instanceof ApiError ? err.message : 'Intentalo de nuevo',
+        title: t('settings.changeFailed'),
+        body: err instanceof ApiError ? err.message : t('common.tryAgain'),
         variant: 'danger',
       });
     } finally {
@@ -73,17 +76,17 @@ export function SettingsPage() {
 
   return (
     <div data-testid="settings-page">
-      <h1 className="h3 mb-4">Mi cuenta</h1>
+      <h1 className="lc-page-title mb-4">{t('settings.title')}</h1>
 
       <div className="row g-4">
         <div className="col-12 col-lg-7">
           <form className="card border-0 shadow-sm" onSubmit={saveProfile} data-testid="profile-form">
             <div className="card-body">
-              <h2 className="h6 mb-3">Datos personales</h2>
+              <h2 className="h5 mb-3">{t('settings.personal')}</h2>
 
               <div className="mb-3">
                 <label className="form-label" htmlFor="profile-name">
-                  Nombre completo
+                  {t('common.fullName')}
                 </label>
                 <input
                   id="profile-name"
@@ -96,19 +99,19 @@ export function SettingsPage() {
 
               <div className="mb-3">
                 <label className="form-label" htmlFor="profile-email">
-                  Correo electronico
+                  {t('common.email')}
                 </label>
                 <input id="profile-email" className="form-control" value={user.email} disabled />
                 <div className="form-text">
-                  Cuenta creada con <strong className="text-capitalize">{user.provider}</strong>
+                  {t('settings.createdWith')} <strong>{t(`providers.${user.provider}`)}</strong>
                   {' · '}
                   {user.emailVerified ? (
                     <span className="text-success" data-testid="email-verified">
-                      correo confirmado
+                      {t('settings.emailVerified')}
                     </span>
                   ) : (
                     <span className="text-warning-emphasis" data-testid="email-unverified">
-                      correo sin confirmar
+                      {t('settings.emailUnverified')}
                     </span>
                   )}
                 </div>
@@ -116,7 +119,7 @@ export function SettingsPage() {
 
               <div className="mb-3">
                 <label className="form-label" htmlFor="profile-whatsapp">
-                  Numero de WhatsApp
+                  {t('common.whatsapp')}
                 </label>
                 <input
                   id="profile-whatsapp"
@@ -139,12 +142,12 @@ export function SettingsPage() {
                   data-testid="profile-notifications"
                 />
                 <label className="form-check-label" htmlFor="profile-notifications">
-                  Recibir avisos cuando alguien modifique una lista compartida
+                  {t('settings.notifications')}
                 </label>
               </div>
 
               <button className="btn btn-primary" type="submit" disabled={saving} data-testid="profile-save">
-                {saving ? 'Guardando…' : 'Guardar cambios'}
+                {saving ? t('common.saving') : t('settings.save')}
               </button>
             </div>
           </form>
@@ -153,12 +156,12 @@ export function SettingsPage() {
         <div className="col-12 col-lg-5">
           <form className="card border-0 shadow-sm" onSubmit={changePassword} data-testid="password-form">
             <div className="card-body">
-              <h2 className="h6 mb-3">Contrasena</h2>
+              <h2 className="h5 mb-3">{t('settings.passwordTitle')}</h2>
 
               {(user.hasPassword ?? user.provider === 'local') && (
                 <div className="mb-3">
                   <label className="form-label" htmlFor="current-password">
-                    Contrasena actual
+                    {t('settings.currentPassword')}
                   </label>
                   <input
                     id="current-password"
@@ -174,7 +177,7 @@ export function SettingsPage() {
 
               <div className="mb-3">
                 <label className="form-label" htmlFor="new-password">
-                  Nueva contrasena
+                  {t('settings.newPassword')}
                 </label>
                 <input
                   id="new-password"
@@ -185,7 +188,7 @@ export function SettingsPage() {
                   autoComplete="new-password"
                   data-testid="new-password"
                 />
-                <div className="form-text">Minimo 8 caracteres.</div>
+                <div className="form-text">{t('common.minPassword')}</div>
               </div>
 
               <button
@@ -194,10 +197,18 @@ export function SettingsPage() {
                 disabled={changing || newPassword.length < 8}
                 data-testid="password-save"
               >
-                {changing ? 'Actualizando…' : 'Cambiar contrasena'}
+                {changing ? t('settings.changing') : t('settings.changePassword')}
               </button>
             </div>
           </form>
+
+          <div className="card border-0 shadow-sm mt-4" data-testid="language-card">
+            <div className="card-body">
+              <h2 className="h5 mb-3">{t('settings.languageTitle')}</h2>
+              <LanguageSwitcher />
+              <div className="form-text mt-2">{t('settings.languageHint')}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

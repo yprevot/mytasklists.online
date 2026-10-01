@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { registerUser } from '../../utils/api-helpers';
 import { loginThroughUI } from '../../utils/ui-helpers';
 
-test.describe('Frontend web · inicio y cierre de sesion', () => {
-  test('CP-WEB-005 · inicio de sesion con correo y contrasena', async ({ page, request }) => {
+test.describe('Frontend web · inicio y cierre de sesión', () => {
+  test('CP-WEB-005 · inicio de sesión con correo y contraseña', async ({ page, request }) => {
     const user = await registerUser(request, { fullName: 'Sofia Nunez Lara' });
 
     await page.goto('/app/login');
@@ -29,7 +29,7 @@ test.describe('Frontend web · inicio y cierre de sesion', () => {
     await expect(page.getByTestId('login-error')).toContainText(/incorrect/i);
   });
 
-  test('CP-WEB-007 · sin sesion, cualquier ruta privada lleva al login', async ({ page }) => {
+  test('CP-WEB-007 · sin sesión, cualquier ruta privada lleva al login', async ({ page }) => {
     await page.goto('/app/');
     await expect(page).toHaveURL(/\/app\/login/);
 
@@ -37,7 +37,7 @@ test.describe('Frontend web · inicio y cierre de sesion', () => {
     await expect(page).toHaveURL(/\/app\/login/);
   });
 
-  test('CP-WEB-008 · cerrar sesion devuelve al login', async ({ page, request }) => {
+  test('CP-WEB-008 · cerrar sesión devuelve al login', async ({ page, request }) => {
     const user = await registerUser(request, { fullName: 'Ricardo Salas' });
     await loginThroughUI(page, user.email, user.password);
 

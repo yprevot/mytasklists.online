@@ -7,9 +7,9 @@ import type { MobileConfig } from '../../config/configuration';
 export const APP_UPDATE_REQUIRED = 'APP_UPDATE_REQUIRED';
 
 /**
- * Corta a las apps moviles que ya no son compatibles con la API. Solo mira a quien
+ * Corta a las apps móviles que ya no son compatibles con la API. Solo mira a quien
  * manda `X-App-Version`: la web y el panel se despliegan junto con el backend y
- * nunca quedan atras. Se evalua antes que la autenticacion para que una app vieja
+ * nunca quedan atrás. Se evalúa antes que la autenticación para que una app vieja
  * reciba "actualiza" y no un 401 que la mande al login.
  */
 @Injectable()
@@ -36,7 +36,7 @@ export class AppVersionGuard implements CanActivate {
     throw new HttpException(
       {
         error: 'UpgradeRequired',
-        message: 'Esta version de la app ya no es compatible. Actualizala para seguir usandola.',
+        message: 'Esta versión de la app ya no es compatible. Actualízala para seguir usándola.',
         code: APP_UPDATE_REQUIRED,
         details: { minVersion: mobile.minVersion, storeUrl },
       },

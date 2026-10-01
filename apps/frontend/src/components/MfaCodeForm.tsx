@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ApiError } from '../api/client';
 
 interface Props {
@@ -6,8 +7,9 @@ interface Props {
   onCancel: () => void;
 }
 
-/** Segundo paso del login cuando la cuenta tiene verificacion en dos pasos */
+/** Segundo paso del login cuando la cuenta tiene verificación en dos pasos */
 export function MfaCodeForm({ onSubmit, onCancel }: Props) {
+  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -20,8 +22,8 @@ export function MfaCodeForm({ onSubmit, onCancel }: Props) {
     try {
       await onSubmit(code.trim());
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo verificar el codigo');
-      if (err instanceof ApiError && err.status === 401 && /vuelve/i.test(err.message)) onCancel();
+      setError(err instanceof ApiError ? err.message : t('mfa.failed'));
+      if (err instanceof ApiError && err.status === 401 && /vuelve|again/i.test(err.message)) onCancel();
     } finally {
       setSubmitting(false);
     }
@@ -29,17 +31,17 @@ export function MfaCodeForm({ onSubmit, onCancel }: Props) {
 
   return (
     <form onSubmit={submit} noValidate data-testid="mfa-form">
-      <p className="text-muted small">
-        Escribe el codigo de 6 digitos de tu app autenticadora. Si perdiste el telefono, usa uno de tus
-        codigos de recuperacion.
+      <p className="text-muted">
+        {t('mfa.hint')}
       </p>
       <div className="mb-3">
         <label className="form-label" htmlFor="mfa-code">
-          Codigo de verificacion
+          {t('mfa.code')}
         </label>
         <input
           id="mfa-code"
-          className="form-control text-center fs-5"
+          className="form-control form-control-lg text-center"
+          style={{ letterSpacing: '0.3em', fontVariantNumeric: 'tabular-nums' }}
           inputMode="numeric"
           autoComplete="one-time-code"
           autoFocus
@@ -54,11 +56,11 @@ export function MfaCodeForm({ onSubmit, onCancel }: Props) {
           {error}
         </div>
       )}
-      <button className="btn btn-primary w-100" type="submit" disabled={submitting} data-testid="mfa-submit">
-        {submitting ? 'Verificando…' : 'Verificar'}
+      <button className="btn btn-primary btn-lg w-100" type="submit" disabled={submitting} data-testid="mfa-submit">
+        {submitting ? t('mfa.verifying') : t('mfa.verify')}
       </button>
       <button type="button" className="btn btn-link w-100 mt-2" onClick={onCancel}>
-        Volver
+        {t('common.back')}
       </button>
     </form>
   );

@@ -12,11 +12,11 @@ export class CompatController {
 
   /**
    * La app lo consulta al abrir. Pasa por AppVersionGuard como cualquier otra ruta,
-   * asi que una version vieja recibe 426 aqui mismo, antes de iniciar sesion.
+   * así que una versión vieja recibe 426 aquí mismo, antes de iniciar sesión.
    */
   @Public()
   @Get('compatibility')
-  @ApiOperation({ summary: 'Version minima de la app movil que la API sigue atendiendo' })
+  @ApiOperation({ summary: 'Versión mínima de la app móvil que la API sigue atendiendo' })
   compatibility(): AppCompatibility {
     const mobile = this.config.get<MobileConfig>('mobile')!;
     return { minVersion: mobile.minVersion, storeUrls: mobile.storeUrls };

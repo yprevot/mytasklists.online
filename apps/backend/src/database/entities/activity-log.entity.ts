@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-/** Bitacora que alimenta las metricas del dashboard de administracion */
+/** Bitácora que alimenta las métricas del dashboard de administración */
 @Entity('activity_logs')
 export class ActivityLog {
   @PrimaryGeneratedColumn('uuid')

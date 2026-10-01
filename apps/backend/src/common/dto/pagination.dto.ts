@@ -18,7 +18,7 @@ export class PaginationDto {
   @Max(100)
   limit = 20;
 
-  @ApiPropertyOptional({ description: 'Texto libre de busqueda' })
+  @ApiPropertyOptional({ description: 'Texto libre de búsqueda' })
   @IsOptional()
   @IsString()
   search?: string;

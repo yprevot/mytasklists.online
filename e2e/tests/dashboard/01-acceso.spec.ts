@@ -3,7 +3,7 @@ import { SEED, loginUser, registerUser } from '../../utils/api-helpers';
 import { useSession } from '../../utils/ui-helpers';
 
 test.describe('Dashboard · acceso restringido', () => {
-  test('CP-DASH-001 · una cuenta de administracion entra al panel', async ({ page }) => {
+  test('CP-DASH-001 · una cuenta de administración entra al panel', async ({ page }) => {
     await page.goto('/dashboard/login');
     await expect(page.getByTestId('login-card')).toBeVisible();
 
@@ -27,12 +27,12 @@ test.describe('Dashboard · acceso restringido', () => {
     await expect(page.getByTestId('overview-page')).toHaveCount(0);
   });
 
-  test('CP-DASH-003 · sin sesion el panel redirige al login', async ({ page }) => {
+  test('CP-DASH-003 · sin sesión el panel redirige al login', async ({ page }) => {
     await page.goto('/dashboard/');
     await expect(page).toHaveURL(/\/dashboard\/login/);
   });
 
-  test('CP-DASH-004 · cerrar sesion vuelve al login', async ({ page, request }) => {
+  test('CP-DASH-004 · cerrar sesión vuelve al login', async ({ page, request }) => {
     const session = await loginUser(request, SEED.admin.email, SEED.admin.password);
     await useSession(page, session, 'lc.dash');
 

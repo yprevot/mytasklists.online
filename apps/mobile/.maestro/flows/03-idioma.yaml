@@ -1,0 +1,13 @@
+appId: com.listadecompras.app
+name: Idioma · cambiar entre español e inglés
+---
+- runFlow: ../subflows/abrir-sin-sesion.yaml
+
+- tapOn:
+    id: language-en
+- assertVisible: Your shared lists, always in sync.
+- takeScreenshot: idioma-ingles
+
+- tapOn:
+    id: language-es
+- assertVisible: Tus listas compartidas, siempre sincronizadas.

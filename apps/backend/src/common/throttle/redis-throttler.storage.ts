@@ -5,9 +5,9 @@ import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../../redis/redis.constants';
 
 /**
- * Contador de ventana fija + bloqueo, atomico en Redis.
+ * Contador de ventana fija + bloqueo, atómico en Redis.
  * KEYS[1] = contador, KEYS[2] = marca de bloqueo.
- * ARGV    = ttl (ms), limite, duracion del bloqueo (ms).
+ * ARGV    = ttl (ms), límite, duración del bloqueo (ms).
  * Devuelve {hits, ttl restante (ms), bloqueado (0/1), bloqueo restante (ms)}.
  */
 const INCREMENT_SCRIPT = `
@@ -32,8 +32,8 @@ return {hits, ttl, 0, 0}
 `;
 
 /**
- * Almacen del rate limiting en Redis: los contadores se comparten entre todas
- * las replicas del backend y sobreviven a un reinicio del contenedor.
+ * Almacén del rate limiting en Redis: los contadores se comparten entre todas
+ * las réplicas del backend y sobreviven a un reinicio del contenedor.
  */
 @Injectable()
 export class RedisThrottlerStorage implements ThrottlerStorage {

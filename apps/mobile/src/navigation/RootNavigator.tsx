@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
@@ -12,10 +13,19 @@ import { ListDetailScreen } from '../screens/ListDetailScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { colors } from '../theme';
 
+const initials = (name: string): string =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+
 const Stack = createNativeStackNavigator();
 
 export function RootNavigator() {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -32,9 +42,11 @@ export function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: colors.brand },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: '800' },
+          headerStyle: { backgroundColor: colors.surface },
+          headerShadowVisible: false,
+          headerTintColor: colors.brand,
+          headerTitleStyle: { fontWeight: '800', color: colors.ink },
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
         {user ? (
@@ -43,14 +55,25 @@ export function RootNavigator() {
               name="Lists"
               component={ListsScreen}
               options={({ navigation }) => ({
-                title: 'Mis listas',
+                title: t('nav.lists'),
                 headerRight: () => (
                   <Pressable
                     onPress={() => navigation.navigate('Settings')}
                     testID="open-settings"
+                    accessibilityLabel={t('nav.account')}
                     hitSlop={12}
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 17,
+                      backgroundColor: colors.brand,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
                   >
-                    <Text style={{ color: '#fff', fontSize: 18 }}>⚙︎</Text>
+                    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '800' }}>
+                      {initials(user.fullName)}
+                    </Text>
                   </Pressable>
                 ),
               })}
@@ -58,9 +81,9 @@ export function RootNavigator() {
             <Stack.Screen
               name="ListDetail"
               component={ListDetailScreen}
-              options={({ route }: any) => ({ title: route.params?.name ?? 'Lista' })}
+              options={({ route }: any) => ({ title: route.params?.name ?? t('nav.list') })}
             />
-            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Mi cuenta' }} />
+            <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.account') }} />
           </>
         ) : (
           <>
@@ -68,17 +91,17 @@ export function RootNavigator() {
             <Stack.Screen
               name="Register"
               component={RegisterScreen}
-              options={{ title: 'Crear cuenta' }}
+              options={{ title: t('nav.register') }}
             />
             <Stack.Screen
               name="SocialHelp"
               component={SocialHelpScreen}
-              options={{ title: 'Iniciar sesion' }}
+              options={{ title: t('nav.signIn') }}
             />
             <Stack.Screen
               name="ForgotPassword"
               component={ForgotPasswordScreen}
-              options={{ title: 'Recuperar contrasena' }}
+              options={{ title: t('nav.forgot') }}
             />
           </>
         )}

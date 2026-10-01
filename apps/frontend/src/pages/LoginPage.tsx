@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
 import { SocialButtons } from '../components/SocialButtons';
@@ -8,6 +10,7 @@ import { MfaCodeForm } from '../components/MfaCodeForm';
 export function LoginPage() {
   const { login, verifyMfa, user, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const location = useLocation() as { state?: { from?: string } };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,24 +34,19 @@ export function LoginPage() {
       }
       goHome();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo iniciar sesion');
+      setError(err instanceof ApiError ? err.message : t('login.failed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="login-card">
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <div style={{ fontSize: '2.5rem' }} aria-hidden="true">
-              🛒
-            </div>
-            <h1 className="h4 mt-2 mb-1">{mfaToken ? 'Verificacion en dos pasos' : 'Inicia sesion'}</h1>
-            <p className="text-muted small mb-0">
-              Tus listas de compras compartidas, siempre sincronizadas.
-            </p>
+    <AuthShell>
+      <div data-testid="login-card">
+        <div>
+          <div className="lc-auth-head">
+            <h1>{mfaToken ? t('login.mfaTitle') : t('login.title')}</h1>
+            <p>{t('login.subtitle')}</p>
           </div>
 
           {mfaToken ? (
@@ -67,7 +65,7 @@ export function LoginPage() {
               <form onSubmit={submit} noValidate data-testid="login-form">
                 <div className="mb-3">
                   <label className="form-label" htmlFor="login-email">
-                    Correo electronico
+                    {t('common.email')}
                   </label>
                   <input
                     id="login-email"
@@ -83,7 +81,7 @@ export function LoginPage() {
 
                 <div className="mb-3">
                   <label className="form-label" htmlFor="login-password">
-                    Contrasena
+                    {t('common.password')}
                   </label>
                   <input
                     id="login-password"
@@ -104,39 +102,35 @@ export function LoginPage() {
                 )}
 
                 <button
-                  className="btn btn-primary w-100"
+                  className="btn btn-primary btn-lg w-100"
                   type="submit"
                   disabled={submitting}
                   data-testid="login-submit"
                 >
-                  {submitting ? 'Entrando…' : 'Entrar'}
+                  {submitting ? t('login.submitting') : t('login.submit')}
                 </button>
 
                 <div className="text-center mt-3">
-                  <Link to="/forgot-password" className="small" data-testid="go-forgot-password">
-                    ¿Olvidaste tu contrasena?
+                  <Link to="/forgot-password" className="small fw-semibold" data-testid="go-forgot-password">
+                    {t('login.forgot')}
                   </Link>
                 </div>
               </form>
 
-              <div className="d-flex align-items-center gap-2 my-3">
-                <hr className="flex-grow-1" />
-                <span className="text-muted small">o</span>
-                <hr className="flex-grow-1" />
-              </div>
+              <div className="lc-divider">{t('common.or')}</div>
 
               <SocialButtons disabled={submitting} />
 
-              <p className="text-center small text-muted mt-4 mb-0">
-                ¿Aun no tienes cuenta?{' '}
-                <Link to="/register" data-testid="go-register">
-                  Registrate
+              <p className="text-center text-muted mt-4 mb-0">
+                {t('login.noAccount')}{' '}
+                <Link to="/register" className="fw-semibold" data-testid="go-register">
+                  {t('login.register')}
                 </Link>
               </p>
             </>
           )}
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

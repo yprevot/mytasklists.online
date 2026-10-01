@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { listsApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import type { ListDetail } from '../types';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }: Props) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +27,10 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
     try {
       await listsApi.share(list.id, email.trim().toLowerCase());
       setEmail('');
-      onNotice(`Lista compartida con ${email.trim().toLowerCase()}`, true);
+      onNotice(t('share.shared', { email: email.trim().toLowerCase() }), true);
       onChanged();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo compartir la lista');
+      setError(err instanceof ApiError ? err.message : t('share.failed'));
     } finally {
       setSaving(false);
     }
@@ -37,10 +39,10 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
   const removeMember = async (userId: string) => {
     try {
       await listsApi.removeMember(list.id, userId);
-      onNotice('Integrante retirado de la lista', true);
+      onNotice(t('share.removed'), true);
       onChanged();
     } catch (err) {
-      onNotice(err instanceof ApiError ? err.message : 'No se pudo quitar al integrante', false);
+      onNotice(err instanceof ApiError ? err.message : t('share.removeFailed'), false);
     }
   };
 
@@ -50,11 +52,11 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Compartir "{list.name}"</h5>
+              <h5 className="modal-title">{t('share.title', { name: list.name })}</h5>
               <button
                 type="button"
                 className="btn-close"
-                aria-label="Cerrar"
+                aria-label={t('common.close')}
                 onClick={onClose}
                 data-testid="share-modal-close"
               />
@@ -64,14 +66,14 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
               {isOwner ? (
                 <form onSubmit={submit} className="mb-3" data-testid="share-form">
                   <label className="form-label small" htmlFor="share-email">
-                    Correo de la persona (debe estar registrada)
+                    {t('share.emailLabel')}
                   </label>
                   <div className="input-group">
                     <input
                       id="share-email"
                       type="email"
                       className="form-control"
-                      placeholder="persona@example.com"
+                      placeholder={t('share.placeholder')}
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       data-testid="share-email-input"
@@ -83,7 +85,7 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
                       disabled={saving || !email.trim()}
                       data-testid="share-submit"
                     >
-                      {saving ? 'Compartiendo…' : 'Compartir'}
+                      {saving ? t('share.submitting') : t('share.submit')}
                     </button>
                   </div>
                   {error && (
@@ -94,11 +96,11 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
                 </form>
               ) : (
                 <p className="text-muted small">
-                  Solo la persona propietaria puede invitar a mas integrantes.
+                  {t('share.ownerOnly')}
                 </p>
               )}
 
-              <h6 className="lc-divider-label mb-2">Integrantes ({list.members.length})</h6>
+              <h6 className="lc-section-title mb-2">{t('share.members', { count: list.members.length })}</h6>
               <ul className="list-group list-group-flush" data-testid="member-list">
                 {list.members.map((member) => (
                   <li
@@ -114,12 +116,12 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
                       <div className="text-truncate">{member.fullName}</div>
                       <div className="text-muted small text-truncate">{member.email}</div>
                     </div>
-                    <span className="badge text-bg-light border text-capitalize">{member.role}</span>
+                    <span className="badge text-bg-light border text-capitalize">{t(`roles.${member.role}`)}</span>
                     {isOwner && member.role !== 'owner' && (
                       <button
                         className="btn btn-sm btn-link text-danger"
                         onClick={() => removeMember(member.userId)}
-                        aria-label={`Quitar a ${member.fullName}`}
+                        aria-label={t('share.remove', { name: member.fullName })}
                         data-testid="member-remove"
                       >
                         <i className="bi bi-person-dash" aria-hidden="true" />
@@ -132,7 +134,7 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
 
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={onClose}>
-                Cerrar
+                {t('common.close')}
               </button>
             </div>
           </div>

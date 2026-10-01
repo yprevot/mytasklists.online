@@ -15,7 +15,7 @@ export enum DevicePlatform {
   WEB = 'web',
 }
 
-/** Token de push (Expo) de cada dispositivo movil del usuario */
+/** Token de push (Expo) de cada dispositivo móvil del usuario */
 @Entity('device_tokens')
 export class DeviceToken {
   @PrimaryGeneratedColumn('uuid')

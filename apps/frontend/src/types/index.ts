@@ -1,4 +1,4 @@
-// Las formas de la API viven en el contrato compartido con el backend y la app movil
+// Las formas de la API viven en el contrato compartido con el backend y la app móvil
 import type { LoginResponse, MfaChallenge } from '@lista/contracts';
 
 export type {

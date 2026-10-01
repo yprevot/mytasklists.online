@@ -14,7 +14,7 @@ export type {
   User,
 } from '@lista/contracts';
 
-/** La app movil no usa cookies: el refresh token siempre llega en el cuerpo */
+/** La app móvil no usa cookies: el refresh token siempre llega en el cuerpo */
 export type AuthResponse = ContractAuthResponse & { refreshToken: string };
 
 export type LoginResponse = AuthResponse | MfaChallenge;

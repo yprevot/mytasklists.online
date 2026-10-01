@@ -1,0 +1,65 @@
+# Gateway de producción detrás del proxy de Coolify (Traefik).
+#
+# Traefik termina TLS y redirige http → https; este nginx solo enruta por ruta
+# (`/`, `/app/`, `/dashboard/`, `/api/`, `/socket.io/`) y escucha en HTTP (80).
+# Las variables ${...} las sustituye el entrypoint de nginx al arrancar.
+include /etc/nginx/snippets/upstreams.conf;
+
+# ── IP real del cliente ─────────────────────────────────────────────
+# Solo se confía en X-Forwarded-For si llega de la red donde está Traefik
+# (TRUSTED_PROXY_CIDR). Sin esto todo el mundo parecería tener la IP de Traefik y
+# el rate limiting (por IP) limitaría a todos a la vez.
+set_real_ip_from ${TRUSTED_PROXY_CIDR};
+real_ip_header X-Forwarded-For;
+real_ip_recursive on;
+
+# Protocolo original: Traefik ya terminó TLS, aquí $scheme siempre es "http"
+map $http_x_forwarded_proto $forwarded_proto { default $scheme; https https; }
+
+# Límite por IP en los endpoints de autenticación (además del rate limiting del backend)
+limit_req_zone $binary_remote_addr zone=auth_zone:10m rate=10r/m;
+limit_req_status 429;
+
+server {
+    listen 80;
+    server_name _;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    location = /healthz {
+        add_header Content-Type text/plain;
+        return 200 'ok';
+    }
+
+    # Commit desplegado: el workflow lo consulta para saber que la versión nueva ya sirve
+    location = /version.json {
+        add_header Content-Type application/json;
+        add_header Cache-Control "no-store";
+        return 200 '{"revision":"${RELEASE_SHA}"}';
+    }
+
+    # ── Asociación con la app móvil ─────────────────────────────────
+    # 15-well-known.sh genera los archivos al arrancar si hay valores (IOS_APP_ID,
+    # ANDROID_CERT_FINGERPRINTS); si no, 404. El reto ACME lo atiende Traefik antes.
+    location /.well-known/ {
+        root /usr/share/nginx/well-known;
+        default_type application/json;
+        add_header Cache-Control "public, max-age=3600";
+        try_files $uri =404;
+    }
+
+    # Login, registro, 2FA y recuperación: ráfagas cortas y nada más
+    location /api/auth/ {
+        limit_req zone=auth_zone burst=10 nodelay;
+        include /etc/nginx/snippets/proxy-headers.conf;
+        proxy_read_timeout 60s;
+        proxy_pass http://backend_upstream;
+    }
+
+    # La documentación OpenAPI no se publica
+    location /api/docs {
+        return 404;
+    }
+
+    include /etc/nginx/snippets/locations.conf;
+}

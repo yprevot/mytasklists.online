@@ -1,11 +1,11 @@
 import type { PublicProfile, User } from '@lista/contracts';
 import { User as UserEntity } from '../../database/entities';
 
-// Las formas publicas viven en el contrato compartido con los clientes
+// Las formas públicas viven en el contrato compartido con los clientes
 export type PublicUser = User;
 export type { PublicProfile };
 
-/** Nunca exponemos el hash de la contrasena ni el secreto de 2FA al cliente */
+/** Nunca exponemos el hash de la contraseña ni el secreto de 2FA al cliente */
 export const toPublicUser = (user: UserEntity, extra: { hasPassword?: boolean } = {}): PublicUser => ({
   id: user.id,
   fullName: user.fullName,
@@ -18,6 +18,7 @@ export const toPublicUser = (user: UserEntity, extra: { hasPassword?: boolean } 
   emailVerified: user.emailVerified,
   mfaEnabled: Boolean(user.totpEnabled),
   isActive: user.isActive,
+  locale: user.locale,
   createdAt: new Date(user.createdAt).toISOString(),
   ...(extra.hasPassword === undefined ? {} : { hasPassword: extra.hasPassword }),
 });

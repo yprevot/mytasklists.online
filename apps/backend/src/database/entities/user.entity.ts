@@ -1,3 +1,4 @@
+import type { Locale } from '@lista/contracts';
 import {
   Column,
   CreateDateColumn,
@@ -32,14 +33,14 @@ export class User {
   @Column({ length: 180 })
   email: string;
 
-  /** Numero de WhatsApp en formato E.164, p. ej. +5215512345678 */
+  /** Número de WhatsApp en formato E.164, p. ej. +5215512345678 */
   @Column({ type: 'varchar', length: 25, nullable: true })
   whatsapp: string | null;
 
   @Column({ name: 'password_hash', type: 'varchar', length: 120, nullable: true, select: false })
   passwordHash: string | null;
 
-  /** Metodo con el que se creo la cuenta. Los proveedores vinculados viven en `identities` */
+  /** Método con el que se creó la cuenta. Los proveedores vinculados viven en `identities` */
   @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.LOCAL })
   provider: AuthProvider;
 
@@ -65,7 +66,7 @@ export class User {
   @Column({ name: 'totp_enabled', default: false })
   totpEnabled: boolean;
 
-  /** Hashes SHA-256 de los codigos de recuperacion de 2FA que siguen sin usarse */
+  /** Hashes SHA-256 de los códigos de recuperación de 2FA que siguen sin usarse */
   @Column({
     name: 'totp_recovery_codes',
     type: 'jsonb',
@@ -74,7 +75,11 @@ export class User {
   })
   totpRecoveryCodes: string[] | null;
 
-  /** Preferencia global: recibir avisos cuando alguien mas edita una lista compartida */
+  /** Idioma de sus correos y avisos (es | en); los clientes lo igualan al de su interfaz */
+  @Column({ type: 'varchar', length: 5, default: 'es' })
+  locale: Locale;
+
+  /** Preferencia global: recibir avisos cuando alguien más edita una lista compartida */
   @Column({ name: 'notifications_enabled', default: true })
   notificationsEnabled: boolean;
 

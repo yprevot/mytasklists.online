@@ -1,14 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import QRCode from 'qrcode';
+import { useTranslation } from 'react-i18next';
 import { adminApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
 type Setup = { secret: string; otpauthUrl: string; qr: string };
 
-/** Verificacion en dos pasos (TOTP) de la cuenta de administracion */
+/** Verificación en dos pasos (TOTP) de la cuenta de administración */
 export function SecurityPage() {
   const { user, reloadUser } = useAdminAuth();
+  const { t } = useTranslation();
   const [setup, setSetup] = useState<Setup | null>(null);
   const [code, setCode] = useState('');
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
@@ -28,7 +30,7 @@ export function SecurityPage() {
     try {
       await action();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo completar la accion');
+      setError(err instanceof ApiError ? err.message : t('common.actionFailed'));
     } finally {
       setBusy(false);
     }
@@ -63,28 +65,26 @@ export function SecurityPage() {
 
   return (
     <div data-testid="security-page">
-      <h1 className="h4 mb-3">Seguridad</h1>
+      <h1 className="lc-page-title mb-4">{t('security.title')}</h1>
 
       <div className="card border-0 shadow-sm" style={{ maxWidth: 640 }}>
         <div className="card-body">
-          <h2 className="h6 d-flex align-items-center gap-2">
-            Verificacion en dos pasos
+          <h2 className="h5 d-flex align-items-center gap-2">
+            {t('security.mfa')}
             <span
               className={`badge ${user.mfaEnabled ? 'text-bg-success' : 'text-bg-secondary'}`}
               data-testid="mfa-status"
             >
-              {user.mfaEnabled ? 'activa' : 'inactiva'}
+              {user.mfaEnabled ? t('security.on') : t('security.off')}
             </span>
           </h2>
           <p className="text-muted small">
-            Ademas de la contrasena, el panel pedira un codigo de tu app autenticadora (Google
-            Authenticator, 1Password, Authy…).
+            {t('security.description')}
           </p>
 
           {recoveryCodes && (
             <div className="alert alert-warning small" data-testid="recovery-codes">
-              <strong>Guarda estos codigos de recuperacion.</strong> Cada uno sirve una sola vez si pierdes
-              el telefono y no se volveran a mostrar.
+              <strong>{t('security.recoveryTitle')}</strong> {t('security.recoveryText')}
               <div className="row row-cols-2 g-1 mt-2 font-monospace">
                 {recoveryCodes.map((entry) => (
                   <div key={entry} className="col">
@@ -99,21 +99,21 @@ export function SecurityPage() {
 
           {!user.mfaEnabled && !setup && (
             <button className="btn btn-primary" onClick={start} disabled={busy} data-testid="mfa-start">
-              Activar verificacion en dos pasos
+              {t('security.start')}
             </button>
           )}
 
           {!user.mfaEnabled && setup && (
             <form onSubmit={enable} data-testid="mfa-setup-form">
               <div className="d-flex flex-wrap gap-3 align-items-center mb-3">
-                <img src={setup.qr} alt="Codigo QR para la app autenticadora" width={220} height={220} />
+                <img src={setup.qr} alt={t('security.qrAlt')} width={220} height={220} />
                 <div className="small">
-                  <p className="mb-1">1. Escanea el QR con tu app autenticadora.</p>
-                  <p className="mb-1">O escribe esta clave a mano:</p>
+                  <p className="mb-1">{t('security.step1')}</p>
+                  <p className="mb-1">{t('security.manual')}</p>
                   <code className="d-block text-break" data-testid="mfa-secret">
                     {setup.secret}
                   </code>
-                  <p className="mt-2 mb-0">2. Escribe el codigo de 6 digitos que muestra.</p>
+                  <p className="mt-2 mb-0">{t('security.step2')}</p>
                 </div>
               </div>
               <div className="input-group" style={{ maxWidth: 320 }}>
@@ -127,7 +127,7 @@ export function SecurityPage() {
                   data-testid="mfa-setup-code"
                 />
                 <button className="btn btn-primary" disabled={busy || !code.trim()} data-testid="mfa-enable">
-                  Activar
+                  {t('common.activate')}
                 </button>
               </div>
             </form>
@@ -136,7 +136,7 @@ export function SecurityPage() {
           {user.mfaEnabled && (
             <form onSubmit={disable} data-testid="mfa-disable-form">
               <label className="form-label small" htmlFor="mfa-disable-code">
-                Para desactivarla escribe un codigo actual o de recuperacion
+                {t('security.disableLabel')}
               </label>
               <div className="input-group" style={{ maxWidth: 320 }}>
                 <input
@@ -152,7 +152,7 @@ export function SecurityPage() {
                   disabled={busy || !code.trim()}
                   data-testid="mfa-disable"
                 >
-                  Desactivar
+                  {t('common.deactivate')}
                 </button>
               </div>
             </form>

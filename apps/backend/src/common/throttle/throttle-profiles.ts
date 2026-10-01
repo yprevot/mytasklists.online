@@ -2,11 +2,11 @@ import { ExecutionContext } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import configuration from '../../config/configuration';
 
-// Los decoradores se evaluan al importar el modulo, asi que los limites se
-// resuelven en cada peticion leyendo la configuracion ya cargada.
+// Los decoradores se evalúan al importar el módulo, así que los límites se
+// resuelven en cada petición leyendo la configuración ya cargada.
 const config = () => configuration().rateLimit;
 
-/** Login, registro, verificacion de 2FA y tokens sociales */
+/** Login, registro, verificación de 2FA y tokens sociales */
 export const AuthThrottle = () =>
   Throttle({
     default: {
@@ -15,7 +15,7 @@ export const AuthThrottle = () =>
     },
   });
 
-/** Acciones que envian correo o validan tokens de un solo uso */
+/** Acciones que envían correo o validan tokens de un solo uso */
 export const SensitiveThrottle = () =>
   Throttle({
     default: {

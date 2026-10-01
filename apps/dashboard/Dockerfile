@@ -1,5 +1,5 @@
-# Se construye desde la raiz del monorepo (context: .) con `npm ci` y el
-# package-lock.json comun.
+# Se construye desde la raíz del monorepo (context: .) con `npm ci` y el
+# package-lock.json común.
 FROM node:24-alpine AS builder
 WORKDIR /app
 

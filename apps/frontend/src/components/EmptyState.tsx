@@ -10,10 +10,12 @@ interface Props {
 
 export function EmptyState({ icon, title, description, action, testId }: Props) {
   return (
-    <div className="text-center py-5 px-3" data-testid={testId ?? 'empty-state'}>
-      <i className={`bi ${icon} text-secondary`} style={{ fontSize: '2.5rem' }} aria-hidden="true" />
-      <h3 className="h6 mt-3 mb-1">{title}</h3>
-      {description && <p className="text-muted small mb-3">{description}</p>}
+    <div className="lc-empty" data-testid={testId ?? 'empty-state'}>
+      <div className="lc-empty-icon">
+        <i className={`bi ${icon}`} aria-hidden="true" />
+      </div>
+      <h3 className="h6">{title}</h3>
+      {description && <p className="text-muted small mb-3 mx-auto" style={{ maxWidth: '34ch' }}>{description}</p>}
       {action}
     </div>
   );

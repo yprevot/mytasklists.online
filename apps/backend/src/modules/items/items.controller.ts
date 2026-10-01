@@ -36,7 +36,7 @@ export class ItemsController {
 
   @Post('lists/:listId/items')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Agrega un producto (unico o recurrente) a la lista' })
+  @ApiOperation({ summary: 'Agrega un producto (único o recurrente) a la lista' })
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Param('listId', ParseUUIDPipe) listId: string,
@@ -56,7 +56,7 @@ export class ItemsController {
   }
 
   @Delete('lists/:listId/items/purchased')
-  @ApiOperation({ summary: 'Vacia la lista de comprados' })
+  @ApiOperation({ summary: 'Vacía la lista de comprados' })
   clearPurchased(
     @CurrentUser() user: AuthenticatedUser,
     @Param('listId', ParseUUIDPipe) listId: string,
@@ -90,7 +90,7 @@ export class ItemsController {
 
   @Delete('items/:id/close')
   @ApiOperation({
-    summary: 'Cierra la tarjeta con la "x" (si es recurrente conserva su programacion)',
+    summary: 'Cierra la tarjeta con la "x" (si es recurrente conserva su programación)',
   })
   archive(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.items.archive(id, user.id);

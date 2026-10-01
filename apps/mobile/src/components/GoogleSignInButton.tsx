@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
+import { useTranslation } from 'react-i18next';
 import { Button } from './ui';
 
 // Cierra la ventana del navegador al volver del flujo (necesario en web)
@@ -36,27 +37,28 @@ interface Props {
 }
 
 /**
- * Inicio de sesion nativo con Google: el SDK devuelve un id_token que el
+ * Inicio de sesión nativo con Google: el SDK devuelve un id_token que el
  * backend verifica en POST /auth/google/token. Requiere un development build
  * (no funciona en Expo Go) y los client id de iOS/Android en app.json.
  * Solo se monta cuando `googleConfigured` es true: el hook exige el client id.
  */
 export function GoogleSignInButton({ onIdToken, onError }: Props) {
+  const { t } = useTranslation();
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest(clientIds);
 
   useEffect(() => {
     if (response?.type === 'success') {
       const idToken = response.params.id_token ?? response.authentication?.idToken;
       if (idToken) onIdToken(idToken);
-      else onError('Google no devolvio el token');
+      else onError(t('google.noToken'));
     } else if (response?.type === 'error') {
-      onError('No se pudo iniciar sesion con Google');
+      onError(t('google.failed'));
     }
-  }, [response, onIdToken, onError]);
+  }, [response, onIdToken, onError, t]);
 
   return (
     <Button
-      title="Continuar con Google"
+      title={t('login.google')}
       variant="ghost"
       disabled={!request}
       onPress={() => void promptAsync()}

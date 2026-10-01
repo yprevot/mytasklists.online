@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../components/ui';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useAuth } from '../context/AuthContext';
 import { usePush } from '../context/PushContext';
 import { useSocket } from '../context/SocketContext';
@@ -13,15 +15,16 @@ export function SettingsScreen() {
   const { connected } = useSocket();
   const { pushToken, permission } = usePush();
   const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   if (!user) return null;
 
   const resendVerification = async () => {
     try {
       await authApi.resendVerification();
-      setVerifyNotice('Te reenviamos el enlace de confirmacion.');
+      setVerifyNotice(t('settings.resent'));
     } catch (err) {
-      setVerifyNotice(err instanceof ApiError ? err.message : 'No se pudo reenviar el enlace');
+      setVerifyNotice(err instanceof ApiError ? err.message : t('settings.resendFailed'));
     }
   };
 
@@ -34,26 +37,43 @@ export function SettingsScreen() {
       <Card>
         <Text style={styles.name}>{user.fullName}</Text>
         <Text style={styles.meta}>{user.email}</Text>
-        <Text style={styles.meta}>{user.whatsapp ?? 'Sin WhatsApp registrado'}</Text>
+        <Text style={styles.meta}>{user.whatsapp ?? t('settings.noWhatsapp')}</Text>
 
         <View style={styles.divider} />
 
-        <Row label="Metodo de registro" value={user.provider} />
-        <Row label="Correo" value={user.emailVerified ? 'confirmado' : 'sin confirmar'} />
-        <Row label="Verificacion en dos pasos" value={user.mfaEnabled ? 'activa' : 'inactiva'} />
-        <Row label="Conexion en vivo" value={connected ? 'activa' : 'sin conexion'} />
+        <Row label={t('settings.signupMethod')} value={t(`settings.providers.${user.provider}`)} />
         <Row
-          label="Notificaciones push"
+          label={t('settings.email')}
+          value={user.emailVerified ? t('settings.confirmed') : t('settings.unconfirmed')}
+        />
+        <Row label={t('settings.mfa')} value={user.mfaEnabled ? t('settings.on') : t('settings.off')} />
+        <Row label={t('settings.live')} value={connected ? t('settings.on') : t('settings.offline')} />
+        <Row
+          label={t('settings.push')}
           value={
-            permission === 'granted' ? (pushToken ? 'registradas' : 'permitidas') : permission
+            permission === 'granted'
+              ? pushToken
+                ? t('settings.pushRegistered')
+                : t('settings.pushGranted')
+              : permission === 'denied'
+                ? t('settings.pushDenied')
+                : t('settings.pushUndetermined')
           }
         />
+      </Card>
+
+      <Card style={{ marginTop: spacing.lg }}>
+        <View style={styles.languageRow} testID="language-card">
+          <Text style={styles.rowLabel}>{t('settings.language')}</Text>
+          <LanguageSwitcher />
+        </View>
+        <Text style={[styles.meta, { marginTop: spacing.sm }]}>{t('settings.languageHint')}</Text>
       </Card>
 
       {!user.emailVerified ? (
         <Card style={{ marginTop: spacing.lg }}>
           <Text style={styles.meta}>
-            Confirma tu correo con el enlace que te enviamos para proteger tu cuenta.
+            {t('settings.verifyHint')}
           </Text>
           {verifyNotice ? (
             <Text style={[styles.meta, { marginTop: spacing.sm }]} testID="verify-notice">
@@ -61,7 +81,7 @@ export function SettingsScreen() {
             </Text>
           ) : null}
           <Button
-            title="Reenviar enlace"
+            title={t('settings.resend')}
             variant="ghost"
             onPress={resendVerification}
             testID="verify-resend"
@@ -71,7 +91,7 @@ export function SettingsScreen() {
       ) : null}
 
       <Button
-        title="Cerrar sesion"
+        title={t('settings.logout')}
         variant="danger"
         onPress={logout}
         testID="logout-button"
@@ -91,10 +111,11 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  name: { fontSize: 18, fontWeight: '800', color: colors.ink },
-  meta: { fontSize: 13, color: colors.inkSoft, marginTop: 2 },
+  name: { fontSize: 20, fontWeight: '800', color: colors.ink, letterSpacing: -0.4 },
+  meta: { fontSize: 14, color: colors.inkSoft, marginTop: 2 },
   divider: { height: 1, backgroundColor: colors.line, marginVertical: spacing.lg },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  rowLabel: { color: colors.inkSoft, fontSize: 13 },
-  rowValue: { color: colors.ink, fontSize: 13, fontWeight: '600', textTransform: 'capitalize' },
+  languageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  rowLabel: { color: colors.inkSoft, fontSize: 14 },
+  rowValue: { color: colors.ink, fontSize: 14, fontWeight: '600', textTransform: 'capitalize' },
 });

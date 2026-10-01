@@ -22,9 +22,9 @@ const openList = async (page: Page, name: string): Promise<void> => {
   await expect(page.getByTestId('list-detail-screen')).toBeVisible({ timeout: 20_000 });
 };
 
-test.describe('App movil · listas y recurrencia', () => {
-  test('CP-MOV-007 · crear una lista desde el telefono', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Creadora Movil' });
+test.describe('App móvil · listas y recurrencia', () => {
+  test('CP-MOV-007 · crear una lista desde el teléfono', async ({ page, request }) => {
+    const user = await registerUser(request, { fullName: 'Creadora Móvil' });
     await loginInApp(page, user);
 
     await page.getByTestId('new-list-button').click();
@@ -35,10 +35,10 @@ test.describe('App movil · listas y recurrencia', () => {
   });
 
   test('CP-MOV-008 · agregar un producto y marcarlo como comprado', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Compradora Movil' });
-    await createList(request, user.accessToken, 'Despensa movil');
+    const user = await registerUser(request, { fullName: 'Compradora Móvil' });
+    await createList(request, user.accessToken, 'Despensa móvil');
     await loginInApp(page, user);
-    await openList(page, 'Despensa movil');
+    await openList(page, 'Despensa móvil');
 
     await page.getByTestId('item-name-input').fill('Pilas AA');
     await page.getByTestId('add-item-button').click();
@@ -52,11 +52,11 @@ test.describe('App movil · listas y recurrencia', () => {
     await expect(page.getByTestId('pending-item').filter({ hasText: 'Pilas AA' })).toHaveCount(0);
   });
 
-  test('CP-MOV-009 · agregar "Pan de caja" con recurrencia de 14 dias', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Recurrente Movil' });
-    await createList(request, user.accessToken, 'Quincenal movil');
+  test('CP-MOV-009 · agregar "Pan de caja" con recurrencia de 14 días', async ({ page, request }) => {
+    const user = await registerUser(request, { fullName: 'Recurrente Móvil' });
+    await createList(request, user.accessToken, 'Quincenal móvil');
     await loginInApp(page, user);
-    await openList(page, 'Quincenal movil');
+    await openList(page, 'Quincenal móvil');
 
     await page.getByTestId('item-name-input').fill('Pan de caja');
     await page.getByTestId('item-recurring-switch').click();
@@ -68,7 +68,7 @@ test.describe('App movil · listas y recurrencia', () => {
     await expect(pendiente).toBeVisible();
     await expect(pendiente.getByTestId('item-recurrence-badge')).toContainText('cada 14 d');
 
-    // Al comprarlo se anuncia cuando volvera
+    // Al comprarlo se anuncia cuándo volverá
     await pendiente.click();
     const comprado = page.getByTestId('purchased-item').filter({ hasText: 'Pan de caja' });
     await expect(comprado).toBeVisible();
@@ -76,8 +76,8 @@ test.describe('App movil · listas y recurrencia', () => {
   });
 
   test('CP-MOV-010 · un recurrente vencido se destaca en la lista', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Vencidos Movil' });
-    const list = await createList(request, user.accessToken, 'Vencidos movil');
+    const user = await registerUser(request, { fullName: 'Vencidos Móvil' });
+    const list = await createList(request, user.accessToken, 'Vencidos móvil');
     const item = await createItem(request, user.accessToken, list.id, {
       name: 'Leche entera',
       isRecurring: true,
@@ -86,7 +86,7 @@ test.describe('App movil · listas y recurrencia', () => {
     await advanceClock(request, user.accessToken, item.id, 9);
 
     await loginInApp(page, user);
-    await openList(page, 'Vencidos movil');
+    await openList(page, 'Vencidos móvil');
 
     const pendiente = page.getByTestId('pending-item').filter({ hasText: 'Leche entera' });
     await expect(pendiente).toBeVisible();
@@ -95,15 +95,15 @@ test.describe('App movil · listas y recurrencia', () => {
   });
 
   test('CP-MOV-011 · la "x" quita el producto de la lista de comprados', async ({ page, request }) => {
-    const user = await registerUser(request, { fullName: 'Cierre Movil' });
-    const list = await createList(request, user.accessToken, 'Cierre movil');
+    const user = await registerUser(request, { fullName: 'Cierre Móvil' });
+    const list = await createList(request, user.accessToken, 'Cierre móvil');
     const item = await createItem(request, user.accessToken, list.id, { name: 'Servilletas' });
     await request.post(`${API_URL}/items/${item.id}/purchase`, {
       headers: auth(user.accessToken),
     });
 
     await loginInApp(page, user);
-    await openList(page, 'Cierre movil');
+    await openList(page, 'Cierre móvil');
 
     const comprado = page.getByTestId('purchased-item').filter({ hasText: 'Servilletas' });
     await expect(comprado).toBeVisible();

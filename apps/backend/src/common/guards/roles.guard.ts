@@ -16,7 +16,7 @@ export class RolesGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest();
     if (!user || !required.includes(user.role)) {
-      throw new ForbiddenException('No cuentas con permisos para esta operacion');
+      throw new ForbiddenException('No cuentas con permisos para esta operación');
     }
     return true;
   }

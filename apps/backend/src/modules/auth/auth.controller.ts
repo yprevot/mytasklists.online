@@ -32,13 +32,15 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { AuthThrottle, SensitiveThrottle } from '../../common/throttle/throttle-profiles';
+import { RequestLocale } from '../../common/decorators/request-locale.decorator';
+import { type Locale, translateMessage } from '../../i18n/locale';
 
 /**
  * Los clientes web (app y panel) mandan `X-Auth-Client: web|dashboard`: su
- * refresh token viaja en una cookie httpOnly y nunca en el cuerpo. La app movil
+ * refresh token viaja en una cookie httpOnly y nunca en el cuerpo. La app móvil
  * y los clientes de API no mandan la cabecera y reciben el par completo.
  */
-@ApiTags('autenticacion')
+@ApiTags('autenticación')
 @ApiHeader({
   name: 'X-Auth-Client',
   required: false,
@@ -75,18 +77,19 @@ export class AuthController {
     return client ? this.cookies.read(request, client) : undefined;
   }
 
-  // ── Registro y sesion con correo/contrasena ─────────────────────────
+  // ── Registro y sesión con correo/contraseña ─────────────────────────
   @Public()
   @AuthThrottle()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registro con nombre, correo, WhatsApp y contrasena' })
+  @ApiOperation({ summary: 'Registro con nombre, correo, WhatsApp y contraseña' })
   async register(
     @Body() dto: RegisterDto,
+    @RequestLocale() locale: Locale,
     @Req() request: FastifyRequest,
     @Res({ passthrough: true }) reply: FastifyReply,
   ) {
-    return this.respond(request, reply, await this.auth.register(dto));
+    return this.respond(request, reply, await this.auth.register(dto, locale));
   }
 
   @Public()
@@ -94,8 +97,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Inicio de sesion con correo y contrasena',
-    description: 'Si la cuenta tiene 2FA responde `{ mfaRequired, mfaToken }`: continua en /auth/mfa/verify',
+    summary: 'Inicio de sesión con correo y contraseña',
+    description: 'Si la cuenta tiene 2FA responde `{ mfaRequired, mfaToken }`: continúa en /auth/mfa/verify',
   })
   async login(
     @Body() dto: LoginDto,
@@ -109,7 +112,7 @@ export class AuthController {
   @AuthThrottle()
   @Post('mfa/verify')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Segundo paso del login: codigo TOTP o de recuperacion' })
+  @ApiOperation({ summary: 'Segundo paso del login: código TOTP o de recuperación' })
   async verifyMfa(
     @Body() dto: MfaVerifyDto,
     @Req() request: FastifyRequest,
@@ -143,7 +146,7 @@ export class AuthController {
   @Post('logout')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Cierra la sesion actual' })
+  @ApiOperation({ summary: 'Cierra la sesión actual' })
   async logout(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: RefreshDto,
@@ -165,12 +168,12 @@ export class AuthController {
 
   @Public()
   @Get('providers')
-  @ApiOperation({ summary: 'Metodos de autenticacion habilitados en esta instalacion' })
+  @ApiOperation({ summary: 'Métodos de autenticación habilitados en esta instalación' })
   providers() {
     return this.auth.providers();
   }
 
-  // ─────────────────────────── Verificacion de correo ─────────────────
+  // ─────────────────────────── Verificación de correo ─────────────────
   @Public()
   @SensitiveThrottle()
   @Post('verify-email')
@@ -184,35 +187,36 @@ export class AuthController {
   @Post('verify-email/resend')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reenvia el correo de verificacion' })
+  @ApiOperation({ summary: 'Reenvía el correo de verificación' })
   resendVerification(@CurrentUser() user: AuthenticatedUser) {
     return this.auth.resendVerification(user.id);
   }
 
-  // ─────────────────────────── Recuperar contrasena ───────────────────
+  // ─────────────────────────── Recuperar contraseña ───────────────────
   @Public()
   @SensitiveThrottle()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Envia un enlace para restablecer la contrasena (respuesta generica)' })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.auth.forgotPassword(dto.email);
+  @ApiOperation({ summary: 'Envía un enlace para restablecer la contraseña (respuesta genérica)' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto, @RequestLocale() locale: Locale) {
+    const result = await this.auth.forgotPassword(dto.email);
+    return { ...result, message: translateMessage(result.message, locale) };
   }
 
   @Public()
   @SensitiveThrottle()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Define una contrasena nueva con el token del enlace y cierra todas las sesiones' })
+  @ApiOperation({ summary: 'Define una contraseña nueva con el token del enlace y cierra todas las sesiones' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.auth.resetPassword(dto.token, dto.newPassword);
   }
 
-  // ─────────────────────────── Verificacion en dos pasos ──────────────
+  // ─────────────────────────── Verificación en dos pasos ──────────────
   @Post('mfa/setup')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Genera el secreto TOTP (QR) para activar la verificacion en dos pasos' })
+  @ApiOperation({ summary: 'Genera el secreto TOTP (QR) para activar la verificación en dos pasos' })
   mfaSetup(@CurrentUser() user: AuthenticatedUser) {
     return this.auth.mfaSetup(user.id);
   }
@@ -221,7 +225,7 @@ export class AuthController {
   @Post('mfa/enable')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Activa 2FA con el primer codigo y devuelve los codigos de recuperacion' })
+  @ApiOperation({ summary: 'Activa 2FA con el primer código y devuelve los códigos de recuperación' })
   mfaEnable(@CurrentUser() user: AuthenticatedUser, @Body() dto: MfaCodeDto) {
     return this.auth.mfaEnable(user.id, dto.code);
   }
@@ -230,7 +234,7 @@ export class AuthController {
   @Post('mfa/disable')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Desactiva 2FA (pide un codigo valido)' })
+  @ApiOperation({ summary: 'Desactiva 2FA (pide un código válido)' })
   mfaDisable(@CurrentUser() user: AuthenticatedUser, @Body() dto: MfaCodeDto) {
     return this.auth.mfaDisable(user.id, dto.code);
   }
@@ -260,7 +264,7 @@ export class AuthController {
       const profile = await this.oauth.handleGoogleCallback(code, state);
       this.finishWebLogin(reply, await this.auth.loginWithSocialProfile(profile));
     } catch (err) {
-      this.logger.error(`Fallo el callback de Google: ${(err as Error).message}`);
+      this.logger.error(`Falló el callback de Google: ${(err as Error).message}`);
       this.redirect(reply, this.auth.buildErrorRedirectUrl('google_fallido'));
     }
   }
@@ -269,7 +273,7 @@ export class AuthController {
   @AuthThrottle()
   @Post('google/token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Inicio de sesion con Google desde la app movil (id_token nativo)' })
+  @ApiOperation({ summary: 'Inicio de sesión con Google desde la app móvil (id_token nativo)' })
   async googleToken(
     @Body() dto: SocialTokenDto,
     @Req() request: FastifyRequest,
@@ -306,7 +310,7 @@ export class AuthController {
       });
       this.finishWebLogin(reply, await this.auth.loginWithSocialProfile(profile));
     } catch (err) {
-      this.logger.error(`Fallo el callback de Apple: ${(err as Error).message}`);
+      this.logger.error(`Falló el callback de Apple: ${(err as Error).message}`);
       this.redirect(reply, this.auth.buildErrorRedirectUrl('apple_fallido'));
     }
   }
@@ -315,7 +319,7 @@ export class AuthController {
   @AuthThrottle()
   @Post('apple/token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Inicio de sesion con Apple desde la app movil (identityToken nativo)' })
+  @ApiOperation({ summary: 'Inicio de sesión con Apple desde la app móvil (identityToken nativo)' })
   async appleToken(
     @Body() dto: SocialTokenDto,
     @Req() request: FastifyRequest,
@@ -325,7 +329,7 @@ export class AuthController {
     return this.respond(request, reply, await this.auth.loginWithSocialProfile(profile, dto.whatsapp));
   }
 
-  /** Los flujos OAuth web siempre terminan en la app web: cookie + redireccion */
+  /** Los flujos OAuth web siempre terminan en la app web: cookie + redirección */
   private finishWebLogin(reply: FastifyReply, outcome: LoginOutcome): void {
     if (!isMfaChallenge(outcome)) {
       this.cookies.write(reply, 'web', outcome.refreshToken, this.tokens.refreshTtlSeconds);

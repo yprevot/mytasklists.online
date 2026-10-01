@@ -1,5 +1,5 @@
 // Crea una cuenta nueva contra la API para que cada flujo empiece sin datos previos.
-// Corre en la computadora (no en el telefono), asi que localhost es la pila de Docker.
+// Corre en la computadora (no en el teléfono), así que localhost es la pila de Docker.
 const email = 'maestro.' + Date.now() + '@example.com';
 const password = 'Prueba12345';
 const whatsapp = '+52155' + Math.floor(10000000 + Math.random() * 89999999);

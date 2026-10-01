@@ -7,11 +7,13 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { onSessionExpired, tokens } from '../api/client';
-import { authApi } from '../api/endpoints';
+import { authApi, usersApi } from '../api/endpoints';
+import { currentLanguage } from '../i18n';
 import type { AuthResponse, LoginResponse, User } from '../types';
 
-/** Sesion iniciada o reto de 2FA pendiente */
+/** Sesión iniciada o reto de 2FA pendiente */
 export type LoginStep = { status: 'done' } | { status: 'mfa'; mfaToken: string };
 
 interface Value {
@@ -45,6 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => onSessionExpired(clear), [clear]);
+
+  // El backend escribe correos y push en `user.locale`: se iguala al idioma de la app
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    const language = currentLanguage();
+    if (!user || user.locale === language) return;
+    usersApi
+      .updateProfile({ locale: language })
+      .then((updated) => setUser((current) => (current ? { ...current, locale: updated.locale } : current)))
+      .catch(() => undefined);
+  }, [user, i18n.language]);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           await authApi.logout(tokens.refresh);
         } catch {
-          /* la sesion local se limpia igualmente */
+          /* la sesión local se limpia igualmente */
         }
         await tokens.clear();
         clear();

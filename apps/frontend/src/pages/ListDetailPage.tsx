@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { itemsApi, listsApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,7 @@ export function ListDetailPage() {
   const { user } = useAuth();
   const { socket } = useSocket();
   const { show } = useToast();
+  const { t } = useTranslation();
 
   const [list, setList] = useState<ListDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +34,10 @@ export function ListDetailPage() {
       setList(detail);
       setError(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo cargar la lista');
+      setError(err instanceof ApiError ? err.message : t('detail.loadFailed'));
       setList(null);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     void load();
@@ -50,7 +52,7 @@ export function ListDetailPage() {
     };
   }, [socket, id]);
 
-  /** Recarga agrupada: varios eventos seguidos provocan una sola peticion */
+  /** Recarga agrupada: varios eventos seguidos provocan una sola petición */
   const scheduleReload = useCallback(() => {
     if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
     reloadTimer.current = window.setTimeout(() => {
@@ -77,13 +79,13 @@ export function ListDetailPage() {
   useSocketEvent('list:member-removed', onListEvent);
   useSocketEvent('list:deleted', (payload) => {
     if (payload?.listId === id) {
-      show({ title: 'Lista eliminada', body: 'Ya no tienes acceso a esta lista', variant: 'warning' });
+      show({ title: t('detail.deletedTitle'), body: t('detail.deletedBody'), variant: 'warning' });
       navigate('/', { replace: true });
     }
   });
 
   const notify = (message: string, ok = true) =>
-    show({ title: ok ? 'Listo' : 'Ups', body: message, variant: ok ? 'success' : 'danger' });
+    show({ title: ok ? t('common.done') : t('common.oops'), body: message, variant: ok ? 'success' : 'danger' });
 
   const guard = async (action: () => Promise<unknown>, failure: string) => {
     setBusy(true);
@@ -103,47 +105,47 @@ export function ListDetailPage() {
       const updated = await itemsApi.purchase(item.id);
       if (updated.isRecurring && updated.nextActivationAt) {
         show({
-          title: 'Comprado',
-          body: `"${updated.name}" volvera a la lista en ${updated.recurrenceDays} dias`,
+          title: t('detail.purchasedTitle'),
+          body: t('detail.purchasedBody', { name: updated.name, count: updated.recurrenceDays ?? 0 }),
           variant: 'success',
         });
       }
-    }, 'No se pudo marcar como comprado');
+    }, t('detail.failures.purchase'));
 
   const restore = (item: Item) =>
-    guard(() => itemsApi.restore(item.id), 'No se pudo regresar el producto');
+    guard(() => itemsApi.restore(item.id), t('detail.failures.restore'));
 
   const close = (item: Item) =>
-    guard(() => itemsApi.close(item.id), 'No se pudo quitar el producto');
+    guard(() => itemsApi.close(item.id), t('detail.failures.close'));
 
   const remove = (item: Item) =>
-    guard(() => itemsApi.remove(item.id), 'No se pudo eliminar el producto');
+    guard(() => itemsApi.remove(item.id), t('detail.failures.remove'));
 
   const clearPurchased = () =>
-    guard(() => itemsApi.clearPurchased(id), 'No se pudo vaciar la lista de comprados');
+    guard(() => itemsApi.clearPurchased(id), t('detail.failures.clear'));
 
   const advanceClock = (item: Item, days: number) =>
     guard(async () => {
       const result = await itemsApi.advanceClock(item.id, days);
       show({
-        title: `Reloj adelantado ${days} dia(s)`,
-        body: `${result.reactivated} producto(s) reactivado(s), ${result.overdue} vencido(s)`,
+        title: t('detail.clockTitle', { count: days }),
+        body: t('detail.clockBody', { reactivated: result.reactivated, overdue: result.overdue }),
         variant: 'info',
       });
-    }, 'No se pudo simular el paso del tiempo');
+    }, t('detail.failures.clock'));
 
   const toggleNotifications = () =>
     guard(async () => {
       if (!list) return;
       await listsApi.setMyNotifications(id, !list.notifyOnChange);
-    }, 'No se pudo cambiar la preferencia de avisos');
+    }, t('detail.failures.notify'));
 
   const deleteList = () =>
     guard(async () => {
-      if (!window.confirm('¿Eliminar la lista completa? Esta accion no se puede deshacer.')) return;
+      if (!window.confirm(t('detail.confirmDelete'))) return;
       await listsApi.remove(id);
       navigate('/', { replace: true });
-    }, 'No se pudo eliminar la lista');
+    }, t('detail.failures.deleteList'));
 
   const overdueCount = useMemo(
     () => (list?.pending ?? []).filter((item) => item.isOverdue).length,
@@ -155,87 +157,100 @@ export function ListDetailPage() {
       <div className="alert alert-danger" role="alert" data-testid="list-error">
         {error}
         <div className="mt-2">
-          <Link className="btn btn-sm btn-outline-danger" to="/">
-            Volver a mis listas
+          <Link className="btn btn-sm btn-outline-danger bg-white" to="/">
+            {t('detail.backToLists')}
           </Link>
         </div>
       </div>
     );
   }
 
-  if (!list || !user) return <Spinner label="Cargando la lista…" />;
+  if (!list || !user) return <Spinner label={t('detail.loading')} />;
 
   return (
     <div data-testid="list-detail-page" data-list-id={list.id}>
       {/* ── Encabezado ─────────────────────────────────────────────── */}
-      <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
-        <div className="d-flex align-items-start gap-3 min-w-0">
-          <Link to="/" className="btn btn-light btn-sm mt-1" aria-label="Volver" data-testid="back-to-lists">
-            <i className="bi bi-arrow-left" aria-hidden="true" />
-          </Link>
-          <span style={{ fontSize: '2rem' }} aria-hidden="true">
-            {list.icon}
-          </span>
-          <div className="min-w-0">
-            <h1 className="h3 mb-1 text-truncate" data-testid="list-title">
-              {list.name}
-            </h1>
-            <div className="d-flex flex-wrap align-items-center gap-2 small text-muted">
-              <span data-testid="list-counters">
-                {list.pending.length} por comprar · {list.purchased.length} comprados
-              </span>
-              {overdueCount > 0 && (
-                <span className="badge text-bg-danger" data-testid="list-overdue-summary">
-                  {overdueCount} vencido(s)
+      <div className="mb-4">
+        <Link
+          to="/"
+          className="btn btn-link text-secondary px-0 mb-2 d-inline-flex"
+          style={{ minHeight: '2rem' }}
+          data-testid="back-to-lists"
+        >
+          <i className="bi bi-arrow-left" aria-hidden="true" />
+          {t('layout.lists')}
+        </Link>
+
+        <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div
+            className="d-flex align-items-center gap-3 min-w-0"
+            style={{ ['--lc-list' as string]: list.color }}
+          >
+            <span className="lc-list-tile lc-list-tile--lg" aria-hidden="true">
+              {list.icon}
+            </span>
+            <div className="min-w-0">
+              <h1 className="lc-page-title text-truncate mb-1" data-testid="list-title">
+                {list.name}
+              </h1>
+              <div className="d-flex flex-wrap align-items-center gap-2 text-muted">
+                <span data-testid="list-counters">
+                  {t('detail.counters', { pending: list.pending.length, purchased: list.purchased.length })}
                 </span>
-              )}
-              {list.isShared && (
-                <span className="badge text-bg-light border" data-testid="list-members-badge">
-                  <i className="bi bi-people me-1" aria-hidden="true" />
-                  {list.memberCount} integrantes
-                </span>
-              )}
+                {overdueCount > 0 && (
+                  <span className="lc-chip lc-chip--late" data-testid="list-overdue-summary">
+                    {t('lists.overdue', { count: overdueCount })}
+                  </span>
+                )}
+                {list.isShared && (
+                  <span className="lc-chip" data-testid="list-members-badge">
+                    <i className="bi bi-people" aria-hidden="true" />
+                    {t('detail.members', { count: list.memberCount })}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="d-flex align-items-center gap-2">
-          <div className="form-check form-switch mb-0" title="Avisarme cuando alguien mas modifique la lista">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id="notify-switch"
-              checked={list.notifyOnChange}
-              onChange={toggleNotifications}
-              disabled={busy}
-              data-testid="notify-switch"
-            />
-            <label className="form-check-label small" htmlFor="notify-switch">
-              Avisarme
-            </label>
-          </div>
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <div className="form-check form-switch mb-0 me-2" title={t('detail.notifyTitle')}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="notify-switch"
+                checked={list.notifyOnChange}
+                onChange={toggleNotifications}
+                disabled={busy}
+                data-testid="notify-switch"
+              />
+              <label className="form-check-label small fw-semibold" htmlFor="notify-switch">
+                {t('detail.notify')}
+              </label>
+            </div>
 
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => setShowShare(true)}
-            data-testid="share-button"
-          >
-            <i className="bi bi-person-plus me-1" aria-hidden="true" />
-            Compartir
-          </button>
-
-          {list.ownerId === user.id && (
             <button
-              className="btn btn-outline-danger"
-              onClick={deleteList}
-              disabled={busy}
-              data-testid="delete-list-button"
-              aria-label="Eliminar la lista"
+              className="btn btn-outline-primary"
+              onClick={() => setShowShare(true)}
+              data-testid="share-button"
             >
-              <i className="bi bi-trash" aria-hidden="true" />
+              <i className="bi bi-person-plus" aria-hidden="true" />
+              {t('detail.share')}
             </button>
-          )}
+
+            {list.ownerId === user.id && (
+              <button
+                className="btn btn-outline-danger px-3"
+                onClick={deleteList}
+                disabled={busy}
+                data-testid="delete-list-button"
+                aria-label={t('detail.deleteList')}
+                title={t('detail.deleteList')}
+              >
+                <i className="bi bi-trash" aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -243,22 +258,20 @@ export function ListDetailPage() {
       <AddItemForm listId={list.id} disabled={busy} onError={(message) => notify(message, false)} />
 
       {/* ── Pendientes ─────────────────────────────────────────────── */}
-      <section className="mb-4" data-testid="pending-section">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="lc-divider-label mb-0">Por comprar ({list.pending.length})</h2>
+      <section className="mb-5" data-testid="pending-section">
+        <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+          <h2 className="lc-section-title">{t('detail.pendingHeading', { count: list.pending.length })}</h2>
         </div>
 
         {list.pending.length === 0 ? (
-          <div className="card border-0 shadow-sm">
-            <EmptyState
-              icon="bi-check2-circle"
-              title="Todo comprado"
-              description="No queda nada pendiente en esta lista."
-              testId="pending-empty"
-            />
-          </div>
+          <EmptyState
+            icon="bi-check2-circle"
+            title={t('detail.allDoneTitle')}
+            description={t('detail.allDoneText')}
+            testId="pending-empty"
+          />
         ) : (
-          <ul className="list-unstyled mb-0" data-testid="pending-list">
+          <ul className="lc-items" data-testid="pending-list">
             {list.pending.map((item) => (
               <PendingItem
                 key={item.id}
@@ -276,18 +289,18 @@ export function ListDetailPage() {
       {/* ── Comprados ──────────────────────────────────────────────── */}
       {list.purchased.length > 0 && (
         <section data-testid="purchased-section">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <h2 className="lc-divider-label mb-0">Comprados ({list.purchased.length})</h2>
+          <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+            <h2 className="lc-section-title">{t('detail.purchasedHeading', { count: list.purchased.length })}</h2>
             <button
               className="btn btn-sm btn-link text-secondary"
               onClick={clearPurchased}
               disabled={busy}
               data-testid="clear-purchased"
             >
-              Vaciar
+              {t('detail.clear')}
             </button>
           </div>
-          <ul className="list-unstyled mb-0" data-testid="purchased-list">
+          <ul className="lc-items" data-testid="purchased-list">
             {list.purchased.map((item) => (
               <PurchasedItem
                 key={item.id}

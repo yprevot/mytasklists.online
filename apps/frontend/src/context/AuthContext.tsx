@@ -7,11 +7,13 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { onUnauthorized, refreshSession, tokenStore } from '../api/client';
-import { authApi } from '../api/endpoints';
+import { authApi, usersApi } from '../api/endpoints';
+import { currentLanguage } from '../i18n';
 import { isMfaChallenge, type AuthProviders, type AuthResponse, type User } from '../types';
 
-/** Resultado del primer paso del login: sesion iniciada o reto de 2FA pendiente */
+/** Resultado del primer paso del login: sesión iniciada o reto de 2FA pendiente */
 export type LoginStep = { status: 'done' } | { status: 'mfa'; mfaToken: string };
 
 interface AuthContextValue {
@@ -28,9 +30,9 @@ interface AuthContextValue {
     password: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
-  /** Recupera la sesion desde la cookie (vuelta de Google/Apple o recarga) */
+  /** Recupera la sesión desde la cookie (vuelta de Google/Apple o recarga) */
   restoreSession: () => Promise<boolean>;
-  /** Adopta un par nuevo emitido por el backend (p. ej. tras cambiar la contrasena) */
+  /** Adopta un par nuevo emitido por el backend (p. ej. tras cambiar la contraseña) */
   adoptSession: (result: AuthResponse) => void;
   refreshUser: () => Promise<void>;
   setUser: (user: User) => void;
@@ -55,6 +57,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => onUnauthorized(clearSession), [clearSession]);
+
+  // El backend escribe correos y avisos en `user.locale`: se iguala al idioma de la interfaz
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    const language = currentLanguage();
+    if (!user || user.locale === language) return;
+    usersApi
+      .updateProfile({ locale: language })
+      .then((updated) => setUserState((current) => (current ? { ...current, locale: updated.locale } : current)))
+      .catch(() => undefined);
+  }, [user, i18n.language]);
 
   useEffect(() => {
     authApi
@@ -128,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } catch {
-      /* la sesion se limpia igual aunque el backend no responda */
+      /* la sesión se limpia igual aunque el backend no responda */
     }
     clearSession();
   }, [clearSession]);

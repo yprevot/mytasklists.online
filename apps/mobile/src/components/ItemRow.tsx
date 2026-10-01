@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Badge } from './ui';
-import { colors, radius, spacing } from '../theme';
+import { colors, spacing } from '../theme';
 import type { Item } from '../types';
 
 interface Props {
@@ -9,35 +10,41 @@ interface Props {
   onPurchase: (item: Item) => void;
   onLongPress?: (item: Item) => void;
   disabled?: boolean;
+  /** Primera fila de la hoja: sin filete arriba */
+  first?: boolean;
 }
 
 /**
- * Producto pendiente. El borde izquierdo cambia de color segun su estado:
- * gris (una sola vez), azul (recurrente al dia) y rojo (recurrente vencido).
+ * Producto pendiente. El estado se lee en el aro del check y en la etiqueta:
+ * gris (una sola vez), etiqueta amarilla (recurrente al día) y rojo (vencido).
  */
-export function ItemRow({ item, onPurchase, onLongPress, disabled }: Props) {
-  const borderColor = item.isOverdue
-    ? colors.danger
-    : item.isRecurring
-      ? colors.accent
-      : colors.line;
+export function ItemRow({ item, onPurchase, onLongPress, disabled, first }: Props) {
+  const { t } = useTranslation();
 
   return (
     <Pressable
       testID="pending-item"
-      accessibilityLabel={`Marcar ${item.name} como comprado`}
+      accessibilityLabel={t('item.markPurchased', { name: item.name })}
       onPress={() => !disabled && onPurchase(item)}
       onLongPress={() => onLongPress?.(item)}
-      style={[
+      style={({ pressed }) => [
         styles.row,
-        { borderLeftColor: borderColor },
+        !first && styles.divided,
         item.isOverdue && { backgroundColor: colors.dangerSoft },
+        pressed && { backgroundColor: item.isOverdue ? '#fbe3dd' : '#f8faf7' },
       ]}
     >
-      <View style={styles.checkbox} testID="item-checkbox" />
+      <View
+        style={[styles.checkbox, item.isOverdue && { borderColor: colors.danger }]}
+        testID="item-checkbox"
+      />
 
       <View style={{ flex: 1 }}>
-        <Text style={styles.name} testID="item-name" numberOfLines={1}>
+        <Text
+          style={[styles.name, item.isOverdue && { color: colors.dangerInk }]}
+          testID="item-name"
+          numberOfLines={1}
+        >
           {item.name}
         </Text>
         <View style={styles.metaRow}>
@@ -47,14 +54,14 @@ export function ItemRow({ item, onPurchase, onLongPress, disabled }: Props) {
           {item.isRecurring && (
             <Badge
               testID="item-recurrence-badge"
-              tone={item.isOverdue ? 'danger' : 'info'}
-              text={`cada ${item.recurrenceDays} d`}
+              tone={item.isOverdue ? 'muted' : 'info'}
+              text={t('item.every', { count: item.recurrenceDays ?? 0 })}
             />
           )}
           {item.isOverdue ? (
-            <Badge testID="item-overdue-badge" tone="danger" text={`vencido ${item.daysOverdue} d`} />
+            <Badge testID="item-overdue-badge" tone="danger" text={t('item.overdue', { count: item.daysOverdue })} />
           ) : item.isRecurring && item.daysUntilDue !== null ? (
-            <Text style={styles.meta}>vence en {item.daysUntilDue} d</Text>
+            <Text style={styles.meta}>{t('item.dueIn', { count: item.daysUntilDue })}</Text>
           ) : null}
         </View>
       </View>
@@ -67,23 +74,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderLeftWidth: 4,
-    borderRadius: radius.md,
+    minHeight: 64,
+    backgroundColor: colors.surface,
     paddingVertical: 12,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
+  divided: { borderTopWidth: 1, borderTopColor: colors.line },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
-    borderColor: colors.muted,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
   },
-  name: { fontSize: 15, fontWeight: '600', color: colors.ink },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 3, flexWrap: 'wrap' },
-  meta: { fontSize: 12, color: colors.inkSoft },
+  name: { fontSize: 16, fontWeight: '600', color: colors.ink, letterSpacing: -0.15 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 4, flexWrap: 'wrap' },
+  meta: { fontSize: 13, color: colors.inkSoft },
 });

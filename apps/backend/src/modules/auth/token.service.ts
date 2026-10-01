@@ -16,7 +16,7 @@ export interface TokenPair {
 
 /**
  * Emite y revoca los pares access/refresh.
- * Los refresh tokens vigentes viven en Redis, asi que cerrar sesion los invalida
+ * Los refresh tokens vigentes viven en Redis, así que cerrar sesión los invalida
  * de inmediato en todas las instancias del backend.
  */
 @Injectable()
@@ -74,13 +74,13 @@ export class TokenService {
         secret: this.config.get<string>('jwt.refreshSecret'),
       });
     } catch {
-      throw new UnauthorizedException('El refresh token no es valido o ya expiro');
+      throw new UnauthorizedException('El refresh token no es válido o ya expiró');
     }
     if (payload.type !== 'refresh' || !payload.jti) {
-      throw new UnauthorizedException('Tipo de token invalido');
+      throw new UnauthorizedException('Tipo de token inválido');
     }
     const stored = await this.cache.get(CacheService.refreshKey(payload.sub, payload.jti));
-    if (!stored) throw new UnauthorizedException('La sesion ya fue cerrada');
+    if (!stored) throw new UnauthorizedException('La sesión ya fue cerrada');
     return payload;
   }
 
@@ -89,7 +89,7 @@ export class TokenService {
   }
 
   /**
-   * Cierra todas las sesiones: borra los refresh tokens y marca como invalidos
+   * Cierra todas las sesiones: borra los refresh tokens y marca como inválidos
    * los access tokens ya emitidos (el JwtAuthGuard los rechaza desde ya).
    */
   async revokeAll(userId: string): Promise<void> {

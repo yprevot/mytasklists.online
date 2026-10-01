@@ -122,7 +122,7 @@ export class AdminService {
     });
   }
 
-  /** Serie diaria de altas y compras para las graficas del dashboard */
+  /** Serie diaria de altas y compras para las gráficas del dashboard */
   async timeseries(days = 14) {
     const since = new Date(Date.now() - days * 86400000);
 
@@ -248,7 +248,7 @@ export class AdminService {
     };
   }
 
-  /** Cuenta filas por lista (integrantes o productos) de una pagina de listas */
+  /** Cuenta filas por lista (integrantes o productos) de una página de listas */
   private async countByList(
     repo: Repository<ListMember> | Repository<ListItem>,
     listIds: string[],

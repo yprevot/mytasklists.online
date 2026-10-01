@@ -44,7 +44,7 @@ export class ListMember {
 
   /**
    * Cada integrante decide si quiere ser avisado cuando otra persona
-   * modifica la lista (pop-up en web, push en movil).
+   * modifica la lista (pop-up en web, push en móvil).
    */
   @Column({ name: 'notify_on_change', default: true })
   notifyOnChange: boolean;

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Item } from '../types';
 
 interface Props {
@@ -18,9 +19,10 @@ const formatQuantity = (item: Item): string =>
  * El color del borde indica su estado:
  *  · gris  → producto de una sola vez
  *  · azul  → recurrente dentro de su plazo
- *  · rojo  → recurrente vencido (paso su plazo sin comprarse)
+ *  · rojo  → recurrente vencido (pasó su plazo sin comprarse)
  */
 export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClock }: Props) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
 
   const stateClass = item.isOverdue
@@ -38,7 +40,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
 
   return (
     <li
-      className={`lc-item d-flex align-items-center gap-3 px-3 py-2 mb-2 ${stateClass}`}
+      className={`lc-item ${stateClass}`}
       data-testid="pending-item"
       data-item-id={item.id}
       data-item-name={item.name}
@@ -47,11 +49,11 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
     >
       <input
         type="checkbox"
-        className="form-check-input lc-check m-0"
+        className="lc-check"
         checked={false}
         onChange={handlePurchase}
         disabled={disabled || busy}
-        aria-label={`Marcar ${item.name} como comprado`}
+        aria-label={t('item.markPurchased', { name: item.name })}
         data-testid="item-checkbox"
       />
 
@@ -60,58 +62,58 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
           <span className="lc-item-name text-truncate" data-testid="item-name">
             {item.name}
           </span>
-          <span className="badge text-bg-light border" data-testid="item-quantity">
+          <span className="lc-chip" data-testid="item-quantity">
             {formatQuantity(item)}
           </span>
 
           {item.isRecurring && (
             <span
-              className={`badge ${item.isOverdue ? 'text-bg-danger' : 'text-bg-info'}`}
+              className={`lc-chip ${item.isOverdue ? 'lc-chip--late-soft' : 'lc-chip--tag'}`}
               data-testid="item-recurrence-badge"
             >
               <i className="bi bi-arrow-repeat me-1" aria-hidden="true" />
-              cada {item.recurrenceDays} d
+              {t('item.every', { count: item.recurrenceDays ?? 0 })}
             </span>
           )}
 
           {item.isOverdue && (
-            <span className="badge text-bg-warning" data-testid="item-overdue-badge">
+            <span className="lc-chip lc-chip--late" data-testid="item-overdue-badge">
               <i className="bi bi-exclamation-triangle me-1" aria-hidden="true" />
-              vencido hace {item.daysOverdue} d
+              {t('item.overdue', { count: item.daysOverdue })}
             </span>
           )}
 
           {item.isRecurring && !item.isOverdue && item.daysUntilDue !== null && (
-            <span className="text-muted small" data-testid="item-due-hint">
-              vence en {item.daysUntilDue} d
+            <span className="lc-hint" data-testid="item-due-hint">
+              {t('item.dueIn', { count: item.daysUntilDue })}
             </span>
           )}
 
           {item.cycleCount > 0 && (
-            <span className="text-muted small" data-testid="item-cycle">
-              · ciclo {item.cycleCount + 1}
+            <span className="lc-hint" data-testid="item-cycle">
+              {t('item.cycle', { count: item.cycleCount + 1 })}
             </span>
           )}
         </div>
-        {item.note && <div className="text-muted small">{item.note}</div>}
+        {item.note && <div className="lc-hint mt-1">{item.note}</div>}
       </div>
 
-      <div className="d-flex align-items-center gap-1 lc-item-actions">
+      <div className="d-flex align-items-center gap-1 flex-shrink-0">
         {item.isRecurring && (
           <div className="dropdown">
             <button
-              className="btn btn-sm btn-link text-secondary"
+              className="lc-icon-btn"
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
-              aria-label={`Opciones de recurrencia de ${item.name}`}
+              aria-label={t('item.clockMenu', { name: item.name })}
               data-testid="item-clock-menu"
             >
               <i className="bi bi-clock-history" aria-hidden="true" />
             </button>
             <ul className="dropdown-menu dropdown-menu-end">
               <li>
-                <h6 className="dropdown-header">Simular paso del tiempo</h6>
+                <h6 className="dropdown-header">{t('item.simulate')}</h6>
               </li>
               {[1, 7, 14, 30].map((days) => (
                 <li key={days}>
@@ -121,7 +123,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
                     onClick={() => onAdvanceClock(item, days)}
                     data-testid={`advance-${days}`}
                   >
-                    Adelantar {days} dia(s)
+                    {t('item.advance', { count: days })}
                   </button>
                 </li>
               ))}
@@ -130,11 +132,11 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
         )}
 
         <button
-          className="btn btn-sm btn-link text-danger lc-close-btn"
+          className="lc-icon-btn lc-icon-btn--danger"
           type="button"
           onClick={() => onDelete(item)}
           disabled={disabled}
-          aria-label={`Eliminar ${item.name}`}
+          aria-label={t('item.delete', { name: item.name })}
           data-testid="item-delete"
         >
           <i className="bi bi-trash" aria-hidden="true" />

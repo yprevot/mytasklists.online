@@ -11,6 +11,8 @@ import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { RT } from '../realtime/realtime.events';
 import { PushService } from './push.service';
 import { toNotificationView } from './notification.mapper';
+import { NOTIFICATION_TEXTS } from './notification.texts';
+import { DEFAULT_LOCALE, type Locale } from '../../i18n/locale';
 
 export interface NotifyInput {
   listId: string;
@@ -19,12 +21,12 @@ export interface NotifyInput {
   actorId?: string | null;
   actorName?: string;
   type: NotificationType;
-  title: string;
-  body: string;
+  /** Título y cuerpo en el idioma de cada destinatario */
+  render: (texts: (typeof NOTIFICATION_TEXTS)[Locale]) => { title: string; body: string };
   payload?: Record<string, unknown>;
   /** Si se indica, esa persona no recibe el aviso (normalmente quien hizo el cambio) */
   excludeUserId?: string | null;
-  /** Fuerza el envio a un conjunto concreto de usuarios */
+  /** Fuerza el envío a un conjunto concreto de usuarios */
   onlyUserIds?: string[];
 }
 
@@ -32,10 +34,10 @@ export interface NotifyInput {
  * Reparte los avisos entre los integrantes de una lista compartida.
  *
  *  - En la web se entregan por WebSocket y el cliente los muestra como pop-up.
- *  - En la app movil se entregan como notificacion push de iOS/Android.
+ *  - En la app móvil se entregan como notificación push de iOS/Android.
  *
  * Cada integrante decide si quiere recibirlos (`list_members.notify_on_change`),
- * y ademas existe un interruptor global por usuario (`users.notifications_enabled`).
+ * y además existe un interruptor global por usuario (`users.notifications_enabled`).
  */
 @Injectable()
 export class NotificationsService {
@@ -67,15 +69,17 @@ export class NotificationsService {
     const recipients = await this.resolveRecipients(input);
     if (!recipients.length) return;
 
+    const localeOf = (member: ListMember): Locale => member.user?.locale ?? DEFAULT_LOCALE;
+    const texts = (locale: Locale) => input.render(NOTIFICATION_TEXTS[locale]);
+
     const rows = recipients.map((member) =>
       this.repo.create({
+        ...texts(localeOf(member)),
         userId: member.userId,
         listId: input.listId,
         itemId: input.itemId ?? null,
         actorId: input.actorId ?? null,
         type: input.type,
-        title: input.title,
-        body: input.body,
         channel: NotificationChannel.BOTH,
         payload: {
           listName: input.listName,
@@ -91,15 +95,16 @@ export class NotificationsService {
       this.realtime.emitToUser(notification.userId, RT.NOTIFICATION, toNotificationView(notification));
     }
 
-    // Push en iOS/Android
-    await this.push.sendToUsers(
-      recipients.map((member) => member.userId),
-      {
-        title: input.title,
-        body: input.body,
-        data: { listId: input.listId, itemId: input.itemId ?? null, type: input.type },
-      },
-    );
+    // Push en iOS/Android: un envío por idioma
+    for (const locale of new Set(recipients.map(localeOf))) {
+      await this.push.sendToUsers(
+        recipients.filter((member) => localeOf(member) === locale).map((member) => member.userId),
+        {
+          ...texts(locale),
+          data: { listId: input.listId, itemId: input.itemId ?? null, type: input.type },
+        },
+      );
+    }
   }
 
   async listForUser(userId: string, onlyUnread = false, limit = 50): Promise<Notification[]> {

@@ -13,7 +13,7 @@ import { tokenFromEmail, waitForEmail } from '../../utils/mailpit';
 import { totp } from '../../utils/totp';
 
 test.describe('Servicio backend · seguridad de la cuenta', () => {
-  test('CP-SEC-001 · el registro envia un correo de verificacion y el enlace confirma la cuenta', async ({
+  test('CP-SEC-001 · el registro envía un correo de verificación y el enlace confirma la cuenta', async ({
     request,
   }) => {
     const user = await registerUser(request);
@@ -41,7 +41,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     expect(resend.status()).toBe(400);
   });
 
-  test('CP-SEC-002 · recuperar la contrasena cambia la clave y cierra todas las sesiones', async ({
+  test('CP-SEC-002 · recuperar la contraseña cambia la clave y cierra todas las sesiones', async ({
     request,
   }) => {
     const user = await registerUser(request);
@@ -49,7 +49,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     const forgot = await request.post(`${API_URL}/auth/forgot-password`, { data: { email: user.email } });
     expect(forgot.status()).toBe(200);
 
-    const email = await waitForEmail(request, user.email, 'Restablece tu contrasena');
+    const email = await waitForEmail(request, user.email, 'Restablece tu contraseña');
     const token = tokenFromEmail(email, '/app/reset-password');
 
     const reset = await request.post(`${API_URL}/auth/reset-password`, {
@@ -82,10 +82,10 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     });
     expect(again.status()).toBe(400);
 
-    await waitForEmail(request, user.email, 'Tu contrasena de ListaDeCompras cambio');
+    await waitForEmail(request, user.email, 'Tu contraseña de ListaDeCompras cambió');
   });
 
-  test('CP-SEC-003 · recuperar contrasena no revela si el correo existe', async ({ request }) => {
+  test('CP-SEC-003 · recuperar contraseña no revela si el correo existe', async ({ request }) => {
     const user = await registerUser(request);
 
     const existing = await request.post(`${API_URL}/auth/forgot-password`, { data: { email: user.email } });
@@ -98,7 +98,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     expect(await missing.json()).toEqual(await existing.json());
   });
 
-  test('CP-SEC-004 · el login no revela si la cuenta existe ni con que proveedor se creo', async ({
+  test('CP-SEC-004 · el login no revela si la cuenta existe ni con qué proveedor se creó', async ({
     request,
   }) => {
     const user = await registerUser(request);
@@ -131,7 +131,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     expect(blocked.status()).toBe(429);
   });
 
-  test('CP-SEC-006 · cambiar la contrasena revoca los tokens anteriores y devuelve un par nuevo', async ({
+  test('CP-SEC-006 · cambiar la contraseña revoca los tokens anteriores y devuelve un par nuevo', async ({
     request,
   }) => {
     const user = await registerUser(request);
@@ -203,7 +203,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     expect(cookie).toMatch(/SameSite=Strict/i);
     expect(cookie).toMatch(/Path=\/api\/auth/i);
 
-    // La renovacion usa la cookie (el contexto la reenvia sola)
+    // La renovación usa la cookie (el contexto la reenvía sola)
     const refresh = await context.post(`${API_URL}/auth/refresh`, {
       headers: { 'X-Auth-Client': 'web' },
       data: {},
@@ -213,7 +213,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     await context.dispose();
   });
 
-  test('CP-SEC-009 · verificacion en dos pasos: alta, login con codigo, recuperacion y baja', async ({
+  test('CP-SEC-009 · verificación en dos pasos: alta, login con código, recuperación y baja', async ({
     request,
   }) => {
     const user = await registerUser(request);
@@ -250,7 +250,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     });
     expect(badCode.status()).toBe(401);
 
-    // Un codigo de recuperacion sirve una sola vez
+    // Un código de recuperación sirve una sola vez
     const recovered = await request.post(`${API_URL}/auth/mfa/verify`, {
       data: { mfaToken: challenge.mfaToken, code: recoveryCodes[0] },
     });
@@ -266,7 +266,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     });
     expect(reused.status()).toBe(401);
 
-    // Desactivar exige un codigo valido
+    // Desactivar exige un código válido
     const disable = await request.post(`${API_URL}/auth/mfa/disable`, {
       headers: auth(session.accessToken),
       data: { code: recoveryCodes[1] },
@@ -278,7 +278,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     expect((await plainLogin.json()).accessToken).toBeTruthy();
   });
 
-  test('CP-SEC-010 · la busqueda de personas solo acepta el correo exacto y no expone el WhatsApp', async ({
+  test('CP-SEC-010 · la búsqueda de personas solo acepta el correo exacto y no expone el WhatsApp', async ({
     request,
   }) => {
     const user = await registerUser(request);
@@ -298,7 +298,7 @@ test.describe('Servicio backend · seguridad de la cuenta', () => {
     expect(results[0]).not.toHaveProperty('whatsapp');
   });
 
-  test('CP-SEC-011 · la API y las paginas envian cabeceras de seguridad', async ({ request }) => {
+  test('CP-SEC-011 · la API y las páginas envían cabeceras de seguridad', async ({ request }) => {
     const api = await request.get(`${API_URL}/health`);
     expect(api.headers()['x-content-type-options']).toBe('nosniff');
     expect(api.headers()['x-powered-by']).toBeUndefined();

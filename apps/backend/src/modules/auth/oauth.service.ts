@@ -11,7 +11,7 @@ export interface SocialProfile {
   fullName: string;
   avatarUrl?: string | null;
   emailVerified: boolean;
-  /** El correo lo generamos nosotros porque el proveedor no envio ninguno */
+  /** El correo lo generamos nosotros porque el proveedor no envió ninguno */
   syntheticEmail?: boolean;
 }
 
@@ -38,14 +38,14 @@ const sha256Base64Url = (value: string): string =>
   createHash('sha256').update(value).digest('base64url');
 
 /**
- * Inicio de sesion con Google y con Apple.
+ * Inicio de sesión con Google y con Apple.
  *
  * Se implementa directamente contra los endpoints OIDC de cada proveedor
- * (sin passport) para poder usar el mismo codigo desde la web (flujo con
- * redireccion) y desde la app movil (flujo con id_token nativo).
+ * (sin passport) para poder usar el mismo código desde la web (flujo con
+ * redirección) y desde la app móvil (flujo con id_token nativo).
  *
  * Flujo web: `state` de un solo uso (anti-CSRF), `nonce` ligado al id_token
- * (anti-repeticion) y PKCE S256 en Google. Al terminar siempre se vuelve a la
+ * (anti-repetición) y PKCE S256 en Google. Al terminar siempre se vuelve a la
  * app web propia: no se acepta ninguna URL de retorno del cliente.
  */
 @Injectable()
@@ -81,7 +81,7 @@ export class OAuthService {
   private async consumeState(state: string, provider: OAuthState['provider']): Promise<OAuthState> {
     const stored = await this.cache.take<OAuthState>(CacheService.oauthStateKey(state));
     if (!stored || stored.provider !== provider) {
-      throw new BadRequestException('El parametro state no es valido o ya expiro');
+      throw new BadRequestException('El parámetro state no es válido o ya expiró');
     }
     return stored;
   }
@@ -90,7 +90,7 @@ export class OAuthService {
   async buildGoogleAuthUrl(): Promise<string> {
     if (!this.googleEnabled) {
       throw new NotImplementedException(
-        'El inicio de sesion con Google no esta configurado (define GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET)',
+        'El inicio de sesión con Google no está configurado (define GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET)',
       );
     }
     const nonce = randomToken();
@@ -128,11 +128,11 @@ export class OAuthService {
       body,
     });
     if (!response.ok) {
-      this.logger.error(`Google rechazo el intercambio de codigo: ${await response.text()}`);
-      throw new BadRequestException('No fue posible completar el inicio de sesion con Google');
+      this.logger.error(`Google rechazó el intercambio de código: ${await response.text()}`);
+      throw new BadRequestException('No fue posible completar el inicio de sesión con Google');
     }
     const tokens = (await response.json()) as { id_token?: string };
-    if (!tokens.id_token) throw new BadRequestException('Google no devolvio un id_token');
+    if (!tokens.id_token) throw new BadRequestException('Google no devolvió un id_token');
 
     return this.verifyGoogleIdToken(tokens.id_token, stored.nonce);
   }
@@ -145,7 +145,7 @@ export class OAuthService {
   async verifyGoogleIdToken(idToken: string, expectedNonce?: string): Promise<SocialProfile> {
     const audiences = this.config.get<string[]>('google.allowedAudiences', []);
     if (!audiences.length) {
-      throw new NotImplementedException('El inicio de sesion con Google no esta configurado');
+      throw new NotImplementedException('El inicio de sesión con Google no está configurado');
     }
     try {
       const { payload } = await jwtVerify(idToken, this.googleJwks, {
@@ -153,10 +153,10 @@ export class OAuthService {
         audience: audiences,
       });
       if (expectedNonce !== undefined && payload.nonce !== expectedNonce) {
-        throw new BadRequestException('El token de Google no corresponde a este inicio de sesion');
+        throw new BadRequestException('El token de Google no corresponde a este inicio de sesión');
       }
       const email = payload.email as string | undefined;
-      if (!email) throw new BadRequestException('La cuenta de Google no expone un correo electronico');
+      if (!email) throw new BadRequestException('La cuenta de Google no expone un correo electrónico');
       return {
         provider: 'google',
         providerId: String(payload.sub),
@@ -167,8 +167,8 @@ export class OAuthService {
       };
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof NotImplementedException) throw error;
-      this.logger.warn(`id_token de Google invalido: ${(error as Error).message}`);
-      throw new BadRequestException('El token de Google no es valido');
+      this.logger.warn(`id_token de Google inválido: ${(error as Error).message}`);
+      throw new BadRequestException('El token de Google no es válido');
     }
   }
 
@@ -176,7 +176,7 @@ export class OAuthService {
   async buildAppleAuthUrl(): Promise<string> {
     if (!this.appleEnabled) {
       throw new NotImplementedException(
-        'Sign in with Apple no esta configurado (define APPLE_CLIENT_ID, APPLE_TEAM_ID y APPLE_KEY_ID)',
+        'Sign in with Apple no está configurado (define APPLE_CLIENT_ID, APPLE_TEAM_ID y APPLE_KEY_ID)',
       );
     }
     const nonce = randomToken();
@@ -231,14 +231,14 @@ export class OAuthService {
         body,
       });
       if (!response.ok) {
-        this.logger.error(`Apple rechazo el intercambio de codigo: ${await response.text()}`);
-        throw new BadRequestException('No fue posible completar el inicio de sesion con Apple');
+        this.logger.error(`Apple rechazó el intercambio de código: ${await response.text()}`);
+        throw new BadRequestException('No fue posible completar el inicio de sesión con Apple');
       }
       identityToken = ((await response.json()) as { id_token?: string }).id_token;
     }
-    if (!identityToken) throw new BadRequestException('Apple no devolvio un identityToken');
+    if (!identityToken) throw new BadRequestException('Apple no devolvió un identityToken');
 
-    // Apple solo manda el nombre en el PRIMER inicio de sesion, dentro del campo `user`
+    // Apple solo manda el nombre en el PRIMER inicio de sesión, dentro del campo `user`
     let fullNameHint: string | undefined;
     if (input.user) {
       try {
@@ -262,14 +262,14 @@ export class OAuthService {
     expectedNonce?: string,
   ): Promise<SocialProfile> {
     const audiences = this.config.get<string[]>('apple.allowedAudiences', []);
-    if (!audiences.length) throw new NotImplementedException('Sign in with Apple no esta configurado');
+    if (!audiences.length) throw new NotImplementedException('Sign in with Apple no está configurado');
     try {
       const { payload } = await jwtVerify(identityToken, this.appleJwks, {
         issuer: APPLE_ISSUER,
         audience: audiences,
       });
       if (expectedNonce !== undefined && payload.nonce !== expectedNonce) {
-        throw new BadRequestException('El token de Apple no corresponde a este inicio de sesion');
+        throw new BadRequestException('El token de Apple no corresponde a este inicio de sesión');
       }
       const realEmail = payload.email as string | undefined;
       const email = realEmail ?? `${payload.sub}@privaterelay.appleid.com`;
@@ -284,8 +284,8 @@ export class OAuthService {
       };
     } catch (error) {
       if (error instanceof BadRequestException || error instanceof NotImplementedException) throw error;
-      this.logger.warn(`identityToken de Apple invalido: ${(error as Error).message}`);
-      throw new BadRequestException('El token de Apple no es valido');
+      this.logger.warn(`identityToken de Apple inválido: ${(error as Error).message}`);
+      throw new BadRequestException('El token de Apple no es válido');
     }
   }
 }

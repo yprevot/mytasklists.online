@@ -1,25 +1,30 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LOCALE_TAGS, currentLanguage } from '../i18n';
+import type { es } from '../i18n/es';
 import { adminApi } from '../api/endpoints';
 import type { ActivityRow } from '../types';
 
-const ACTION_LABEL: Record<string, { text: string; variant: string }> = {
-  'list.created': { text: 'Lista creada', variant: 'primary' },
-  'list.updated': { text: 'Lista editada', variant: 'secondary' },
-  'list.deleted': { text: 'Lista eliminada', variant: 'danger' },
-  'list.shared': { text: 'Lista compartida', variant: 'info' },
-  'list.left': { text: 'Salio de la lista', variant: 'secondary' },
-  'list.member_removed': { text: 'Integrante retirado', variant: 'warning' },
-  'list.cleared_purchased': { text: 'Comprados vaciados', variant: 'secondary' },
-  'item.created': { text: 'Producto agregado', variant: 'primary' },
-  'item.updated': { text: 'Producto editado', variant: 'secondary' },
-  'item.purchased': { text: 'Producto comprado', variant: 'success' },
-  'item.restored': { text: 'Compra deshecha', variant: 'warning' },
-  'item.archived': { text: 'Producto cerrado', variant: 'secondary' },
-  'item.removed': { text: 'Producto eliminado', variant: 'danger' },
-  'item.reactivated': { text: 'Recurrencia reactivada', variant: 'info' },
+/** Etiqueta (clave del catálogo) y color de cada acción de la bitácora */
+const ACTIONS: Record<string, { key: keyof typeof es.activity.actions; variant: string }> = {
+  'list.created': { key: 'list_created', variant: 'primary' },
+  'list.updated': { key: 'list_updated', variant: 'secondary' },
+  'list.deleted': { key: 'list_deleted', variant: 'danger' },
+  'list.shared': { key: 'list_shared', variant: 'info' },
+  'list.left': { key: 'list_left', variant: 'secondary' },
+  'list.member_removed': { key: 'list_member_removed', variant: 'warning' },
+  'list.cleared_purchased': { key: 'list_cleared_purchased', variant: 'secondary' },
+  'item.created': { key: 'item_created', variant: 'primary' },
+  'item.updated': { key: 'item_updated', variant: 'secondary' },
+  'item.purchased': { key: 'item_purchased', variant: 'success' },
+  'item.restored': { key: 'item_restored', variant: 'warning' },
+  'item.archived': { key: 'item_archived', variant: 'secondary' },
+  'item.removed': { key: 'item_removed', variant: 'danger' },
+  'item.reactivated': { key: 'item_reactivated', variant: 'info' },
 };
 
 export function ActivityPage() {
+  const { t } = useTranslation();
   const [rows, setRows] = useState<ActivityRow[]>([]);
 
   useEffect(() => {
@@ -31,13 +36,17 @@ export function ActivityPage() {
 
   return (
     <div data-testid="activity-page">
-      <h1 className="h4 mb-3">Bitacora</h1>
+      <h1 className="lc-page-title mb-4">{t('activity.title')}</h1>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">
           <ul className="list-group list-group-flush" data-testid="activity-list">
             {rows.map((row) => {
-              const meta = ACTION_LABEL[row.action] ?? { text: row.action, variant: 'light' };
+              // Una acción nueva que el panel todavía no conoce se muestra tal cual
+              const action = ACTIONS[row.action];
+              const meta = action
+                ? { text: t(`activity.actions.${action.key}`), variant: action.variant }
+                : { text: row.action, variant: 'light' };
               return (
                 <li
                   key={row.id}
@@ -52,14 +61,14 @@ export function ActivityPage() {
                     {row.listName ? ` · ${row.listName}` : ''}
                   </span>
                   <span className="ms-auto text-muted small">
-                    {new Date(row.createdAt).toLocaleString('es-MX')}
+                    {new Date(row.createdAt).toLocaleString(LOCALE_TAGS[currentLanguage()])}
                   </span>
                 </li>
               );
             })}
             {rows.length === 0 && (
               <li className="list-group-item text-center text-muted py-4 px-0">
-                Todavia no hay actividad registrada
+                {t('activity.empty')}
               </li>
             )}
           </ul>

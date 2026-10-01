@@ -26,7 +26,7 @@ test.describe('Frontend web · mi cuenta', () => {
     await expect(page.getByTestId('profile-notifications')).not.toBeChecked();
   });
 
-  test('CP-WEB-032 · cambiar la contrasena desde la interfaz', async ({ page, request }) => {
+  test('CP-WEB-032 · cambiar la contraseña desde la interfaz', async ({ page, request }) => {
     const user = await registerUser(request);
     await useSession(page, user);
 
@@ -35,10 +35,10 @@ test.describe('Frontend web · mi cuenta', () => {
     await page.getByTestId('new-password').fill('ClaveNueva12345');
     await page.getByTestId('password-save').click();
 
-    await expect(page.getByTestId('toast-title')).toHaveText('Contrasena actualizada');
+    await expect(page.getByTestId('toast-title')).toHaveText('Contraseña actualizada');
   });
 
-  test('CP-WEB-033 · el indicador de conexion en vivo se enciende', async ({ page, request }) => {
+  test('CP-WEB-033 · el indicador de conexión en vivo se enciende', async ({ page, request }) => {
     const user = await registerUser(request);
     await useSession(page, user);
 

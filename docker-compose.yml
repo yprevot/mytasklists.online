@@ -3,7 +3,7 @@ name: listadecompras
 # ─────────────────────────────────────────────────────────────
 #  Arquitectura:
 #
-#    nginx (proxy)  ─┬─ /            → landing   (estatico)
+#    nginx (proxy)  ─┬─ /            → landing   (estático)
 #                    ├─ /app/        → frontend  (React SPA)
 #                    ├─ /dashboard/  → dashboard (React SPA)
 #                    ├─ /api/        → backend   (NestJS + Fastify)
@@ -11,9 +11,9 @@ name: listadecompras
 #
 #    backend ─── postgres (datos)
 #            ├── redis    (cache + pub/sub de Socket.IO + rate limiting)
-#            └── mailpit  (SMTP de desarrollo; en produccion, tu SMTP real)
+#            └── mailpit  (SMTP de desarrollo; en producción, tu SMTP real)
 #
-#  Este archivo es el entorno de DESARROLLO. Para produccion:
+#  Este archivo es el entorno de DESARROLLO. Para producción:
 #    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 # ─────────────────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ services:
       - postgres18-data:/var/lib/postgresql
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     ports:
-      # Solo accesible desde esta maquina (herramientas de BD locales)
+      # Solo accesible desde esta máquina (herramientas de BD locales)
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lista} -d ${POSTGRES_DB:-listadecompras}"]
@@ -74,9 +74,9 @@ services:
     logging: *default-logging
 
   # ───────────────────── Correo de desarrollo (Mailpit) ───────────────
-  # Captura todos los correos que envia el backend. Bandeja: http://localhost:8025
+  # Captura todos los correos que envía el backend. Bandeja: http://localhost:8025
   mailpit:
-    image: axllent/mailpit:v1.30.5
+    image: axllent/mailpit:v1.31.3
     container_name: lc-mailpit
     restart: unless-stopped
     environment:
@@ -125,11 +125,11 @@ services:
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-}
       ALLOW_TIME_TRAVEL: ${ALLOW_TIME_TRAVEL:-}
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
-      # Apagado por defecto: crea cuentas con contrasenas publicas (el .env de
+      # Apagado por defecto: crea cuentas con contraseñas públicas (el .env de
       # desarrollo lo enciende para las pruebas e2e)
       RUN_SEED: ${RUN_SEED:-false}
       RECURRENCE_CRON: ${RECURRENCE_CRON:-0 */5 * * * *}
-      # Rate limiting (vacio = valores por defecto segun NODE_ENV)
+      # Rate limiting (vacío = valores por defecto según NODE_ENV)
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
       RATE_LIMIT_GLOBAL: ${RATE_LIMIT_GLOBAL:-}
       RATE_LIMIT_AUTH: ${RATE_LIMIT_AUTH:-}
@@ -154,7 +154,7 @@ services:
       APPLE_CALLBACK_URL: ${APPLE_CALLBACK_URL:-http://localhost:8080/api/auth/apple/callback}
       APPLE_ALLOWED_AUDIENCES: ${APPLE_ALLOWED_AUDIENCES:-}
       EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
-      # App movil: por debajo de esta version la API responde 426 (docs/COMPATIBILIDAD.md)
+      # App móvil: por debajo de esta versión la API responde 426 (docs/COMPATIBILIDAD.md)
       MOBILE_MIN_VERSION: ${MOBILE_MIN_VERSION:-1.0.0}
       MOBILE_STORE_URL_IOS: ${MOBILE_STORE_URL_IOS:-}
       MOBILE_STORE_URL_ANDROID: ${MOBILE_STORE_URL_ANDROID:-}

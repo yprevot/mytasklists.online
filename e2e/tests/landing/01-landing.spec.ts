@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Landing · pagina publica de descargas', () => {
+test.describe('Landing · página pública de descargas', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
@@ -21,7 +21,7 @@ test.describe('Landing · pagina publica de descargas', () => {
     await expect(android).toHaveAttribute('href', /.+/);
   });
 
-  test('CP-LAND-002 · la seccion de descarga repite ambas tiendas', async ({ page }) => {
+  test('CP-LAND-002 · la sección de descarga repite ambas tiendas', async ({ page }) => {
     await page.getByTestId('nav-download').click();
     await expect(page.locator('#descargar')).toBeInViewport();
 
@@ -29,7 +29,7 @@ test.describe('Landing · pagina publica de descargas', () => {
     await expect(page.getByTestId('download-android-cta')).toContainText('Android');
   });
 
-  test('CP-LAND-003 · se puede saltar a la aplicacion web', async ({ page }) => {
+  test('CP-LAND-003 · se puede saltar a la aplicación web', async ({ page }) => {
     const link = page.getByTestId('open-web-app');
     await expect(link).toHaveAttribute('href', '/app/');
 
@@ -48,11 +48,11 @@ test.describe('Landing · pagina publica de descargas', () => {
 
     const comoFunciona = page.locator('#como-funciona');
     await expect(comoFunciona).toContainText('Pan de caja');
-    await expect(comoFunciona).toContainText('14 dias');
+    await expect(comoFunciona).toContainText('14 días');
     await expect(comoFunciona.locator('.step')).toHaveCount(4);
   });
 
-  test('CP-LAND-005 · la pagina se adapta al movil', async ({ page }) => {
+  test('CP-LAND-005 · la página se adapta al móvil', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
 

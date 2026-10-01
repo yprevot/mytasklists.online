@@ -9,6 +9,9 @@ export type AuthProvider = 'local' | 'google' | 'apple';
 export type UserRole = 'user' | 'admin';
 export type DevicePlatform = 'ios' | 'android' | 'web';
 
+/** Idiomas de la interfaz, los correos y los avisos */
+export type Locale = 'es' | 'en';
+
 /**
  * Tipos de aviso conocidos. `AppNotification.type` es un texto abierto: el backend
  * puede sumar tipos nuevos y los clientes deben mostrar los que no reconozcan.
@@ -37,12 +40,14 @@ export interface User {
   emailVerified: boolean;
   mfaEnabled: boolean;
   isActive: boolean;
+  /** Idioma de sus correos y avisos; los clientes lo igualan al de su interfaz */
+  locale: Locale;
   createdAt: string;
-  /** Solo en el perfil propio: si la cuenta tiene contrasena definida */
+  /** Solo en el perfil propio: si la cuenta tiene contraseña definida */
   hasPassword?: boolean;
 }
 
-/** Lo minimo que se puede saber de otra persona (busqueda al compartir) */
+/** Lo mínimo que se puede saber de otra persona (búsqueda al compartir) */
 export interface PublicProfile {
   id: string;
   fullName: string;
@@ -122,7 +127,7 @@ export interface ListDetail extends ListSummary {
 
 export interface AppNotification {
   id: string;
-  /** Uno de `NotificationType`, o uno nuevo que el cliente todavia no conoce */
+  /** Uno de `NotificationType`, o uno nuevo que el cliente todavía no conoce */
   type: string;
   title: string;
   body: string;

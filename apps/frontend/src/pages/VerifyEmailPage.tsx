@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from '../components/Spinner';
+import { AuthShell } from '../components/AuthShell';
 
-/** Destino del enlace del correo de verificacion (#token=…) */
+/** Destino del enlace del correo de verificación (#token=…) */
 export function VerifyEmailPage() {
   const { user, refreshUser } = useAuth();
+  const { t } = useTranslation();
   const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
   const [message, setMessage] = useState('');
   const started = useRef(false);
@@ -21,41 +24,35 @@ export function VerifyEmailPage() {
     window.history.replaceState(null, '', window.location.pathname);
     if (!token) {
       setState('error');
-      setMessage('El enlace no es valido.');
+      setMessage(t('verifyEmail.invalidLink'));
       return;
     }
     authApi
       .verifyEmail(token)
       .then(async (result) => {
-        setMessage(`Confirmamos ${result.email}.`);
+        setMessage(t('verifyEmail.confirmed', { email: result.email }));
         setState('ok');
         if (user) await refreshUser().catch(() => undefined);
       })
       .catch((err) => {
-        setMessage(err instanceof ApiError ? err.message : 'No pudimos confirmar tu correo.');
+        setMessage(err instanceof ApiError ? err.message : t('verifyEmail.failed'));
         setState('error');
       });
-  }, [user, refreshUser]);
+  }, [user, refreshUser, t]);
 
-  if (state === 'loading') return <Spinner label="Confirmando tu correo…" />;
+  if (state === 'loading') return <Spinner label={t('verifyEmail.loading')} />;
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="verify-card">
-        <div className="card-body p-4 text-center">
-          <i
-            className={`bi ${state === 'ok' ? 'bi-patch-check text-success' : 'bi-x-octagon text-danger'} fs-1`}
-            aria-hidden="true"
-          />
-          <h1 className="h5 mt-3">{state === 'ok' ? 'Correo confirmado' : 'No se pudo confirmar'}</h1>
-          <p className="text-muted small" data-testid={state === 'ok' ? 'verify-ok' : 'verify-error'}>
-            {message}
-          </p>
-          <Link className="btn btn-primary" to={user ? '/' : '/login'}>
-            {user ? 'Ir a mis listas' : 'Iniciar sesion'}
-          </Link>
+    <AuthShell>
+      <div data-testid="verify-card">
+        <div className="lc-auth-head">
+          <h1>{state === 'ok' ? t('verifyEmail.okTitle') : t('verifyEmail.errorTitle')}</h1>
+          <p data-testid={state === 'ok' ? 'verify-ok' : 'verify-error'}>{message}</p>
         </div>
+        <Link className="btn btn-primary btn-lg w-100" to={user ? '/' : '/login'}>
+          {user ? t('common.goToLists') : t('common.signIn')}
+        </Link>
       </div>
-    </div>
+    </AuthShell>
   );
 }

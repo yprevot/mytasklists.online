@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type ToastVariant = 'success' | 'danger' | 'warning' | 'info' | 'primary';
 
@@ -27,6 +28,7 @@ const VARIANT_ICON: Record<ToastVariant, string> = {
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const dismiss = useCallback((id: string) => {
@@ -79,7 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 className="btn-close btn-close-white me-2 m-auto"
-                aria-label="Cerrar"
+                aria-label={t('common.close')}
                 data-testid="toast-close"
                 onClick={() => dismiss(toast.id)}
               />

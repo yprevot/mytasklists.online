@@ -5,7 +5,7 @@ import { ThrottlerException, ThrottlerGuard } from '@nestjs/throttler';
  * Rate limiting global de la API.
  *
  * La IP sale de `request.ip`, que Fastify calcula a partir de X-Forwarded-For
- * respetando `TRUST_PROXY` (por defecto confia solo en nginx). Solo aplica a
+ * respetando `TRUST_PROXY` (por defecto confía solo en nginx). Solo aplica a
  * HTTP: Socket.IO se autentica en el handshake.
  */
 @Injectable()

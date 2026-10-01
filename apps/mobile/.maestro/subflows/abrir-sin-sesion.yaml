@@ -1,4 +1,4 @@
-# Abre la app desde cero: sin datos ni tokens guardados de una ejecucion anterior
+# Abre la app desde cero: sin datos ni tokens guardados de una ejecución anterior
 appId: com.listadecompras.app
 ---
 - runFlow:

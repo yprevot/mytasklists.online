@@ -1,3 +1,4 @@
+import type { UpdateProfileRequest } from '@lista/contracts';
 import { api } from './client';
 import type {
   ActivityRow,
@@ -22,6 +23,7 @@ export const adminApi = {
     api.post<AdminSession>('/auth/mfa/verify', { mfaToken, code }, { auth: false }),
   logout: () => api.post<{ ok: boolean }>('/auth/logout', {}),
   me: () => api.get<AdminUser>('/auth/me'),
+  updateProfile: (payload: UpdateProfileRequest) => api.patch<AdminUser>('/users/me', payload),
   mfaSetup: () => api.post<{ secret: string; otpauthUrl: string }>('/auth/mfa/setup'),
   mfaEnable: (code: string) =>
     api.post<{ enabled: true; recoveryCodes: string[] }>('/auth/mfa/enable', { code }),

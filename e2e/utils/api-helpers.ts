@@ -123,7 +123,7 @@ export async function getList(
   return response.json();
 }
 
-/** Adelanta el reloj de un producto N dias y dispara el motor de recurrencia */
+/** Adelanta el reloj de un producto N días y dispara el motor de recurrencia */
 export async function advanceClock(
   request: APIRequestContext,
   token: string,

@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LOCALE_TAGS, currentLanguage } from '../i18n';
 import { adminApi } from '../api/endpoints';
 import type { AdminListRow, Paginated } from '../types';
 
 export function ListsPage() {
+  const { t } = useTranslation();
   const [result, setResult] = useState<Paginated<AdminListRow> | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -17,7 +20,7 @@ export function ListsPage() {
 
   return (
     <div data-testid="lists-page">
-      <h1 className="h4 mb-3">Listas</h1>
+      <h1 className="lc-page-title mb-4">{t('lists.title')}</h1>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">
@@ -25,7 +28,7 @@ export function ListsPage() {
             <input
               className="form-control"
               style={{ maxWidth: 320 }}
-              placeholder="Buscar por nombre o propietario…"
+              placeholder={t('lists.search')}
               value={search}
               onChange={(event) => {
                 setPage(1);
@@ -34,7 +37,7 @@ export function ListsPage() {
               data-testid="lists-search"
             />
             <span className="ms-auto align-self-center text-muted small" data-testid="lists-total">
-              {result?.total ?? 0} lista(s)
+              {t('lists.total', { count: result?.total ?? 0 })}
             </span>
           </div>
 
@@ -42,15 +45,15 @@ export function ListsPage() {
             <table className="table table-sm align-middle" data-testid="lists-table">
               <thead>
                 <tr>
-                  <th scope="col">Lista</th>
-                  <th scope="col">Propietario</th>
+                  <th scope="col">{t('lists.list')}</th>
+                  <th scope="col">{t('lists.owner')}</th>
                   <th scope="col" className="text-center">
-                    Integrantes
+                    {t('lists.members')}
                   </th>
                   <th scope="col" className="text-center">
-                    Productos
+                    {t('lists.items')}
                   </th>
-                  <th scope="col">Ultima actividad</th>
+                  <th scope="col">{t('lists.lastActivity')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -62,7 +65,7 @@ export function ListsPage() {
                       </span>
                       {list.name}
                       {list.isArchived && (
-                        <span className="badge text-bg-secondary ms-2">archivada</span>
+                        <span className="badge text-bg-secondary ms-2">{t('lists.archived')}</span>
                       )}
                     </td>
                     <td className="text-muted">
@@ -72,14 +75,14 @@ export function ListsPage() {
                     <td className="text-center">{list.memberCount}</td>
                     <td className="text-center">{list.itemCount}</td>
                     <td className="text-muted small">
-                      {new Date(list.updatedAt).toLocaleString('es-MX')}
+                      {new Date(list.updatedAt).toLocaleString(LOCALE_TAGS[currentLanguage()])}
                     </td>
                   </tr>
                 ))}
                 {result?.data.length === 0 && (
                   <tr>
                     <td colSpan={5} className="text-center text-muted py-4">
-                      Sin resultados
+                      {t('common.noResults')}
                     </td>
                   </tr>
                 )}

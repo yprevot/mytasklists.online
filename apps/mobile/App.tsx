@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import './src/i18n';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/context/AuthContext';
@@ -10,7 +11,7 @@ import { UpdateGate } from './src/components/UpdateGate';
 import type { AppNotification } from './src/types';
 
 /**
- * Muestra los avisos en vivo mientras la app esta abierta.
+ * Muestra los avisos en vivo mientras la app está abierta.
  * Con la app cerrada o en segundo plano el mismo aviso llega como push de
  * iOS/Android desde el backend.
  */
@@ -40,7 +41,7 @@ function LiveNotifications() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <UpdateGate>
         <AuthProvider>
           <SocketProvider>

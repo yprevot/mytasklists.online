@@ -1,12 +1,12 @@
-# Publica la app movil cuando cambia en main, por el camino que corresponda:
-# - Solo cambio JavaScript → actualizacion OTA con EAS Update (llega en minutos).
+# Publica la app móvil cuando cambia en main, por el camino que corresponda:
+# - Solo cambio JavaScript → actualización OTA con EAS Update (llega en minutos).
 # - Cambio nativo (dependencias, app.json, iconos…) → build nuevo para las tiendas.
-# La decision la toma scripts/impact.mjs. Aunque se equivocara, runtimeVersion
+# La decisión la toma scripts/impact.mjs. Aunque se equivocara, runtimeVersion
 # (fingerprint) impide que una OTA llegue a un binario incompatible.
 #
-# Configuracion: variable EAS_ENABLED=true y secreto EXPO_TOKEN (expo.dev → Access tokens).
+# Configuración: variable EAS_ENABLED=true y secreto EXPO_TOKEN (expo.dev → Access tokens).
 # Antes hay que vincular el proyecto: `npx eas init` y `npx eas update:configure` en apps/mobile.
-name: App movil
+name: App móvil
 
 on:
   push:
@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: Tipo de publicacion
+        description: Tipo de publicación
         type: choice
         options: [ota, tienda]
         default: ota
@@ -34,10 +34,10 @@ jobs:
     if: vars.EAS_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -62,7 +62,7 @@ jobs:
           fi
           echo "release=$release" >> "$GITHUB_OUTPUT"
 
-      - uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v9
         if: steps.plan.outputs.release != 'ninguno'
         with:
           eas-version: latest
@@ -73,9 +73,9 @@ jobs:
         working-directory: apps/mobile
         run: eas build --platform all --profile production --non-interactive --no-wait
 
-      - name: Actualizacion OTA
+      - name: Actualización OTA
         if: steps.plan.outputs.release == 'ota'
         working-directory: apps/mobile
         env:
-          MESSAGE: ${{ github.event.head_commit.message || 'Publicacion manual' }}
+          MESSAGE: ${{ github.event.head_commit.message || 'Publicación manual' }}
         run: eas update --channel production --environment production --message "$MESSAGE" --non-interactive

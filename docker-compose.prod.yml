@@ -1,16 +1,16 @@
 # ─────────────────────────────────────────────────────────────
-#  Ajustes de PRODUCCION sobre docker-compose.yml:
+#  Ajustes de PRODUCCIÓN sobre docker-compose.yml:
 #
 #    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 #
 #  - NODE_ENV=production: el backend se niega a arrancar con secretos de
-#    desarrollo, sin contrasena de Redis o con RUN_SEED activo.
+#    desarrollo, sin contraseña de Redis o con RUN_SEED activo.
 #  - Postgres y Redis dejan de publicarse en el host.
-#  - nginx sirve HTTPS (80 → 443) con HSTS y limites por IP en /api/auth/.
+#  - nginx sirve HTTPS (80 → 443) con HSTS y límites por IP en /api/auth/.
 #  - Mailpit no arranca: define SMTP_HOST/SMTP_USER/SMTP_PASSWORD de tu proveedor.
 #
 #  Certificados: coloca fullchain.pem y privkey.pem en infra/nginx/certs/
-#  (por ejemplo, generados con certbot). Ver "Despliegue en produccion" en el README.
+#  (por ejemplo, generados con certbot). Ver "Despliegue en producción" en el README.
 # ─────────────────────────────────────────────────────────────
 
 services:

@@ -2,6 +2,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { secureStorage } from './secureStorage';
 import type { AppUpdateRequiredError } from '../types';
+import i18n, { currentLanguage } from '../i18n';
 
 const extra = (Constants.expoConfig?.extra ?? {}) as { apiUrl?: string; socketUrl?: string };
 
@@ -18,7 +19,7 @@ export const SOCKET_URL = (
 ).replace(/\/$/, '');
 
 /**
- * Version de la app (la `version` de app.json). Viaja en cada peticion para que la
+ * Versión de la app (la `version` de app.json). Viaja en cada petición para que la
  * API corte a las que ya no son compatibles (docs/COMPATIBILIDAD.md).
  */
 export const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
@@ -100,7 +101,7 @@ async function renew(): Promise<boolean> {
     try {
       const response = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
-        headers: { ...clientHeaders, 'Content-Type': 'application/json' },
+        headers: { ...clientHeaders, 'Accept-Language': currentLanguage(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken }),
       });
       if (!response.ok) return false;
@@ -126,7 +127,12 @@ interface Options {
 export async function request<T>(path: string, options: Options = {}): Promise<T> {
   const { method = 'GET', body, auth = true, retry = true } = options;
 
-  const headers: Record<string, string> = { ...clientHeaders, Accept: 'application/json' };
+  const headers: Record<string, string> = {
+    ...clientHeaders,
+    // La API responde los errores en el idioma de la app
+    'Accept-Language': currentLanguage(),
+    Accept: 'application/json',
+  };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
@@ -140,7 +146,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
     if (await renew()) return request<T>(path, { ...options, retry: false });
     await tokens.clear();
     listeners.forEach((listener) => listener());
-    throw new ApiError('Tu sesion expiro', 401);
+    throw new ApiError(i18n.t('common.sessionExpired'), 401);
   }
 
   const text = await response.text();
@@ -149,7 +155,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   if (response.status === 426) {
     const problem = payload as AppUpdateRequiredError | null;
     const info: UpdateRequired = {
-      message: String(problem?.message ?? 'Actualiza la app para seguir usandola'),
+      message: String(problem?.message ?? i18n.t('common.updateRequired')),
       minVersion: problem?.details?.minVersion ?? '',
       storeUrl: problem?.details?.storeUrl ?? null,
     };
@@ -159,7 +165,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   if (!response.ok) {
     const raw = payload?.message;
     throw new ApiError(
-      Array.isArray(raw) ? raw.join('. ') : (raw ?? 'Ocurrio un error inesperado'),
+      Array.isArray(raw) ? raw.join('. ') : (raw ?? i18n.t('common.unexpectedError')),
       response.status,
     );
   }

@@ -1,60 +1,282 @@
-:root {
-  --dash-bg: #0f172a;
-  --dash-panel: #ffffff;
-  --dash-border: #e2e8f0;
-}
+/* Panel de administración: densidad de herramienta de trabajo sobre los tokens de theme.css */
 
-/* Bootstrap no trae utilidad de min-width: sin ella los hijos flex con texto
-   largo no se encogen y desbordan la tarjeta. */
-.min-w-0 {
-  min-width: 0;
-}
-
-body {
-  background: #f1f5f9;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-}
-
-.dash-sidebar {
-  background: var(--dash-bg);
-  color: #cbd5e1;
+.dash-shell {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  width: 240px;
-  flex-shrink: 0;
 }
-.dash-sidebar a {
-  color: #cbd5e1;
+.dash-main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.25rem 1rem 3rem;
+}
+
+/* Títulos: los mismos que en la app web */
+.lc-page-title {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.15rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.lc-section-title {
+  font-family: var(--lc-font-body);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--lc-ink-2);
+  margin: 0;
+}
+
+/* ── Barra lateral ─────────────────────────────────────────────────────── */
+.dash-sidebar {
+  --side-ink: #12211a;
+  --side-text: #aebdb3;
+  background: var(--side-ink);
+  color: var(--side-text);
+  padding: 0.85rem 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'brand foot'
+    'nav nav';
+  align-items: center;
+  gap: 0.75rem 0.5rem;
+}
+.dash-brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #fff;
+}
+.dash-brand .lc-brand-mark rect {
+  fill: rgb(255 255 255 / 0.14);
+}
+.dash-brand-name {
+  font-family: var(--lc-font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.dash-brand-role {
+  font-size: 0.78rem;
+  color: var(--side-text);
+}
+
+.dash-nav {
+  grid-area: nav;
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+  overflow-x: auto;
+  margin: 0 -0.25rem;
+  padding: 0 0.25rem;
+  scrollbar-width: none;
+}
+.dash-nav::-webkit-scrollbar {
+  display: none;
+}
+.dash-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.8rem;
+  min-height: 2.5rem;
+  border-radius: var(--lc-radius);
+  color: var(--side-text);
+  font-weight: 600;
+  font-size: 0.9375rem;
   text-decoration: none;
-  border-radius: 0.5rem;
+  white-space: nowrap;
+  transition:
+    background-color 0.16s var(--lc-ease),
+    color 0.16s var(--lc-ease);
 }
-.dash-sidebar a.active,
-.dash-sidebar a:hover {
-  background: rgba(255, 255, 255, 0.08);
+.dash-nav a:hover {
+  background: rgb(255 255 255 / 0.07);
+  color: #fff;
+}
+.dash-nav a.active {
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+}
+.dash-nav a.active .bi {
+  color: var(--lc-tag);
+}
+.dash-nav a:focus-visible,
+.dash-logout:focus-visible {
+  outline-color: var(--lc-tag);
+}
+
+.dash-foot {
+  grid-area: foot;
+}
+.dash-user,
+.dash-logout-text {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .dash-shell {
+    flex-direction: row;
+  }
+  .dash-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    width: 15.5rem;
+    flex-shrink: 0;
+    padding: 1.4rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.6rem;
+  }
+  .dash-nav {
+    flex-direction: column;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+  .dash-user {
+    display: flex;
+  }
+  .dash-logout-text {
+    display: inline;
+  }
+  .dash-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+  }
+  .dash-main {
+    padding: 2rem 2rem 4rem;
+  }
+}
+
+.dash-user {
+  flex-direction: column;
+  min-width: 0;
+  font-size: 0.875rem;
+}
+.dash-user-name {
+  color: #fff;
+  font-weight: 600;
+}
+.dash-user-email {
+  color: var(--side-text);
+  font-size: 0.8125rem;
+}
+.dash-foot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.dash-sidebar .lc-lang {
+  background: rgb(255 255 255 / 0.08);
+}
+.dash-sidebar .lc-lang button {
+  color: var(--side-text);
+}
+.dash-sidebar .lc-lang button:hover {
+  color: #fff;
+}
+.dash-sidebar .lc-lang button[aria-pressed='true'] {
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
+  box-shadow: none;
+}
+.dash-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.25rem;
+  padding: 0 0.7rem;
+  border: 0;
+  border-radius: var(--lc-radius);
+  background: transparent;
+  color: var(--side-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  transition:
+    background-color 0.16s var(--lc-ease),
+    color 0.16s var(--lc-ease);
+}
+.dash-logout:hover {
+  background: rgb(255 255 255 / 0.08);
   color: #fff;
 }
 
+/* ── Cifras ────────────────────────────────────────────────────────────── */
+/* Las cuatro cifras viven en una sola hoja, separadas por filetes de 1px */
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--lc-line);
+  border: 1px solid var(--lc-line);
+  border-radius: var(--lc-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--lc-shadow-card);
+}
+@media (min-width: 992px) {
+  .dash-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
 .dash-kpi {
-  border: 1px solid var(--dash-border);
-  border-radius: 0.75rem;
-  background: var(--dash-panel);
+  background: var(--lc-surface);
+  padding: 1.1rem 1.25rem 1.2rem;
+  min-width: 0;
 }
-.dash-kpi .value {
-  font-size: 1.9rem;
-  font-weight: 700;
+.dash-kpi-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--lc-ink-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.dash-kpi-value {
+  margin-top: 0.5rem;
+  font-family: var(--lc-font-display);
+  font-size: clamp(1.9rem, 1.4rem + 1.2vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
-.dash-kpi .label {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
+.dash-kpi-value.is-alert {
+  color: var(--lc-tomato);
+}
+.dash-kpi-hint {
+  margin-top: 0.55rem;
+  font-size: 0.8125rem;
+  color: var(--lc-ink-2);
 }
 
+/* ── Gráfica ───────────────────────────────────────────────────────────── */
 .dash-chart {
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  height: 180px;
+  height: 200px;
+  background: repeating-linear-gradient(
+    to top,
+    var(--lc-line) 0,
+    var(--lc-line) 1px,
+    transparent 1px,
+    transparent 25%
+  );
+  border-bottom: 1px solid var(--lc-line-strong);
 }
 .dash-chart .bar-group {
   flex: 1;
@@ -67,18 +289,72 @@ body {
 .dash-chart .bar {
   width: 100%;
   max-width: 14px;
-  border-radius: 3px 3px 0 0;
+  border-radius: 4px 4px 0 0;
   min-height: 2px;
+  transition: opacity 0.16s var(--lc-ease);
+}
+.dash-chart .bar-group:hover .bar {
+  opacity: 0.85;
 }
 
+/* ── Tablas y listas ───────────────────────────────────────────────────── */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: #f6f8f5;
+  --bs-table-border-color: var(--lc-line);
+  margin-bottom: 0;
+}
+.table > :not(caption) > * > * {
+  padding: 0.75rem 0.75rem;
+}
+.table thead th {
+  color: var(--lc-ink-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--lc-line-strong);
+  background: transparent;
+}
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
 .table-sm td,
 .table-sm th {
   vertical-align: middle;
 }
+.list-group {
+  --bs-list-group-border-color: var(--lc-line);
+  --bs-list-group-bg: transparent;
+}
+.list-group-item {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+code {
+  color: var(--lc-ink);
+  background: #eef1ed;
+  padding: 0.15em 0.4em;
+  border-radius: 0.3rem;
+}
+.font-monospace {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace !important;
+}
 
-@media (max-width: 768px) {
-  .dash-sidebar {
-    width: 100%;
-    min-height: auto;
-  }
+.table .btn-sm {
+  min-height: 2rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8125rem;
+}
+.table td:first-child {
+  white-space: nowrap;
+}
+.btn-outline-warning {
+  --bs-btn-color: var(--lc-tag-ink);
+  --bs-btn-border-color: var(--lc-tag-line);
+  --bs-btn-hover-bg: var(--lc-tag-soft);
+  --bs-btn-hover-color: var(--lc-tag-ink);
+  --bs-btn-hover-border-color: #d9b94a;
+  --bs-btn-active-bg: var(--lc-tag);
+  --bs-btn-active-color: var(--lc-ink);
+  --bs-btn-active-border-color: var(--lc-tag);
 }

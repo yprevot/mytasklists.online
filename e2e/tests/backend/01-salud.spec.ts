@@ -14,7 +14,7 @@ test.describe('Servicio backend · salud e infraestructura', () => {
     expect(body.uptime).toBeGreaterThanOrEqual(0);
   });
 
-  test('CP-API-002 · la documentacion OpenAPI esta publicada', async ({ request }) => {
+  test('CP-API-002 · la documentación OpenAPI está publicada', async ({ request }) => {
     const response = await request.get(`${API_URL}/docs-json`);
     expect(response.ok()).toBeTruthy();
 
@@ -25,7 +25,7 @@ test.describe('Servicio backend · salud e infraestructura', () => {
     );
   });
 
-  test('CP-API-003 · los metodos de autenticacion disponibles se anuncian', async ({ request }) => {
+  test('CP-API-003 · los métodos de autenticación disponibles se anuncian', async ({ request }) => {
     const response = await request.get(`${API_URL}/auth/providers`);
     expect(response.ok()).toBeTruthy();
 

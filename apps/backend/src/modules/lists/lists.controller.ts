@@ -24,7 +24,7 @@ export class ListsController {
   constructor(private readonly lists: ListsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listas del usuario (propias y compartidas con el)' })
+  @ApiOperation({ summary: 'Listas del usuario (propias y compartidas con él)' })
   findAll(
     @CurrentUser() user: AuthenticatedUser,
     @Query('includeArchived') includeArchived?: string,

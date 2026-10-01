@@ -14,7 +14,7 @@ import { User } from './user.entity';
  * Cuenta de un proveedor externo (Google, Apple) vinculada a un usuario.
  *
  * Se identifica por el `sub` del proveedor, que nunca cambia, y no por el
- * correo: asi un usuario puede cambiar el correo de su cuenta de Google sin
+ * correo: así un usuario puede cambiar el correo de su cuenta de Google sin
  * perder el acceso y puede tener Google y Apple vinculados a la vez.
  */
 @Entity('user_identities')
@@ -37,7 +37,7 @@ export class UserIdentity {
   @Column({ length: 191 })
   subject: string;
 
-  /** Correo que reporto el proveedor la ultima vez (solo informativo) */
+  /** Correo que reportó el proveedor la última vez (solo informativo) */
   @Column({ type: 'varchar', length: 180, nullable: true })
   email: string | null;
 

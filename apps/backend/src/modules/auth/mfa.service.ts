@@ -26,7 +26,7 @@ interface ChallengeState {
 }
 
 /**
- * Verificacion en dos pasos (TOTP) y los retos que se emiten en el login
+ * Verificación en dos pasos (TOTP) y los retos que se emiten en el login
  * cuando una cuenta la tiene activa.
  */
 @Injectable()
@@ -43,7 +43,7 @@ export class MfaService {
 
   // ── Alta ───────────────────────────────────────────────────────────────
   async startSetup(user: User): Promise<{ secret: string; otpauthUrl: string }> {
-    if (user.totpEnabled) throw new BadRequestException('La verificacion en dos pasos ya esta activa');
+    if (user.totpEnabled) throw new BadRequestException('La verificación en dos pasos ya está activa');
     const secret = generateTotpSecret();
     await this.cache.set(
       CacheService.mfaSetupKey(user.id),
@@ -55,10 +55,10 @@ export class MfaService {
 
   async confirmSetup(userId: string, code: string): Promise<{ recoveryCodes: string[] }> {
     const pending = await this.cache.get<{ secret: string }>(CacheService.mfaSetupKey(userId));
-    if (!pending) throw new BadRequestException('El alta expiro. Vuelve a generar el codigo QR.');
+    if (!pending) throw new BadRequestException('El alta expiró. Vuelve a generar el código QR.');
     const secret = decryptSecret(pending.secret, this.keyMaterial);
     const step = verifyTotp(secret, code);
-    if (step === null) throw new BadRequestException('El codigo no es correcto');
+    if (step === null) throw new BadRequestException('El código no es correcto');
 
     const recoveryCodes = generateRecoveryCodes();
     await this.users.setTotp(userId, {
@@ -75,8 +75,8 @@ export class MfaService {
     await this.users.setTotp(userId, { secret: null, enabled: false, recoveryCodes: null });
   }
 
-  // ── Comprobacion de un codigo ──────────────────────────────────────────
-  /** Acepta un codigo TOTP o un codigo de recuperacion (que se consume) */
+  // ── Comprobación de un código ──────────────────────────────────────────
+  /** Acepta un código TOTP o un código de recuperación (que se consume) */
   async verifyCode(userId: string, code: string): Promise<boolean> {
     const user = await this.users.findByIdWithSecrets(userId);
     if (!user.totpEnabled || !user.totpSecret) return false;
@@ -85,7 +85,7 @@ export class MfaService {
     if (/^\d{6}$/.test(trimmed.replace(/\s+/g, ''))) {
       const step = verifyTotp(decryptSecret(user.totpSecret, this.keyMaterial), trimmed);
       if (step === null) return false;
-      // Un mismo codigo no se acepta dos veces (proteccion contra repeticion)
+      // Un mismo código no se acepta dos veces (protección contra repetición)
       const last = await this.cache.get<number>(CacheService.mfaLastStepKey(userId));
       if (last !== null && step <= last) return false;
       await this.rememberStep(userId, step);
@@ -114,11 +114,11 @@ export class MfaService {
     return token;
   }
 
-  /** Valida el reto; tras varios codigos erroneos el reto se invalida */
+  /** Valida el reto; tras varios códigos erróneos el reto se invalida */
   async resolveChallenge(token: string, code: string): Promise<string> {
     const key = CacheService.mfaChallengeKey(token);
     const state = await this.cache.get<ChallengeState>(key);
-    if (!state) throw new UnauthorizedException('El inicio de sesion expiro. Vuelve a empezar.');
+    if (!state) throw new UnauthorizedException('El inicio de sesión expiró. Vuelve a empezar.');
 
     if (await this.verifyCode(state.userId, code)) {
       await this.cache.del(key);
@@ -128,9 +128,9 @@ export class MfaService {
     const attempts = state.attempts + 1;
     if (attempts >= CHALLENGE_MAX_ATTEMPTS) {
       await this.cache.del(key);
-      throw new UnauthorizedException('Demasiados codigos incorrectos. Vuelve a iniciar sesion.');
+      throw new UnauthorizedException('Demasiados códigos incorrectos. Vuelve a iniciar sesión.');
     }
     await this.cache.set(key, { ...state, attempts }, CHALLENGE_TTL_SECONDS);
-    throw new UnauthorizedException('El codigo no es correcto');
+    throw new UnauthorizedException('El código no es correcto');
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Configuracion central de la aplicacion.
+ * Configuración central de la aplicación.
  * Todo se lee de variables de entorno para que la imagen Docker sea inmutable.
  */
 export interface RateLimitConfig {
@@ -7,10 +7,10 @@ export interface RateLimitConfig {
   /** Peticiones por IP y ventana en toda la API */
   globalLimit: number;
   globalTtlMs: number;
-  /** Login, registro y verificacion de 2FA: peticiones por IP y ventana */
+  /** Login, registro y verificación de 2FA: peticiones por IP y ventana */
   authLimit: number;
   authTtlMs: number;
-  /** Recuperar contrasena y reenviar verificacion: peticiones por IP y ventana */
+  /** Recuperar contraseña y reenviar verificación: peticiones por IP y ventana */
   sensitiveLimit: number;
   sensitiveTtlMs: number;
   /** Intentos fallidos de login por correo antes de bloquearlo temporalmente */
@@ -20,7 +20,7 @@ export interface RateLimitConfig {
 
 /** Compatibilidad con las apps de las tiendas (ver docs/COMPATIBILIDAD.md) */
 export interface MobileConfig {
-  /** Las apps por debajo de esta version reciben 426 y deben actualizarse */
+  /** Las apps por debajo de esta versión reciben 426 y deben actualizarse */
   minVersion: string;
   storeUrls: { ios: string | null; android: string | null };
 }
@@ -130,8 +130,8 @@ export default (): AppConfig => {
   const isProduction = env === 'production';
   const publicUrl = process.env.PUBLIC_URL ?? 'http://localhost:8080';
 
-  // En desarrollo y pruebas los limites son holgados para no frenar la suite e2e;
-  // en produccion son estrictos. Cualquiera se puede fijar por variable de entorno.
+  // En desarrollo y pruebas los límites son holgados para no frenar la suite e2e;
+  // en producción son estrictos. Cualquiera se puede fijar por variable de entorno.
   const rl = (name: string, prod: number, dev: number) =>
     int(process.env[name], isProduction ? prod : dev);
 

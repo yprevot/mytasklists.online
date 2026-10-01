@@ -1,3 +1,4 @@
+import type { UpdateProfileRequest } from '@lista/contracts';
 import { api } from './client';
 import type {
   AppCompatibility,
@@ -9,9 +10,13 @@ import type {
   User,
 } from '../types';
 
-/** Si esta version ya no es compatible la API responde 426 y client.ts avisa a UpdateGate */
+/** Si esta versión ya no es compatible la API responde 426 y client.ts avisa a UpdateGate */
 export const compatApi = {
   check: () => api.get<AppCompatibility>('/app/compatibility'),
+};
+
+export const usersApi = {
+  updateProfile: (payload: UpdateProfileRequest) => api.patch<User>('/users/me', payload),
 };
 
 export const authApi = {

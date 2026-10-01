@@ -69,7 +69,7 @@ export class ItemsService {
     try {
       await this.activity.save(this.activity.create(entry));
     } catch (error) {
-      this.logger.warn(`No se pudo escribir la bitacora: ${(error as Error).message}`);
+      this.logger.warn(`No se pudo escribir la bitácora: ${(error as Error).message}`);
     }
   }
 
@@ -80,7 +80,7 @@ export class ItemsService {
 
     const isRecurring = dto.isRecurring === true;
     if (isRecurring && !dto.recurrenceDays) {
-      throw new BadRequestException('Indica cada cuantos dias debe volver a aparecer el producto');
+      throw new BadRequestException('Indica cada cuántos días debe volver a aparecer el producto');
     }
 
     const now = new Date();
@@ -102,7 +102,7 @@ export class ItemsService {
         isRecurring,
         recurrenceDays: isRecurring ? dto.recurrenceDays! : null,
         activatedAt: now,
-        // La fecha limite del primer ciclo se cuenta desde que se agrega el producto
+        // La fecha límite del primer ciclo se cuenta desde que se agrega el producto
         dueAt: isRecurring ? addDays(now, dto.recurrenceDays!) : null,
         nextActivationAt: null,
         createdById: userId,
@@ -122,10 +122,10 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_ADDED,
-      title: list.name,
-      body: `${actorName} agrego "${item.name}"${
-        isRecurring ? ` (se repite cada ${item.recurrenceDays} dias)` : ''
-      }`,
+      render: (texts) => ({
+        title: list.name,
+        body: texts.itemAdded(actorName, item.name, isRecurring ? item.recurrenceDays : null),
+      }),
       payload: { itemName: item.name, isRecurring },
     });
 
@@ -141,7 +141,7 @@ export class ItemsService {
     return view;
   }
 
-  // ── Edicion ─────────────────────────────────────────────────────────
+  // ── Edición ─────────────────────────────────────────────────────────
   async update(itemId: string, userId: string, dto: UpdateItemDto): Promise<ItemView> {
     const item = await this.loadItem(itemId);
     await this.listsService.assertMember(item.listId, userId, true);
@@ -152,12 +152,12 @@ export class ItemsService {
     if (dto.note !== undefined) item.note = dto.note?.trim() || null;
     if (dto.category !== undefined) item.category = dto.category.trim();
 
-    // Cambiar la recurrencia recalcula la fecha limite del ciclo en curso
+    // Cambiar la recurrencia recalcula la fecha límite del ciclo en curso
     if (dto.isRecurring !== undefined || dto.recurrenceDays !== undefined) {
       const isRecurring = dto.isRecurring ?? item.isRecurring;
       const days = dto.recurrenceDays ?? item.recurrenceDays;
       if (isRecurring && !days) {
-        throw new BadRequestException('Indica cada cuantos dias debe volver a aparecer el producto');
+        throw new BadRequestException('Indica cada cuántos días debe volver a aparecer el producto');
       }
       item.isRecurring = isRecurring;
       item.recurrenceDays = isRecurring ? days! : null;
@@ -189,8 +189,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_UPDATED,
-      title: list.name,
-      body: `${actorName} edito "${item.name}"`,
+      render: (texts) => ({ title: list.name, body: texts.itemUpdated(actorName, item.name) }),
     });
 
     await this.log({ listId: item.listId, userId, itemId, action: 'item.updated', summary: item.name });
@@ -200,11 +199,11 @@ export class ItemsService {
   // ── Marcar como comprado ────────────────────────────────────────────
   /**
    * Al marcar el producto como comprado pasa a la lista de abajo (tachado) y,
-   * si es recurrente, se programa su reaparicion contando los dias de
+   * si es recurrente, se programa su reaparición contando los días de
    * recurrencia **desde el momento de la compra**.
    *
-   * Ej.: "Pan de caja" agregado el lunes con recurrencia de 14 dias y comprado
-   * el viernes vuelve a activarse 14 dias despues de ese viernes.
+   * Ej.: "Pan de caja" agregado el lunes con recurrencia de 14 días y comprado
+   * el viernes vuelve a activarse 14 días después de ese viernes.
    */
   async purchase(itemId: string, userId: string): Promise<ItemView> {
     const item = await this.loadItem(itemId);
@@ -235,8 +234,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_PURCHASED,
-      title: list.name,
-      body: `${actorName} ya compro "${item.name}"`,
+      render: (texts) => ({ title: list.name, body: texts.itemPurchased(actorName, item.name) }),
       payload: {
         itemName: item.name,
         nextActivationAt: item.nextActivationAt?.toISOString() ?? null,
@@ -283,8 +281,7 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_RESTORED,
-      title: list.name,
-      body: `${actorName} regreso "${item.name}" a la lista de pendientes`,
+      render: (texts) => ({ title: list.name, body: texts.itemRestored(actorName, item.name) }),
     });
 
     await this.log({ listId: item.listId, userId, itemId, action: 'item.restored', summary: item.name });
@@ -294,7 +291,7 @@ export class ItemsService {
   // ── Quitar de la lista de comprados con la "x" ──────────────────────
   /**
    * Cierra la tarjeta de la lista de abajo. Si el producto es recurrente
-   * conserva su programacion y volvera a aparecer cuando toque.
+   * conserva su programación y volverá a aparecer cuando toque.
    */
   async archive(itemId: string, userId: string): Promise<{ id: string; listId: string }> {
     const item = await this.loadItem(itemId);
@@ -313,7 +310,7 @@ export class ItemsService {
     return { id: itemId, listId: item.listId };
   }
 
-  /** Borra el producto por completo (tambien cancela su recurrencia) */
+  /** Borra el producto por completo (también cancela su recurrencia) */
   async remove(itemId: string, userId: string): Promise<{ id: string; listId: string }> {
     const item = await this.loadItem(itemId);
     await this.listsService.assertMember(item.listId, userId, true);
@@ -331,15 +328,14 @@ export class ItemsService {
       actorName,
       excludeUserId: userId,
       type: NotificationType.ITEM_REMOVED,
-      title: list.name,
-      body: `${actorName} elimino "${name}"`,
+      render: (texts) => ({ title: list.name, body: texts.itemRemoved(actorName, name) }),
     });
 
     await this.log({ listId, userId, itemId, action: 'item.removed', summary: name });
     return { id: itemId, listId };
   }
 
-  /** Vacia de golpe la lista de comprados */
+  /** Vacía de golpe la lista de comprados */
   async clearPurchased(listId: string, userId: string): Promise<{ cleared: number }> {
     await this.listsService.assertMember(listId, userId, true);
     const purchased = await this.items.find({ where: { listId, status: ItemStatus.PURCHASED } });

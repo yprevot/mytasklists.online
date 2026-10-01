@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { localeFromHeader, translateMessage } from '../../i18n/locale';
 
 /** Normaliza todas las respuestas de error de la API */
 @Catch()
@@ -22,9 +23,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message: string | string[] = 'Ocurrio un error inesperado';
+    let message: string | string[] = 'Ocurrió un error inesperado';
     let error = 'InternalServerError';
-    // Codigo estable y datos extra para que el cliente reaccione sin leer el texto
+    // Código estable y datos extra para que el cliente reaccione sin leer el texto
     let extra: { code?: unknown; details?: unknown } = {};
 
     if (exception instanceof HttpException) {
@@ -41,10 +42,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.error(exception.message, exception.stack);
     }
 
+    // Los mensajes se escriben en español; si la petición llega en inglés se traducen
+    const locale = localeFromHeader(request?.headers?.['accept-language']);
+    const translated = Array.isArray(message)
+      ? message.map((entry) => translateMessage(entry, locale))
+      : translateMessage(message, locale);
+
     reply.status(status).send({
       statusCode: status,
       error,
-      message,
+      message: translated,
       ...extra,
       path: request?.url,
       timestamp: new Date().toISOString(),

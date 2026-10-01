@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// El panel se publica detras del proxy nginx en la ruta /dashboard/
+// El panel se publica detrás del proxy nginx en la ruta /dashboard/
 export default defineConfig({
   base: '/dashboard/',
   plugins: [react()],

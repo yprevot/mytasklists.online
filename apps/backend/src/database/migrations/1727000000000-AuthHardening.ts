@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * Endurecimiento de la autenticacion:
+ * Endurecimiento de la autenticación:
  *  - `user_identities`: cuentas de Google/Apple vinculadas por `sub` (no por correo).
  *  - Columnas de 2FA (TOTP) en `users`.
  */

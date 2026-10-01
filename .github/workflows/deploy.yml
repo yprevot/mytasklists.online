@@ -1,0 +1,190 @@
+# Publica las imágenes de los servicios en GHCR y despliega en Coolify cuando
+# cambia main. La app móvil tiene su propio workflow (mobile.yml): un cambio solo
+# en apps/mobile no llega aquí. Guía completa: docs/DESPLIEGUE.md
+#
+#   verificar → publicar (5 imágenes) → desplegar (webhook de Coolify) → comprobar
+#
+# Configuración:
+#   Variables del REPOSITORIO (Settings → Secrets and variables → Actions → Variables):
+#     DEPLOY_ENABLED=true, y LANDING_IOS_URL / LANDING_ANDROID_URL (enlaces de las tiendas, opcionales).
+#     Deben ser del repositorio: las del entorno no se ven en los `if:` ni en la matriz.
+#   Entorno `production` (Settings → Environments):
+#     variable SITE_URL=https://tu-dominio
+#     secretos COOLIFY_WEBHOOK y COOLIFY_TOKEN (los guarda el playbook cliente-alta de infra)
+# Sin DEPLOY_ENABLED=true el workflow solo verifica.
+name: Desplegar
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'apps/mobile/**'
+      - 'docs/**'
+      - 'e2e/**'
+      - '**/*.md'
+      - '.github/workflows/mobile.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Verificar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck --workspaces --if-present
+      - run: npm run build --workspaces --if-present
+
+      # Los cambios que rompen a las apps publicadas no se despliegan solos: hay que
+      # publicar antes la app nueva y subir MOBILE_MIN_VERSION (docs/COMPATIBILIDAD.md).
+      # Una vez coordinado, se lanza a mano con "Run workflow".
+      - name: Solo cambios sin riesgo alto
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          node scripts/impact.mjs "$BEFORE" | tee -a "$GITHUB_STEP_SUMMARY"
+          level=$(node scripts/impact.mjs "$BEFORE" --json | jq -r .level)
+          if [ "$level" = "alto" ]; then
+            echo "::error::Este cambio necesita coordinarse con la app móvil. Despliega a mano cuando esté listo."
+            exit 1
+          fi
+
+  publicar:
+    name: Publicar ${{ matrix.name }}
+    needs: verificar
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # KEEP_SEED=false: la imagen de producción no lleva datos de demostración
+          - name: backend
+            file: apps/backend/Dockerfile
+            context: .
+            target: runtime
+            build_args: |
+              KEEP_SEED=false
+          - name: frontend
+            file: apps/frontend/Dockerfile
+            context: .
+            build_args: |
+              VITE_API_URL=/api
+              VITE_SOCKET_URL=/
+          - name: dashboard
+            file: apps/dashboard/Dockerfile
+            context: .
+            build_args: |
+              VITE_API_URL=/api
+          - name: landing
+            file: apps/landing/Dockerfile
+            context: apps/landing
+            build_args: |
+              LANDING_IOS_URL=${{ vars.LANDING_IOS_URL || '#descargar' }}
+              LANDING_ANDROID_URL=${{ vars.LANDING_ANDROID_URL || '#descargar' }}
+          - name: gateway
+            file: infra/nginx/gateway/Dockerfile
+            context: .
+            build_args: |
+              RELEASE_SHA=${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # GHCR exige minúsculas en el nombre de la imagen
+      - id: image
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: echo "name=ghcr.io/${REPOSITORY,,}-${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          target: ${{ matrix.target }}
+          push: true
+          build-args: ${{ matrix.build_args }}
+          tags: |
+            ${{ steps.image.outputs.name }}:main
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          provenance: true
+          sbom: true
+
+  desplegar:
+    name: Desplegar en Coolify
+    needs: publicar
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      # Mientras la app no exista en Coolify (sin secretos) se publican las imágenes
+      # pero no se despliega: el job avisa y termina sin error.
+      - name: ¿Coolify está configurado?
+        id: coolify
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -n "$COOLIFY_WEBHOOK" ] && [ -n "$COOLIFY_TOKEN" ] && [ -n "$SITE_URL" ]; then
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Imágenes publicadas, pero no se despliega: faltan COOLIFY_WEBHOOK, COOLIFY_TOKEN o SITE_URL en el entorno production (docs/DESPLIEGUE.md §5)."
+          fi
+
+      - name: Pedir el despliegue a Coolify
+        if: steps.coolify.outputs.listo == 'true'
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          # Coolify (4.3.x) solo despliega con POST
+          curl --fail-with-body --silent --show-error --retry 3 --max-time 60 \
+            --request POST --header "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
+
+      # Cada redespliegue corta el sitio ~1 minuto (Coolify para y arranca los
+      # contenedores): se espera a que /version.json sirva el commit nuevo.
+      - name: Comprobar que la versión nueva ya sirve
+        if: steps.coolify.outputs.listo == 'true'
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test -n "$SITE_URL"
+          for attempt in $(seq 1 60); do
+            revision=$(curl --fail --silent --max-time 10 "$SITE_URL/version.json" | jq -r '.revision' || true)
+            if [ "$revision" = "$EXPECTED_SHA" ]; then
+              curl --fail --silent --show-error --max-time 15 "$SITE_URL/api/health"
+              echo
+              echo "Desplegado: $EXPECTED_SHA"
+              exit 0
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              echo "::error::Coolify no sirvió la revisión esperada en 10 minutos."
+              exit 1
+            fi
+            sleep 10
+          done

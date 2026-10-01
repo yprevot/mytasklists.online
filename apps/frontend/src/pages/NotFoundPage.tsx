@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function NotFoundPage() {
+  const { t } = useTranslation();
   return (
-    <div className="text-center py-5" data-testid="not-found">
-      <div style={{ fontSize: '3rem' }} aria-hidden="true">
-        🧭
+    <div className="lc-empty mx-auto" style={{ maxWidth: '32rem' }} data-testid="not-found">
+      <div className="lc-empty-icon">
+        <i className="bi bi-compass" aria-hidden="true" />
       </div>
-      <h1 className="h4 mt-3">No encontramos esta pagina</h1>
-      <p className="text-muted">Puede que el enlace haya cambiado o que la lista ya no exista.</p>
+      <h1 className="h4">{t('notFound.title')}</h1>
+      <p className="text-muted mb-3">{t('notFound.text')}</p>
       <Link className="btn btn-primary" to="/">
-        Ir a mis listas
+        {t('common.goToLists')}
       </Link>
     </div>
   );

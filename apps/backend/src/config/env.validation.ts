@@ -5,14 +5,14 @@ import { parseVersion } from '../common/version';
 const MIN_SECRET_LENGTH = 32;
 
 /**
- * Se ejecuta al cargar la configuracion. En produccion el backend se niega a
- * arrancar con secretos de desarrollo, datos de demostracion o CORS abierto:
+ * Se ejecuta al cargar la configuración. En producción el backend se niega a
+ * arrancar con secretos de desarrollo, datos de demostración o CORS abierto:
  * es preferible un contenedor que no levanta a uno que deja entrar a cualquiera.
  */
 export function validateEnv(env: Record<string, unknown>): Record<string, unknown> {
   const value = (key: string): string => String(env[key] ?? '');
 
-  // Un valor ilegible desactivaria el corte de versiones sin avisar
+  // Un valor ilegible desactivaría el corte de versiones sin avisar
   const minVersion = value('MOBILE_MIN_VERSION');
   if (minVersion && !parseVersion(minVersion)) {
     throw new Error(`MOBILE_MIN_VERSION debe tener la forma x.y.z (recibido: "${minVersion}")`);
@@ -40,12 +40,12 @@ export function validateEnv(env: Record<string, unknown>): Record<string, unknow
 
   const pgPassword = value('POSTGRES_PASSWORD');
   if (!pgPassword || pgPassword === DEV_DEFAULTS.postgresPassword) {
-    errors.push('POSTGRES_PASSWORD no puede quedar vacia ni con el valor de desarrollo');
+    errors.push('POSTGRES_PASSWORD no puede quedar vacía ni con el valor de desarrollo');
   }
-  if (!value('REDIS_PASSWORD')) errors.push('REDIS_PASSWORD es obligatoria en produccion');
+  if (!value('REDIS_PASSWORD')) errors.push('REDIS_PASSWORD es obligatoria en producción');
 
   if (['1', 'true', 'yes', 'on'].includes(value('RUN_SEED').toLowerCase())) {
-    errors.push('RUN_SEED debe estar desactivado: crearia cuentas con contrasenas publicas');
+    errors.push('RUN_SEED debe estar desactivado: crearía cuentas con contraseñas públicas');
   }
 
   const origins = value('CORS_ORIGINS');
@@ -57,15 +57,15 @@ export function validateEnv(env: Record<string, unknown>): Record<string, unknow
     warnings.push('PUBLIC_URL no usa https: Google y Apple rechazan callbacks sin TLS');
   }
   if (!value('SMTP_HOST')) {
-    warnings.push('SMTP_HOST vacio: los correos de verificacion y recuperacion no se enviaran');
+    warnings.push('SMTP_HOST vacío: los correos de verificación y recuperación no se enviarán');
   }
 
-  const logger = new Logger('Configuracion');
+  const logger = new Logger('Configuración');
   warnings.forEach((warning) => logger.warn(warning));
 
   if (errors.length) {
     throw new Error(
-      `Configuracion insegura para produccion:\n  - ${errors.join('\n  - ')}\n` +
+      `Configuración insegura para producción:\n  - ${errors.join('\n  - ')}\n` +
         'Revisa el .env (ver .env.example) antes de desplegar.',
     );
   }

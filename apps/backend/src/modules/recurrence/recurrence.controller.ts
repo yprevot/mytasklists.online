@@ -29,7 +29,7 @@ export class RecurrenceController {
   @Post('run')
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Fuerza una pasada del motor de recurrencia (administracion)' })
+  @ApiOperation({ summary: 'Fuerza una pasada del motor de recurrencia (administración)' })
   run() {
     return this.recurrence.runSweep();
   }
@@ -38,7 +38,7 @@ export class RecurrenceController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
-      'Adelanta el reloj de un producto N dias y ejecuta el motor. Pensado para demos y pruebas automatizadas.',
+      'Adelanta el reloj de un producto N días y ejecuta el motor. Pensado para demos y pruebas automatizadas.',
   })
   advance(
     @CurrentUser() user: AuthenticatedUser,
@@ -46,11 +46,11 @@ export class RecurrenceController {
     @Body() body: { days?: number },
   ) {
     if (!this.config.get<boolean>('allowTimeTravel', false)) {
-      throw new ForbiddenException('Esta utilidad esta deshabilitada en produccion');
+      throw new ForbiddenException('Esta utilidad está deshabilitada en producción');
     }
     const days = Number(body?.days ?? 1);
     if (!Number.isFinite(days) || days <= 0 || days > 3650) {
-      throw new BadRequestException('`days` debe ser un numero entre 1 y 3650');
+      throw new BadRequestException('`days` debe ser un número entre 1 y 3650');
     }
     return this.recurrence.advanceItem(id, user.id, days);
   }

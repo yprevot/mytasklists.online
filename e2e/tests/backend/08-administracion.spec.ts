@@ -9,7 +9,7 @@ import {
   registerUser,
 } from '../../utils/api-helpers';
 
-test.describe('Servicio backend · panel de administracion', () => {
+test.describe('Servicio backend · panel de administración', () => {
   let adminToken: string;
 
   test.beforeAll(async ({ playwright }) => {
@@ -18,7 +18,7 @@ test.describe('Servicio backend · panel de administracion', () => {
     await context.dispose();
   });
 
-  test('CP-ADM-001 · los indicadores globales estan disponibles', async ({ request }) => {
+  test('CP-ADM-001 · los indicadores globales están disponibles', async ({ request }) => {
     const response = await request.get(`${API_URL}/admin/stats`, { headers: auth(adminToken) });
     expect(response.ok()).toBeTruthy();
 
@@ -30,7 +30,7 @@ test.describe('Servicio backend · panel de administracion', () => {
     expect(stats.notifications).toHaveProperty('unread');
   });
 
-  test('CP-ADM-002 · la serie diaria devuelve un punto por dia', async ({ request }) => {
+  test('CP-ADM-002 · la serie diaria devuelve un punto por día', async ({ request }) => {
     const response = await request.get(`${API_URL}/admin/timeseries?days=7`, {
       headers: auth(adminToken),
     });
@@ -47,10 +47,10 @@ test.describe('Servicio backend · panel de administracion', () => {
     );
   });
 
-  test('CP-ADM-003 · la bitacora registra lo que ocurre en las listas', async ({ request }) => {
-    const user = await registerUser(request, { fullName: 'Persona Bitacora' });
-    const list = await createList(request, user.accessToken, 'Bitacora e2e');
-    await createItem(request, user.accessToken, list.id, { name: 'Producto de bitacora' });
+  test('CP-ADM-003 · la bitácora registra lo que ocurre en las listas', async ({ request }) => {
+    const user = await registerUser(request, { fullName: 'Persona Bitácora' });
+    const list = await createList(request, user.accessToken, 'Bitácora e2e');
+    await createItem(request, user.accessToken, list.id, { name: 'Producto de bitácora' });
 
     await expect(async () => {
       const response = await request.get(`${API_URL}/admin/activity?limit=50`, {
@@ -59,11 +59,11 @@ test.describe('Servicio backend · panel de administracion', () => {
       const rows = await response.json();
       const acciones = rows.map((row: any) => row.action);
       expect(acciones).toContain('item.created');
-      expect(rows.some((row: any) => row.summary === 'Producto de bitacora')).toBe(true);
+      expect(rows.some((row: any) => row.summary === 'Producto de bitácora')).toBe(true);
     }).toPass({ timeout: 10_000 });
   });
 
-  test('CP-ADM-004 · listado y busqueda de usuarios', async ({ request }) => {
+  test('CP-ADM-004 · listado y búsqueda de usuarios', async ({ request }) => {
     const user = await registerUser(request, { fullName: 'Persona Buscable' });
 
     const response = await request.get(
@@ -77,7 +77,7 @@ test.describe('Servicio backend · panel de administracion', () => {
     expect(page.data[0]).not.toHaveProperty('passwordHash');
   });
 
-  test('CP-ADM-005 · desactivar una cuenta impide iniciar sesion', async ({ request }) => {
+  test('CP-ADM-005 · desactivar una cuenta impide iniciar sesión', async ({ request }) => {
     const user = await registerUser(request, { fullName: 'Persona Suspendida' });
 
     const patch = await request.patch(`${API_URL}/admin/users/${user.id}`, {
@@ -102,7 +102,7 @@ test.describe('Servicio backend · panel de administracion', () => {
     expect(otraVez.ok()).toBeTruthy();
   });
 
-  test('CP-ADM-006 · una cuenta normal no puede entrar a administracion', async ({ request }) => {
+  test('CP-ADM-006 · una cuenta normal no puede entrar a administración', async ({ request }) => {
     const user = await registerUser(request);
 
     for (const path of ['/admin/stats', '/admin/users', '/admin/lists', '/admin/activity']) {

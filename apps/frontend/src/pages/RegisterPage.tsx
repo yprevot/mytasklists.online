@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../api/client';
 import { SocialButtons } from '../components/SocialButtons';
@@ -14,6 +16,7 @@ interface FieldErrors {
 export function RegisterPage() {
   const { register, user, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ fullName: '', email: '', whatsapp: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
@@ -26,12 +29,12 @@ export function RegisterPage() {
 
   const validate = (): boolean => {
     const errors: FieldErrors = {};
-    if (form.fullName.trim().length < 3) errors.fullName = 'Escribe tu nombre completo';
+    if (form.fullName.trim().length < 3) errors.fullName = t('register.errors.fullName');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim()))
-      errors.email = 'El correo electronico no es valido';
+      errors.email = t('register.errors.email');
     if (!/^\+?[0-9]{8,20}$/.test(form.whatsapp.trim()))
-      errors.whatsapp = 'Escribe tu numero de WhatsApp, p. ej. +5215512345678';
-    if (form.password.length < 8) errors.password = 'La contrasena debe tener al menos 8 caracteres';
+      errors.whatsapp = t('register.errors.whatsapp');
+    if (form.password.length < 8) errors.password = t('common.passwordTooShort');
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -51,30 +54,25 @@ export function RegisterPage() {
       });
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'No se pudo completar el registro');
+      setError(err instanceof ApiError ? err.message : t('register.failed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
-      <div className="card border-0 shadow-sm lc-auth-card" data-testid="register-card">
-        <div className="card-body p-4 p-md-5">
-          <div className="text-center mb-4">
-            <div style={{ fontSize: '2.5rem' }} aria-hidden="true">
-              🛒
-            </div>
-            <h1 className="h4 mt-2 mb-1">Crea tu cuenta</h1>
-            <p className="text-muted small mb-0">
-              Necesitas una cuenta para crear y compartir listas.
-            </p>
+    <AuthShell>
+      <div data-testid="register-card">
+        <div>
+          <div className="lc-auth-head">
+            <h1>{t('register.title')}</h1>
+            <p>{t('register.subtitle')}</p>
           </div>
 
           <form onSubmit={submit} noValidate data-testid="register-form">
             <div className="mb-3">
               <label className="form-label" htmlFor="register-name">
-                Nombre completo
+                {t('common.fullName')}
               </label>
               <input
                 id="register-name"
@@ -93,7 +91,7 @@ export function RegisterPage() {
 
             <div className="mb-3">
               <label className="form-label" htmlFor="register-email">
-                Correo electronico
+                {t('common.email')}
               </label>
               <input
                 id="register-email"
@@ -113,7 +111,7 @@ export function RegisterPage() {
 
             <div className="mb-3">
               <label className="form-label" htmlFor="register-whatsapp">
-                Numero de WhatsApp
+                {t('common.whatsapp')}
               </label>
               <input
                 id="register-whatsapp"
@@ -133,7 +131,7 @@ export function RegisterPage() {
 
             <div className="mb-3">
               <label className="form-label" htmlFor="register-password">
-                Contrasena
+                {t('common.password')}
               </label>
               <input
                 id="register-password"
@@ -158,31 +156,27 @@ export function RegisterPage() {
             )}
 
             <button
-              className="btn btn-primary w-100"
+              className="btn btn-primary btn-lg w-100"
               type="submit"
               disabled={submitting}
               data-testid="register-submit"
             >
-              {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
+              {submitting ? t('register.submitting') : t('register.submit')}
             </button>
           </form>
 
-          <div className="d-flex align-items-center gap-2 my-3">
-            <hr className="flex-grow-1" />
-            <span className="text-muted small">o</span>
-            <hr className="flex-grow-1" />
-          </div>
+          <div className="lc-divider">{t('common.or')}</div>
 
           <SocialButtons disabled={submitting} />
 
-          <p className="text-center small text-muted mt-4 mb-0">
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login" data-testid="go-login">
-              Inicia sesion
+          <p className="text-center text-muted mt-4 mb-0">
+            {t('register.haveAccount')}{' '}
+            <Link to="/login" className="fw-semibold" data-testid="go-login">
+              {t('register.login')}
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }

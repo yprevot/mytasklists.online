@@ -5,9 +5,9 @@ import { BASE_URL } from './api-helpers';
 const REFRESH_COOKIE = { lc: 'lc_rt', 'lc.dash': 'lc_dash_rt' } as const;
 
 /**
- * Inyecta una sesion ya iniciada para no repetir el login en cada caso.
+ * Inyecta una sesión ya iniciada para no repetir el login en cada caso.
  * Las SPA guardan el refresh token en una cookie httpOnly (nunca en
- * localStorage): basta con ponerla en el contexto y la app recupera la sesion
+ * localStorage): basta con ponerla en el contexto y la app recupera la sesión
  * con /auth/refresh al cargar.
  */
 export async function useSession(
@@ -29,7 +29,7 @@ export async function useSession(
   ]);
 }
 
-/** Login por la interfaz de la aplicacion web */
+/** Login por la interfaz de la aplicación web */
 export async function loginThroughUI(page: Page, email: string, password: string): Promise<void> {
   await page.goto('/app/login');
   await page.getByTestId('login-email').fill(email);
@@ -38,7 +38,7 @@ export async function loginThroughUI(page: Page, email: string, password: string
   await expect(page.getByTestId('lists-page')).toBeVisible();
 }
 
-/** Espera a que el indicador "En vivo" confirme la conexion WebSocket */
+/** Espera a que el indicador "En vivo" confirme la conexión WebSocket */
 export async function waitForRealtime(page: Page): Promise<void> {
   await expect(page.getByTestId('connection-status')).toHaveAttribute(
     'data-connected',
