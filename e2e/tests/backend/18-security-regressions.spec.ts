@@ -98,7 +98,7 @@ test('ARC-01 SMTP caído conserva el correo cifrado y no retiene una transacció
   const email=uniqueEmail('outbox');
   execFileSync('docker',['compose','stop','mailpit'],{cwd:'..',stdio:'pipe'});
   try {
-    expect((await request.post(`${API_URL}/auth/registration/request`,{data:{email}})).status()).toBe(201);
+    expect((await request.post(`${API_URL}/auth/registration/request`,{data:{email}})).status()).toBe(200);
     const result=backend(`(async()=>{const {Client}=require('pg');const c=new Client({host:process.env.POSTGRES_HOST,user:process.env.POSTGRES_USER,password:process.env.POSTGRES_PASSWORD,database:process.env.POSTGRES_DB});await c.connect();
       const jobs=(await c.query('SELECT payload FROM mail_outbox WHERE reference=$1',[process.argv[1]])).rows;
       const locks=(await c.query("SELECT count(*)::int n FROM pg_locks WHERE locktype='advisory' AND granted")).rows[0].n;
