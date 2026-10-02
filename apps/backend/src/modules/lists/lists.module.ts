@@ -10,12 +10,11 @@ import {
 } from '../../database/entities';
 import { ListsService } from './lists.service';
 import { ListsController } from './lists.controller';
-import { ItemImageStorage } from '../items/item-image.storage';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ShoppingList, ListMember, ListInvitation, ListItem, User, ActivityLog])],
-  providers: [ListsService, ItemImageStorage],
+  providers: [ListsService],
   controllers: [ListsController],
-  exports: [ListsService, ItemImageStorage],
+  exports: [ListsService],
 })
 export class ListsModule {}

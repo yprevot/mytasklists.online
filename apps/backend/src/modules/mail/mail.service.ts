@@ -34,6 +34,10 @@ export class MailService implements OnModuleDestroy {
     });
   }
 
+  assertConfigured(): void {
+    if (!this.transporter) throw new ServiceUnavailableException('El servicio de correo no está disponible. Inténtalo más tarde.');
+  }
+
   async assertAvailable(): Promise<void> {
     if (!this.transporter) throw new ServiceUnavailableException('El servicio de correo no está disponible. Inténtalo más tarde.');
     try { await this.transporter.verify(); }

@@ -44,7 +44,10 @@ export const authApi = {
   logout: (refreshToken?: string | null) => api.post('/auth/logout', { refreshToken }),
 };
 
+export interface PendingInvitation { id: string; email: string; role: string; expiresAt: string; lastSentAt: string | null; }
 export const listsApi = {
+  invitations: (id: string) => api.get<PendingInvitation[]>(`/lists/${id}/invitations`),
+  revokeInvitation: (id: string, invitationId: string) => api.delete<{ok:true}>(`/lists/${id}/invitations/${invitationId}`),
   all: () => api.get<ListSummary[]>('/lists'),
   detail: (id: string) => api.get<ListDetail>(`/lists/${id}`),
   create: (name: string) => api.post<ListDetail>('/lists', { name }),

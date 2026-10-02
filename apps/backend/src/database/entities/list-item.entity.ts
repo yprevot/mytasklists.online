@@ -59,6 +59,9 @@ export class ListItem {
   @Column({ name: 'image_key', type: 'varchar', length: 80, nullable: true })
   imageKey: string | null;
 
+  @Column({ name: 'image_bytes', type: 'integer', default: 0 })
+  imageBytes: number;
+
   @Column({ type: 'enum', enum: ItemStatus, default: ItemStatus.PENDING })
   status: ItemStatus;
 

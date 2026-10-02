@@ -1,3 +1,4 @@
+import { MailOutboxService } from '../mail/mail-outbox.service';
 import { BillingService } from '../billing/billing.service';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
@@ -7,6 +8,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  HttpException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -28,7 +30,6 @@ import { CacheService } from '../../redis/cache.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { RT } from '../realtime/realtime.events';
 import { NotificationsService } from '../notifications/notifications.service';
-import { isItemOverdue } from '../items/item.mapper';
 import { ItemImageStorage } from '../items/item-image.storage';
 import {
   ListDetailView,
@@ -59,6 +60,7 @@ export class ListsService {
     private readonly mail: MailService,
     private readonly config: ConfigService,
     private readonly imageStorage: ItemImageStorage,
+    private readonly outbox: MailOutboxService,
   ) {}
 
   // ── Permisos ────────────────────────────────────────────────────────
@@ -75,7 +77,8 @@ export class ListsService {
   private async assertOwner(listId: string, userId: string): Promise<ListMember> {
     const member = await this.members.findOne({ where: { listId, userId } });
     if (!member) throw new NotFoundException('La lista no existe o no tienes acceso a ella');
-    if (member.role !== MemberRole.OWNER) {
+    const list = await this.lists.findOne({ where: { id: listId }, select: { ownerId: true } });
+    if (member.role !== MemberRole.OWNER || list?.ownerId !== userId) {
       throw new ForbiddenException('Solo la persona propietaria puede hacer esto');
     }
     return member;
@@ -106,16 +109,24 @@ export class ListsService {
     const listIds = memberships.map((member) => member.listId);
     const lists = await this.lists.find({
       where: { id: In(listIds) },
-      relations: { members: { user: true }, items: true },
       order: { updatedAt: 'DESC' },
     });
 
-    const now = new Date();
+    const counts = await this.dataSource.query(`
+      SELECT l.id,
+        (SELECT count(*) FROM list_members m WHERE m.list_id=l.id)::int AS members,
+        count(i.id) FILTER (WHERE i.status='pending')::int AS pending,
+        count(i.id) FILTER (WHERE i.status='purchased')::int AS purchased,
+        count(i.id) FILTER (WHERE i.status='pending' AND i.is_recurring AND i.due_at<now())::int AS overdue,
+        count(i.id) FILTER (WHERE i.is_recurring)::int AS recurring
+      FROM shopping_lists l LEFT JOIN list_items i ON i.list_id=l.id
+      WHERE l.id=ANY($1::uuid[]) GROUP BY l.id`, [listIds]);
+    const byId = new Map<string, any>(counts.map((row: any) => [row.id, row]));
     return lists
       .filter((list) => includeArchived || !list.isArchived)
       .map((list) => {
         const mine = memberships.find((member) => member.listId === list.id)!;
-        const items = list.items ?? [];
+        const count = byId.get(list.id);
         return {
           id: list.id,
           name: list.name,
@@ -124,14 +135,14 @@ export class ListsService {
           icon: list.icon,
           ownerId: list.ownerId,
           isArchived: list.isArchived,
-          isShared: (list.members ?? []).length > 1,
+          isShared: count.members > 1,
           myRole: mine.role,
           notifyOnChange: mine.notifyOnChange,
-          memberCount: (list.members ?? []).length,
-          pendingCount: items.filter((item) => item.status === ItemStatus.PENDING).length,
-          purchasedCount: items.filter((item) => item.status === ItemStatus.PURCHASED).length,
-          overdueCount: items.filter((item) => isItemOverdue(item, now)).length,
-          recurringCount: items.filter((item) => item.isRecurring).length,
+          memberCount: count.members,
+          pendingCount: count.pending,
+          purchasedCount: count.purchased,
+          overdueCount: count.overdue,
+          recurringCount: count.recurring,
           createdAt: new Date(list.createdAt).toISOString(),
           updatedAt: new Date(list.updatedAt).toISOString(),
         };
@@ -248,16 +259,26 @@ export class ListsService {
       const email = dto.email!.trim().toLowerCase();
       const actor = await this.users.findOne({ where: { id: actorId } });
       if (actor?.email.toLowerCase() === email) throw new BadRequestException('Esta lista ya es tuya');
-      await this.mail.assertAvailable();
+      this.mail.assertConfigured();
       const list = await this.lists.findOneOrFail({ where: { id: listId } });
       const lifetimeHours = 72;
-      const invite = await this.dataSource.transaction(async manager => {
-        await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`invite:${listId}:${email}`]);
+      await this.dataSource.transaction(async manager => {
+        await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['invite-sender:' + actorId]);
+        const [{ count }] = await manager.query("SELECT count(*) FROM invitation_send_events WHERE sender_id=$1 AND sent_at>now()-interval '1 hour'", [actorId]);
+        if (Number(count) >= 20) throw new HttpException('Se alcanzó el límite de invitaciones por hora.', 429);
+        await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['invite-recipient:' + email]);
+        const [recent] = await manager.query("SELECT 1 FROM invitation_send_events WHERE sender_id=$1 AND email=$2 AND sent_at>now()-interval '1 minute' LIMIT 1", [actorId, email]);
+        if (recent) throw new HttpException('Espera un minuto antes de reenviar la invitación.', 429);
+        const [{ count: received }] = await manager.query("SELECT count(*) FROM invitation_send_events WHERE email=$1 AND sent_at>now()-interval '1 hour'", [email]);
+        if (Number(received) >= 10) throw new HttpException('Este correo recibió varias invitaciones. Inténtalo más tarde.', 429);
+        await manager.query('INSERT INTO invitation_send_events(sender_id,email) VALUES($1,$2)', [actorId, email]);
         const repo = manager.getRepository(ListInvitation);
         let pending = await repo.createQueryBuilder('invite')
           .where('invite.listId = :listId AND lower(invite.email) = :email AND invite.status = :status',
             { listId, email, status: InvitationStatus.PENDING })
           .getOne();
+        if (pending?.lastSentAt && Date.now() - pending.lastSentAt.getTime() < 60000)
+          throw new HttpException('Espera un minuto antes de reenviar la invitación.', 429);
         const token = randomBytes(32).toString('base64url');
         if (pending) {
           pending.token = token;
@@ -271,16 +292,14 @@ export class ListsService {
             expiresAt: new Date(Date.now() + lifetimeHours * 3600_000),
           });
         }
-        return repo.save(pending);
+        pending.lastSentAt = new Date();
+        const invite = await repo.save(pending);
+        const base = this.config.get<string>('publicUrl', 'http://localhost:8080').replace(/\/$/, '');
+        const registrationUrl = `${base}/app/register?email=${encodeURIComponent(email)}`;
+        await this.outbox.enqueue(manager, email, listInvitationTemplate(actor?.locale ?? 'es', list.name,
+          actor?.fullName ?? 'MyTaskLists', registrationUrl, lifetimeHours), 'invitation', invite.id, invite.token);
       });
-      const base = this.config.get<string>('publicUrl', 'http://localhost:8080').replace(/\/$/, '');
-      const registrationUrl = `${base}/app/register?email=${encodeURIComponent(email)}`;
-      try {
-        await this.mail.send(email, listInvitationTemplate(actor?.locale ?? 'es', list.name, actor?.fullName ?? 'MyTaskLists', registrationUrl, lifetimeHours));
-      } catch {
-        await this.invitations.update({ id: invite.id, token: invite.token, status: InvitationStatus.PENDING }, { status: InvitationStatus.REVOKED });
-        throw new BadRequestException('No se pudo enviar la invitación. Comprueba el correo e inténtalo de nuevo.');
-      }
+      this.outbox.kick();
       return Object.assign(await this.findOne(listId, actorId), { invitationSent: true, invitationEmail: email });
     }
     if (target.id === actorId) throw new BadRequestException('Esta lista ya es tuya');
@@ -346,6 +365,8 @@ export class ListsService {
     dto: UpdateMemberDto,
   ): Promise<ListDetailView> {
     const actorMember = await this.assertMember(listId, actorId);
+    if (dto.role === MemberRole.OWNER) throw new BadRequestException('La propiedad no se cambia mediante roles');
+    if (dto.role !== undefined || memberUserId !== actorId) await this.assertOwner(listId, actorId);
 
     // Cada quien puede cambiar sus propias notificaciones; el rol solo lo cambia la persona propietaria
     if (memberUserId !== actorId && actorMember.role !== MemberRole.OWNER) {
@@ -357,7 +378,7 @@ export class ListsService {
 
     const member = await this.members.findOne({ where: { listId, userId: memberUserId } });
     if (!member) throw new NotFoundException('Esa persona no forma parte de la lista');
-    if (member.role === MemberRole.OWNER && dto.role && dto.role !== MemberRole.OWNER) {
+    if (member.role === MemberRole.OWNER && dto.role) {
       throw new BadRequestException('No puedes quitarle la propiedad a quien creó la lista');
     }
 
@@ -374,6 +395,7 @@ export class ListsService {
   async removeMember(listId: string, actorId: string, memberUserId: string): Promise<void> {
     const actorMember = await this.assertMember(listId, actorId);
     const isSelf = actorId === memberUserId;
+    if (!isSelf) await this.assertOwner(listId, actorId);
     if (!isSelf && actorMember.role !== MemberRole.OWNER) {
       throw new ForbiddenException('Solo la persona propietaria puede quitar integrantes');
     }
@@ -404,6 +426,21 @@ export class ListsService {
       action: isSelf ? 'list.left' : 'list.member_removed',
       summary: `${list.name} → ${member.user?.email ?? memberUserId}`,
     });
+  }
+
+  async pendingInvitations(listId: string, actorId: string) {
+    await this.assertOwner(listId, actorId);
+    return this.invitations.createQueryBuilder('i')
+      .select(['i.id','i.email','i.role','i.expiresAt','i.lastSentAt'])
+      .where('i.list_id=:listId AND i.status=:status AND i.expires_at > now()', { listId, status: InvitationStatus.PENDING })
+      .orderBy('i.createdAt','DESC').take(100).getMany();
+  }
+
+  async revokeInvitation(listId: string, actorId: string, invitationId: string) {
+    await this.assertOwner(listId, actorId);
+    const result = await this.invitations.update({ id: invitationId, listId, status: InvitationStatus.PENDING }, { status: InvitationStatus.REVOKED });
+    if (!result.affected) throw new NotFoundException('La invitación ya no está pendiente');
+    return { ok: true };
   }
 
   // ── Utilidades para otros módulos ───────────────────────────────────

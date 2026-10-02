@@ -95,7 +95,7 @@ export const onUpdateRequired = (listener: (info: UpdateRequired) => void): (() 
 
 let refreshing: Promise<boolean> | null = null;
 
-async function renew(): Promise<boolean> {
+export async function renewSession(): Promise<boolean> {
   if (refreshing) return refreshing;
   if (!refreshToken) return false;
 
@@ -146,7 +146,7 @@ export async function request<T>(path: string, options: Options = {}): Promise<T
   });
 
   if (response.status === 401 && auth && retry) {
-    if (await renew()) return request<T>(path, { ...options, retry: false });
+    if (await renewSession()) return request<T>(path, { ...options, retry: false });
     await tokens.clear();
     listeners.forEach((listener) => listener());
     throw new ApiError(i18n.t('common.sessionExpired'), 401);

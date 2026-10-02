@@ -27,6 +27,9 @@ import { listRoom, RT, userRoom } from './realtime.events';
 interface AuthedSocket extends Socket {
   userId?: string;
   email?: string;
+  sessionVersion?: number;
+  expiresAt?: number;
+  expiryTimer?: ReturnType<typeof setTimeout>;
 }
 
 /**
@@ -81,6 +84,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
           secret: this.config.get<string>('jwt.accessSecret'),
         });
+        if (!payload.exp) return next(new Error('Falta la caducidad del token'));
         if (payload.type !== 'access') return next(new Error('Tipo de token inválido'));
         if (!(await this.authState.isTokenAllowed(payload.sub, payload.sv))) {
           return next(new Error('La sesión ya no es válida'));
@@ -88,6 +92,8 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         const authed = socket as AuthedSocket;
         authed.userId = payload.sub;
         authed.email = payload.email;
+        authed.sessionVersion = payload.sv;
+        authed.expiresAt = payload.exp * 1000;
         return next();
       } catch {
         return next(new Error('Token inválido o expirado'));
@@ -111,6 +117,13 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       return;
     }
 
+    if (!client.expiresAt || client.expiresAt <= Date.now()) { client.disconnect(true); return; }
+    client.expiryTimer = setTimeout(() => {
+      client.emit('session:expired');
+      // Transport close lets older Socket.IO clients retry with their current token.
+      client.conn.close(true);
+    }, Math.min(client.expiresAt - Date.now(), 2147483647));
+    client.expiryTimer.unref();
     await client.join(userRoom(client.userId));
 
     const memberships = await this.members.find({
@@ -128,6 +141,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
   }
 
   handleDisconnect(client: AuthedSocket): void {
+    if (client.expiryTimer) clearTimeout(client.expiryTimer);
     if (client.userId) this.logger.debug(`Desconectado ${client.email ?? client.userId}`);
   }
 
@@ -136,7 +150,11 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     @ConnectedSocket() client: AuthedSocket,
     @MessageBody() body: ClientEvents['list:join'],
   ): Promise<{ ok: boolean; listId?: string; error?: string }> {
-    if (!client.userId || !body?.listId) return { ok: false, error: 'Petición inválida' };
+    if (!client.userId || !client.expiresAt || client.expiresAt <= Date.now() ||
+      !(await this.authState.isTokenAllowed(client.userId, client.sessionVersion))) {
+      client.disconnect(true); return { ok: false, error: 'Sesión expirada' };
+    }
+    if (!body?.listId || !/^[0-9a-f-]{36}$/i.test(body.listId)) return { ok: false, error: 'Petición inválida' };
     const member = await this.members.findOne({
       where: { listId: body.listId, userId: client.userId },
     });

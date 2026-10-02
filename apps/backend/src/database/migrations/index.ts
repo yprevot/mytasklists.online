@@ -1,3 +1,4 @@
+import { SecurityHardening1750000000000 } from './1750000000000-SecurityHardening';
 import { RegistrationBilling1731000000000 } from './1731000000000-RegistrationBilling';
 import { ListInvitationsAndItemImages1740000000000 } from './1740000000000-ListInvitationsAndItemImages';
 import { InitialSchema1710000000000 } from './1710000000000-InitialSchema';
@@ -11,4 +12,5 @@ export const MIGRATIONS = [
   UserLocale1730000000000,
   RegistrationBilling1731000000000,
   ListInvitationsAndItemImages1740000000000,
+  SecurityHardening1750000000000,
 ];

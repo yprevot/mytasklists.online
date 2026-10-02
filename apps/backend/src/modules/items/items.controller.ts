@@ -1,3 +1,5 @@
+import { ItemImageStorage } from './item-image.storage';
+import { ItemImageAccessService } from './item-image-access.service';
 import {
   Body,
   BadRequestException,
@@ -28,13 +30,14 @@ import { Public } from '../../common/decorators/public.decorator';
 @ApiBearerAuth()
 @Controller()
 export class ItemsController {
-  constructor(private readonly items: ItemsService) {}
+  constructor(private readonly items: ItemsService, private readonly imageAccess: ItemImageAccessService, private readonly imageStorage: ItemImageStorage) {}
 
   @Public()
   @Get('items/images/:filename')
-  async image(@Param('filename') filename: string, @Res() reply: FastifyReply) {
+  async image(@Param('filename') filename: string, @Query('grant') grant: string | undefined, @Res() reply: FastifyReply) {
+    await this.imageAccess.authorize(filename, grant);
     const result = await this.items.readImage(filename);
-    return reply.type(result.contentType).header('Cache-Control', 'public, max-age=31536000, immutable')
+    return reply.type(result.contentType).header('Cache-Control', 'private, no-store')
       .header('X-Content-Type-Options', 'nosniff').send(result.buffer);
   }
 
@@ -44,6 +47,7 @@ export class ItemsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Req() request: FastifyRequest,
   ) {
+    return this.imageStorage.limited(async () => {
     try {
       const file = await request.file();
       if (!file) throw new BadRequestException('Selecciona una imagen.');
@@ -54,6 +58,7 @@ export class ItemsController {
       }
       throw error;
     }
+    });
   }
 
   @Delete('items/:id/image')

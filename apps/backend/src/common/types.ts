@@ -13,6 +13,7 @@ export interface JwtPayload {
 }
 
 export interface AuthenticatedUser {
+  sessionVersion?: number;
   id: string;
   email: string;
   role: UserRole;

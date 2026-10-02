@@ -1,3 +1,4 @@
+import { ItemImagesModule } from './modules/items/item-images.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
@@ -65,6 +66,7 @@ import { RedisThrottlerStorage } from './common/throttle/redis-throttler.storage
     ScheduleModule.forRoot(),
     RedisModule,
     MailModule,
+    ItemImagesModule,
 
     // Rate limiting global por IP, con los contadores en Redis
     ThrottlerModule.forRootAsync({

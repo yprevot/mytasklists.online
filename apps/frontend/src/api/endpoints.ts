@@ -44,7 +44,10 @@ export const usersApi = {
     api.delete<{ ok: true; appleRevoked: boolean }>('/users/me', { body: payload }),
 };
 
+export interface PendingInvitation { id: string; email: string; role: string; expiresAt: string; lastSentAt: string | null; }
 export const listsApi = {
+  invitations: (id: string) => api.get<PendingInvitation[]>(`/lists/${id}/invitations`),
+  revokeInvitation: (id: string, invitationId: string) => api.delete<{ok:true}>(`/lists/${id}/invitations/${invitationId}`),
   all: () => api.get<ListSummary[]>('/lists'),
   detail: (id: string) => api.get<ListDetail>(`/lists/${id}`),
   create: (payload: { name: string; description?: string; color?: string; icon?: string }) =>

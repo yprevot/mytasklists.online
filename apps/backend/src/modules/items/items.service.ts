@@ -1,6 +1,6 @@
 import { BillingService } from '../billing/billing.service';
 import type { ServerEvents } from '@lista/contracts';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import {
@@ -221,13 +221,22 @@ export class ItemsService {
     const item = await this.loadItem(itemId);
     await this.listsService.assertMember(item.listId, userId, true);
     const imageKey = await this.imageStorage.save(buffer, mimeType);
+    const imageBytes = await this.imageStorage.size(imageKey);
+    const list = await this.listsService.getListOrFail(item.listId);
     let previous: string | null = null;
     try {
       previous = await this.items.manager.transaction(async (manager) => {
+        await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['image-quota:' + list.ownerId]);
         const repo = manager.getRepository(ListItem);
         const current = await repo.findOne({ where: { id: itemId }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
         if (!current) throw new NotFoundException('El producto no existe');
-        await repo.update(itemId, { imageKey });
+        const [canWrite] = await manager.query("SELECT 1 FROM list_members WHERE list_id=$1 AND user_id=$2 AND role IN ('owner','editor')", [item.listId, userId]);
+        if (!canWrite) throw new NotFoundException('Ya no tienes acceso para editar el producto');
+        const [{ bytes }] = await manager.query(`SELECT COALESCE(sum(CASE WHEN i.image_key IS NOT NULL AND i.image_bytes=0 THEN 5242880 ELSE i.image_bytes END),0) AS bytes FROM list_items i
+          JOIN shopping_lists l ON l.id=i.list_id WHERE l.owner_id=$1 AND i.id<>$2`, [list.ownerId, itemId]);
+        if (Number(bytes) + imageBytes > Number(process.env.IMAGE_MAX_BYTES_PER_ACCOUNT || 104857600))
+          throw new HttpException('Se alcanzó el límite de almacenamiento de imágenes de la cuenta.', 413);
+        await repo.update(itemId, { imageKey, imageBytes });
         return current.imageKey;
       });
     }
@@ -246,7 +255,7 @@ export class ItemsService {
       const repo = manager.getRepository(ListItem);
       const current = await repo.findOne({ where: { id: itemId }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
       if (!current) throw new NotFoundException('El producto no existe');
-      await repo.update(itemId, { imageKey: null });
+      await repo.update(itemId, { imageKey: null, imageBytes: 0 });
       return current.imageKey;
     });
     if (previous) await this.imageStorage.remove(previous).catch(() => undefined);

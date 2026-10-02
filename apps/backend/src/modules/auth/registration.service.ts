@@ -1,3 +1,4 @@
+import { MailOutboxService } from '../mail/mail-outbox.service';
 import { BadRequestException, HttpException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
@@ -19,11 +20,11 @@ const invalid = () => new BadRequestException('El enlace no es válido o ya expi
 export class RegistrationService {
   private readonly logger = new Logger(RegistrationService.name);
   constructor(private readonly db: DataSource, private readonly mail: MailService, private readonly config: ConfigService,
-    private readonly cache: CacheService, private readonly realtime: RealtimeGateway) {}
+    private readonly cache: CacheService, private readonly realtime: RealtimeGateway, private readonly outbox: MailOutboxService) {}
   async request(email: string, locale: Locale): Promise<{ ok: true; cooldownSeconds: number }> {
     const started = Date.now();
-    // Health check applies to every address, including existing accounts.
-    await this.mail.assertAvailable();
+    // Availability is configuration-only; temporary SMTP outages are retried by the outbox.
+    this.mail.assertConfigured();
     const cooldown = Number(process.env.REGISTRATION_COOLDOWN_SECONDS || 60);
     try {
       await this.db.transaction(async m => {
@@ -40,7 +41,7 @@ export class RegistrationService {
         const ttl = Number(process.env.REGISTRATION_TTL_SECONDS || 1800);
         if (!exists) {
           const base = this.config.get<string>('publicUrl', 'http://localhost:8080');
-          await this.mail.send(email, registrationTemplate(locale, `${base}/app/register/complete#token=${token}`, Math.ceil(ttl / 60)));
+          await this.outbox.enqueue(m, email, registrationTemplate(locale, `${base}/app/register/complete#token=${token}`, Math.ceil(ttl / 60)), 'registration', email, digest(token));
         }
         await m.query(`UPDATE registration_requests SET token_hash=$2, locale=$3, expires_at=now()+($4 * interval '1 second'),
           consumed_at=NULL,last_sent_at=now(),window_start=$5,attempts=$6 WHERE email=$1`,
@@ -54,6 +55,7 @@ export class RegistrationService {
       const remaining = 1500 - (Date.now() - started);
       if (remaining > 0) await new Promise(r => setTimeout(r, remaining));
     }
+    this.outbox.kick();
     return { ok: true, cooldownSeconds: cooldown };
   }
   async validate(token: string): Promise<{ email: string }> {
@@ -76,7 +78,7 @@ export class RegistrationService {
         const user = await repo.save(repo.create({ email: row.email, fullName: dto.fullName.trim(),
           whatsapp: dto.whatsapp, passwordHash, locale: row.locale, emailVerified: true, provider: AuthProvider.LOCAL }));
         const pendingInvitations = await m.getRepository(ListInvitation).find({
-          where: { email: row.email, status: InvitationStatus.PENDING },
+          where: { email: row.email, status: InvitationStatus.PENDING }, lock: { mode: 'pessimistic_write' },
         });
         const now = new Date();
         for (const invitation of pendingInvitations) {

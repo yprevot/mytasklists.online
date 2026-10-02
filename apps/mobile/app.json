@@ -2,7 +2,7 @@
   "expo": {
     "name": "MyTaskLists",
     "slug": "mytasklists",
-    "version": "2.1.1",
+    "version": "2.2.0",
     "runtimeVersion": {
       "policy": "fingerprint"
     },
@@ -25,7 +25,7 @@
       "associatedDomains": [
         "webcredentials:mytasklists.online"
       ],
-      "buildNumber": "3"
+      "buildNumber": "4"
     },
     "android": {
       "package": "online.mytasklists.app",
@@ -37,7 +37,7 @@
         "POST_NOTIFICATIONS",
         "INTERNET"
       ],
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "bundler": "metro",
