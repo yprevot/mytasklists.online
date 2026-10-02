@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, request as playwrightRequest } from '@playwright/test';
 import sharp from 'sharp';
 import { execFileSync } from 'node:child_process';
 import { io } from 'socket.io-client';
@@ -53,6 +53,7 @@ test('SEC-03 cooldown sobrevive cancelación; invitación cancelada no se acepta
   const send=()=>request.post(`${API_URL}/lists/${list.id}/share`,{headers:auth(owner.accessToken),data:{email}});
   expect((await send()).status()).toBe(201); expect((await send()).status()).toBe(429);
   const pending=await request.get(`${API_URL}/lists/${list.id}/invitations`,{headers:auth(owner.accessToken)});
+  expect(pending.status()).toBe(200);
   const [invite]=await pending.json(); expect(invite.email).toBe(email); expect(invite.token).toBeUndefined();
   expect((await request.delete(`${API_URL}/lists/${list.id}/invitations/${invite.id}`,{headers:auth(owner.accessToken)})).status()).toBe(200);
   expect((await send()).status()).toBe(429);
@@ -104,9 +105,10 @@ test('ARC-01 SMTP caído conserva el correo cifrado y no retiene una transacció
       const locks=(await c.query("SELECT count(*)::int n FROM pg_locks WHERE locktype='advisory' AND granted")).rows[0].n;
       await c.end();process.stdout.write(JSON.stringify({jobs:jobs.length,encrypted:jobs.every(j=>j.payload.startsWith('v1.')&&!j.payload.includes(process.argv[1])),locks}));})().catch(()=>process.exit(1))`,email);
     expect(JSON.parse(result)).toMatchObject({jobs:1,encrypted:true,locks:0});
-  } finally { execFileSync('docker',['compose','start','mailpit'],{cwd:'..',stdio:'pipe'}); }
+  } finally { execFileSync('docker',['compose','start','--wait','mailpit'],{cwd:'..',stdio:'pipe'}); }
   const {waitForEmail}=await import('../../utils/mailpit');
-  await waitForEmail(request,email,'Completa tu registro');
+  const fresh=await playwrightRequest.newContext();
+  try { await waitForEmail(fresh,email,'Completa tu registro'); } finally { await fresh.dispose(); }
 });
 
 test('ARC-01 cuota de fotos conserva el archivo anterior y limita la concurrencia de trabajo', async ({request}) => {

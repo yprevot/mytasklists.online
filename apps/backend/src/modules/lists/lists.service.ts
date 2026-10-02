@@ -432,7 +432,7 @@ export class ListsService {
     await this.assertOwner(listId, actorId);
     return this.invitations.createQueryBuilder('i')
       .select(['i.id','i.email','i.role','i.expiresAt','i.lastSentAt'])
-      .where('i.listId=:listId AND i.status=:status AND i.expiresAt>now()', { listId, status: InvitationStatus.PENDING })
+      .where('i.list_id=:listId AND i.status=:status AND i.expires_at > now()', { listId, status: InvitationStatus.PENDING })
       .orderBy('i.createdAt','DESC').take(100).getMany();
   }
 
