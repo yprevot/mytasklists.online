@@ -30,7 +30,6 @@ import { CacheService } from '../../redis/cache.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { RT } from '../realtime/realtime.events';
 import { NotificationsService } from '../notifications/notifications.service';
-import { isItemOverdue } from '../items/item.mapper';
 import { ItemImageStorage } from '../items/item-image.storage';
 import {
   ListDetailView,
@@ -110,16 +109,24 @@ export class ListsService {
     const listIds = memberships.map((member) => member.listId);
     const lists = await this.lists.find({
       where: { id: In(listIds) },
-      relations: { members: { user: true }, items: true },
       order: { updatedAt: 'DESC' },
     });
 
-    const now = new Date();
+    const counts = await this.dataSource.query(`
+      SELECT l.id,
+        (SELECT count(*) FROM list_members m WHERE m.list_id=l.id)::int AS members,
+        count(i.id) FILTER (WHERE i.status='pending')::int AS pending,
+        count(i.id) FILTER (WHERE i.status='purchased')::int AS purchased,
+        count(i.id) FILTER (WHERE i.status='pending' AND i.is_recurring AND i.due_at<now())::int AS overdue,
+        count(i.id) FILTER (WHERE i.is_recurring)::int AS recurring
+      FROM shopping_lists l LEFT JOIN list_items i ON i.list_id=l.id
+      WHERE l.id=ANY($1::uuid[]) GROUP BY l.id`, [listIds]);
+    const byId = new Map<string, any>(counts.map((row: any) => [row.id, row]));
     return lists
       .filter((list) => includeArchived || !list.isArchived)
       .map((list) => {
         const mine = memberships.find((member) => member.listId === list.id)!;
-        const items = list.items ?? [];
+        const count = byId.get(list.id);
         return {
           id: list.id,
           name: list.name,
@@ -128,14 +135,14 @@ export class ListsService {
           icon: list.icon,
           ownerId: list.ownerId,
           isArchived: list.isArchived,
-          isShared: (list.members ?? []).length > 1,
+          isShared: count.members > 1,
           myRole: mine.role,
           notifyOnChange: mine.notifyOnChange,
-          memberCount: (list.members ?? []).length,
-          pendingCount: items.filter((item) => item.status === ItemStatus.PENDING).length,
-          purchasedCount: items.filter((item) => item.status === ItemStatus.PURCHASED).length,
-          overdueCount: items.filter((item) => isItemOverdue(item, now)).length,
-          recurringCount: items.filter((item) => item.isRecurring).length,
+          memberCount: count.members,
+          pendingCount: count.pending,
+          purchasedCount: count.purchased,
+          overdueCount: count.overdue,
+          recurringCount: count.recurring,
           createdAt: new Date(list.createdAt).toISOString(),
           updatedAt: new Date(list.updatedAt).toISOString(),
         };
