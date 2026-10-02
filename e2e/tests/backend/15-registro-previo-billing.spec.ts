@@ -1,5 +1,6 @@
 import {expect,test} from '@playwright/test';
 import {API_URL,uniqueEmail,uniqueWhatsapp,DEFAULT_PASSWORD,registerUser,auth,createList,createItem} from '../../utils/api-helpers';
+import { MAILPIT_URL } from '../../utils/mailpit';
 import {requestRegistration} from '../../utils/registration';
 const fields=()=>({fullName:'Persona Verificada',whatsapp:uniqueWhatsapp(),password:DEFAULT_PASSWORD,passwordConfirmation:DEFAULT_PASSWORD});
 test('REG-01/06/07/11/19 · correo primero, enlace no consume y alta una sola vez',async({request})=>{
@@ -12,7 +13,7 @@ test('REG-01/06/07/11/19 · correo primero, enlace no consume y alta una sola ve
 });
 test('REG-04 · correo existente no genera enlace de alta',async({request})=>{
  const r=await request.post(`${API_URL}/auth/registration/request`,{data:{email:'ana@example.com'}});expect(r.status()).toBe(200);expect(await r.json()).toEqual({ok:true,cooldownSeconds:60});
- const mail=await request.get('http://localhost:8025/api/v1/search',{params:{query:'to:"ana@example.com" subject:"Completa tu registro"'}});expect((await mail.json()).messages.length).toBe(0);
+ const mail=await request.get(`${MAILPIT_URL}/api/v1/search`,{params:{query:'to:"ana@example.com" subject:"Completa tu registro"'}});expect((await mail.json()).messages.length).toBe(0);
 });
 for(const email of ['', 'bad-address','a'.repeat(180)+'@example.com'])test(`REG-03 · correo inválido ${email.slice(0,8)}`,async({request})=>{expect((await request.post(`${API_URL}/auth/registration/request`,{data:{email}})).status()).toBe(400);});
 for(const token of ['', 'broken', 'A'.repeat(43)])test(`REG-09 · token inválido ${token.slice(0,8)}`,async({request})=>{expect((await request.post(`${API_URL}/auth/registration/validate`,{data:{token}})).status()).toBe(400);});

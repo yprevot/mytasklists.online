@@ -37,7 +37,9 @@ WORKDIR /app/apps/backend
 
 RUN apk add --no-cache tini \
  && addgroup -S nodejs -g 1001 \
- && adduser  -S nestjs -u 1001 -G nodejs
+ && adduser  -S nestjs -u 1001 -G nodejs \
+ && mkdir -p /app/uploads/items \
+ && chown -R nestjs:nodejs /app/uploads
 
 COPY --from=deps    /app/node_modules                 /app/node_modules
 COPY --from=deps    /app/apps/backend/node_modules    ./node_modules

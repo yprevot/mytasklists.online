@@ -25,9 +25,11 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
     setSaving(true);
     setError(null);
     try {
-      await listsApi.share(list.id, email.trim().toLowerCase());
+      const result = await listsApi.share(list.id, email.trim().toLowerCase());
       setEmail('');
-      onNotice(t('share.shared', { email: email.trim().toLowerCase() }), true);
+      onNotice(result.invitationSent
+        ? t('share.invited', { email: email.trim().toLowerCase() })
+        : t('share.shared', { email: email.trim().toLowerCase() }), true);
       onChanged();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('share.failed'));

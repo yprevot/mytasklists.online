@@ -1,5 +1,7 @@
 import {
   Body,
+  BadRequestException,
+  PayloadTooLargeException,
   Controller,
   Delete,
   Get,
@@ -10,19 +12,54 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  Res,
 } from '@nestjs/common';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ItemsService } from './items.service';
 import { CreateItemDto, ReorderItemsDto, UpdateItemDto } from './dto/item.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { ItemStatus } from '../../database/entities';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('productos')
 @ApiBearerAuth()
 @Controller()
 export class ItemsController {
   constructor(private readonly items: ItemsService) {}
+
+  @Public()
+  @Get('items/images/:filename')
+  async image(@Param('filename') filename: string, @Res() reply: FastifyReply) {
+    const result = await this.items.readImage(filename);
+    return reply.type(result.contentType).header('Cache-Control', 'public, max-age=31536000, immutable')
+      .header('X-Content-Type-Options', 'nosniff').send(result.buffer);
+  }
+
+  @Post('items/:id/image')
+  async uploadImage(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      const file = await request.file();
+      if (!file) throw new BadRequestException('Selecciona una imagen.');
+      return await this.items.uploadImage(id, user.id, await file.toBuffer(), file.mimetype);
+    } catch (error) {
+      if ((error as { code?: string }).code === 'FST_REQ_FILE_TOO_LARGE') {
+        throw new PayloadTooLargeException('La imagen no puede superar 5 MB.');
+      }
+      throw error;
+    }
+  }
+
+  @Delete('items/:id/image')
+  removeImage(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.items.removeImage(id, user.id);
+  }
 
   @Get('lists/:listId/items')
   @ApiOperation({ summary: 'Productos de una lista' })

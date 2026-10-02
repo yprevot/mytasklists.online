@@ -108,6 +108,7 @@ export const es = {
     advance: 'Adelantar 14 días',
   },
   item: {
+    edit: 'Editar',
     markPurchased: 'Marcar {{name}} como comprado',
     every: 'cada {{count}} d',
     overdue: 'vencido {{count}} d',

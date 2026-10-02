@@ -63,6 +63,8 @@ export interface Item {
   unit: string;
   note: string | null;
   category: string;
+  /** Ruta relativa a la API para una imagen cargada; null cuando no tiene. */
+  imageUrl: string | null;
   status: ItemStatus;
   isRecurring: boolean;
   recurrenceDays: number | null;

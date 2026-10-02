@@ -86,6 +86,19 @@ export function verifyEmailTemplate(locale: Locale, name: string, url: string, h
   };
 }
 
+export function listInvitationTemplate(locale: Locale, listName: string, inviter: string, url: string, hours: number): MailContent {
+  if (locale === 'en') return {
+    subject: `${inviter} invited you to a MyTaskLists list`,
+    text: `${inviter} invited you to collaborate on “${listName}”. Create your free account using this link (expires in ${hours} hours):\n${url}`,
+    html: layout(locale, 'You have a list invitation', `<p>${escape(inviter)} invited you to collaborate on <strong>${escape(listName)}</strong>.</p><p>Create a free account with this email address to open the shared list. This invitation expires in ${hours} hours.</p>`, { label: 'Create your account', url }),
+  };
+  return {
+    subject: `${inviter} te invitó a una lista de MyTaskLists`,
+    text: `${inviter} te invitó a colaborar en “${listName}”. Crea tu cuenta gratis con este enlace (vence en ${hours} horas):\n${url}`,
+    html: layout(locale, 'Tienes una invitación a una lista', `<p>${escape(inviter)} te invitó a colaborar en <strong>${escape(listName)}</strong>.</p><p>Crea una cuenta gratis con este correo para abrir la lista compartida. La invitación vence en ${hours} horas.</p>`, { label: 'Crear cuenta gratis', url }),
+  };
+}
+
 export function resetPasswordTemplate(locale: Locale, name: string, url: string, minutes: number): MailContent {
   if (locale === 'en') {
     return {

@@ -80,7 +80,7 @@ test.describe('Servicio backend · listas de compras', () => {
     expect(detalle.myRole).toBe('editor');
   });
 
-  test('CP-LIST-005 · no se puede compartir con alguien que no está registrado', async ({ request }) => {
+  test('CP-LIST-005 · compartir con alguien sin cuenta envía una invitación', async ({ request }) => {
     const list = await createList(request, owner.accessToken, 'Sin destinatario');
 
     const response = await request.post(`${API_URL}/lists/${list.id}/share`, {
@@ -88,8 +88,8 @@ test.describe('Servicio backend · listas de compras', () => {
       data: { email: uniqueEmail('desconocido') },
     });
 
-    expect(response.status()).toBe(404);
-    expect(JSON.stringify(await response.json())).toContain('registrarse');
+    expect(response.status()).toBe(201);
+    expect(await response.json()).toMatchObject({ invitationSent: true, memberCount: 1 });
   });
 
   test('CP-LIST-006 · quien no es integrante no puede ver la lista', async ({ request }) => {

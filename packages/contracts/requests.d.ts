@@ -2,7 +2,7 @@
  * Cuerpos que envían los clientes (cliente → servidor). Los DTO del backend los
  * implementan, así que no pueden separarse sin que falle la compilación.
  */
-import type { DevicePlatform, Locale, MemberRole } from './models';
+import type { DevicePlatform, ListDetail, Locale, MemberRole } from './models';
 
 // ── Autenticación ──────────────────────────────────────────────────────
 export interface RegisterRequest {
@@ -100,6 +100,12 @@ export interface ShareListRequest {
   email?: string;
   userId?: string;
   role?: MemberRole;
+}
+
+export interface ShareListResponse extends ListDetail {
+  /** true si se envió un correo a una dirección todavía no registrada. */
+  invitationSent?: boolean;
+  invitationEmail?: string;
 }
 
 export interface UpdateMemberRequest {

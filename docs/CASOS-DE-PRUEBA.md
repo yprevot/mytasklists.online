@@ -466,3 +466,8 @@ Archivo: `e2e/tests/mobile/05-idiomas.spec.ts`
 | `CP-MOV-018` | Con el teléfono en inglés la app se abre en inglés y se puede cambiar |
 
 ---
+
+
+## Invitaciones, edición e imágenes (2.1.0)
+
+Ver [RELEASE-2.1.0.md](RELEASE-2.1.0.md) y las pruebas API/web/móvil allí indicadas. Las expectativas antiguas de error al compartir con una persona sin cuenta se reemplazan por envío de invitación y aceptación tras verificar su correo.

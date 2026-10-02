@@ -39,6 +39,7 @@ export const toItemView = (item: ListItem, now: Date = new Date()): ItemView => 
     unit: item.unit,
     note: item.note,
     category: item.category,
+    imageUrl: item.imageKey ? `/items/images/${encodeURIComponent(item.imageKey)}` : null,
     status: item.status,
     isRecurring: item.isRecurring,
     recurrenceDays: item.recurrenceDays,

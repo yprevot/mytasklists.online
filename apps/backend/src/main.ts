@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import fastifyCookie from '@fastify/cookie';
+import multipart from '@fastify/multipart';
 import helmet from '@fastify/helmet';
 import { DataSource } from 'typeorm';
 import { AppModule } from './app.module';
@@ -34,6 +35,7 @@ async function bootstrap(): Promise<void> {
   const swaggerEnabled = config.get<boolean>('swaggerEnabled', false);
 
   await app.register(fastifyCookie as any);
+  await app.register(multipart, { limits: { files: 1, fileSize: 5 * 1024 * 1024, fields: 2, fieldSize: 4096, parts: 3 } });
   await app.register(helmet as any, {
     // Swagger UI necesita estilos y scripts en línea; la API pura no sirve HTML
     contentSecurityPolicy: swaggerEnabled
