@@ -19,6 +19,7 @@ export class SecurityHardening1750000000000 implements MigrationInterface {
       CREATE INDEX invite_sender_events ON invitation_send_events(sender_id,sent_at);
       CREATE INDEX invite_recipient_events ON invitation_send_events(email,sent_at);
       ALTER TABLE list_items ADD COLUMN image_bytes integer NOT NULL DEFAULT 0 CHECK(image_bytes>=0);
+      CREATE INDEX item_image_lookup ON list_items(image_key) WHERE image_key IS NOT NULL;
       CREATE TABLE image_deletions (image_key varchar(80) PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now(),
         attempts integer NOT NULL DEFAULT 0, available_at timestamptz NOT NULL DEFAULT now());
       CREATE FUNCTION queue_deleted_item_image() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
@@ -39,7 +40,7 @@ export class SecurityHardening1750000000000 implements MigrationInterface {
   async down(q: QueryRunner): Promise<void> {
     await q.query(`DROP TABLE invitation_send_events; DROP TABLE mail_outbox; DROP TRIGGER item_image_cleanup ON list_items;
       DROP FUNCTION queue_deleted_item_image(); DROP TABLE image_deletions;
-      ALTER TABLE list_items DROP COLUMN image_bytes; ALTER TABLE list_invitations DROP COLUMN last_sent_at;
+      DROP INDEX item_image_lookup; ALTER TABLE list_items DROP COLUMN image_bytes; ALTER TABLE list_invitations DROP COLUMN last_sent_at;
       DROP INDEX one_owner_per_list;`);
   }
 }

@@ -108,3 +108,16 @@ test('ARC-01 SMTP caído conserva el correo cifrado y no retiene una transacció
   const {waitForEmail}=await import('../../utils/mailpit');
   await waitForEmail(request,email,'Completa tu registro');
 });
+
+test('ARC-01 cuota de fotos conserva el archivo anterior y limita la concurrencia de trabajo', async ({request}) => {
+  const owner=await registerUser(request), list=await createList(request,owner.accessToken,'Cuota');
+  const first=await createItem(request,owner.accessToken,list.id,{name:'Primero'}), second=await createItem(request,owner.accessToken,list.id,{name:'Segundo'});
+  const uploaded=await request.post(`${API_URL}/items/${first.id}/image`,{headers:auth(owner.accessToken),multipart:await photo()});
+  const url=(await uploaded.json()).imageUrl;
+  backend(`(async()=>{const {Client}=require('pg');const c=new Client({host:process.env.POSTGRES_HOST,user:process.env.POSTGRES_USER,password:process.env.POSTGRES_PASSWORD,database:process.env.POSTGRES_DB});await c.connect();await c.query('UPDATE list_items SET image_bytes=104857600 WHERE id=$1',[process.argv[1]]);await c.end()})().catch(()=>process.exit(1))`,first.id);
+  expect((await request.post(`${API_URL}/items/${second.id}/image`,{headers:auth(owner.accessToken),multipart:await photo()})).status()).toBe(413);
+  expect((await request.get(API_URL+url)).status()).toBe(200);
+  const concurrency=backend(`(async()=>{const {ItemImageStorage}=require('./dist/modules/items/item-image.storage');const s=new ItemImageStorage(null);let release;const wait=new Promise(r=>release=r);const a=s.limited(()=>wait),b=s.limited(()=>wait);let denied=false;try{await s.limited(async()=>true)}catch(e){denied=e.getStatus()===429}release();await Promise.all([a,b]);const recovered=await s.limited(async()=>true);process.stdout.write(JSON.stringify({denied,recovered}))})().catch(()=>process.exit(1))`);
+  expect(JSON.parse(concurrency)).toEqual({denied:true,recovered:true});
+  await request.delete(`${API_URL}/lists/${list.id}`,{headers:auth(owner.accessToken)});
+});

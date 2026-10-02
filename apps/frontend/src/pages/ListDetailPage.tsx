@@ -57,11 +57,14 @@ export function ListDetailPage() {
   // Al entrar a la pantalla nos unimos a la sala de la lista
   useEffect(() => {
     if (!socket || !id) return;
+    const connected = () => { void load(); };
+    socket.on('connect', connected);
     socket.emit('list:join', { listId: id });
     return () => {
+      socket.off('connect', connected);
       socket.emit('list:leave', { listId: id });
     };
-  }, [socket, id]);
+  }, [socket, id, load]);
 
   /** Recarga agrupada: varios eventos seguidos provocan una sola petición */
   const scheduleReload = useCallback(() => {

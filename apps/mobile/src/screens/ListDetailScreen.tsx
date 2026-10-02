@@ -68,11 +68,14 @@ export function ListDetailScreen({ route, navigation }: any) {
 
   useEffect(() => {
     if (!socket) return;
+    const connected = () => { void load(); };
+    socket.on('connect', connected);
     socket.emit('list:join', { listId });
     return () => {
+      socket.off('connect', connected);
       socket.emit('list:leave', { listId });
     };
-  }, [socket, listId]);
+  }, [socket, listId, load]);
 
   useEffect(() => {
     const timer = setInterval(() => { if (AppState.currentState === 'active') void load(); }, 240000);

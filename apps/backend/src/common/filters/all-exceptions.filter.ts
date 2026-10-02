@@ -53,7 +53,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error,
       message: translated,
       ...extra,
-      path: request?.url,
+      path: request?.url?.split('?')[0],
       timestamp: new Date().toISOString(),
     });
   }

@@ -230,6 +230,8 @@ export class ItemsService {
         const repo = manager.getRepository(ListItem);
         const current = await repo.findOne({ where: { id: itemId }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
         if (!current) throw new NotFoundException('El producto no existe');
+        const [canWrite] = await manager.query("SELECT 1 FROM list_members WHERE list_id=$1 AND user_id=$2 AND role IN ('owner','editor')", [item.listId, userId]);
+        if (!canWrite) throw new NotFoundException('Ya no tienes acceso para editar el producto');
         const [{ bytes }] = await manager.query(`SELECT COALESCE(sum(i.image_bytes),0) AS bytes FROM list_items i
           JOIN shopping_lists l ON l.id=i.list_id WHERE l.owner_id=$1 AND i.id<>$2`, [list.ownerId, itemId]);
         if (Number(bytes) + imageBytes > Number(process.env.IMAGE_MAX_BYTES_PER_ACCOUNT || 104857600))
