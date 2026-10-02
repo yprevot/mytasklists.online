@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import type { ServerEventName, ServerEvents } from '@lista/contracts';
-import { SOCKET_URL, tokens, renewSession } from '../api/client';
+import { SOCKET_URL, tokens, api } from '../api/client';
 import { useAuth } from './AuthContext';
 
 interface Value {
@@ -45,14 +45,21 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     socket.on('connect', () => setConnected(true));
     let disposed = false;
     let recovering = false;
-    let lastRecovery = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let retryDelay = 5000;
     const recover = async () => {
-      if (disposed || recovering || Date.now() - lastRecovery < 5000) return;
+      if (disposed || recovering) return;
       recovering = true;
-      lastRecovery = Date.now();
       try {
-        const renewed = await renewSession();
-        if (renewed && !disposed) socket.connect();
+        // The HTTP client rotates expired credentials and clears revoked sessions.
+        await api.get('/auth/me');
+        retryDelay = 5000;
+        if (!disposed) socket.connect();
+      } catch {
+        if (!disposed && tokens.refresh) {
+          retryTimer = setTimeout(() => { retryTimer = null; void recover(); }, retryDelay);
+          retryDelay = Math.min(30000, retryDelay * 2);
+        }
       } finally { recovering = false; }
     };
     socket.on('disconnect', reason => {
@@ -69,6 +76,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
     return () => {
       disposed = true;
+      if (retryTimer) clearTimeout(retryTimer);
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;

@@ -120,7 +120,8 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     if (!client.expiresAt || client.expiresAt <= Date.now()) { client.disconnect(true); return; }
     client.expiryTimer = setTimeout(() => {
       client.emit('session:expired');
-      client.disconnect(true);
+      // Transport close lets older Socket.IO clients retry with their current token.
+      client.conn.close(true);
     }, Math.min(client.expiresAt - Date.now(), 2147483647));
     client.expiryTimer.unref();
     await client.join(userRoom(client.userId));

@@ -105,10 +105,15 @@ test('ARC-01 SMTP caído conserva el correo cifrado y no retiene una transacció
       const locks=(await c.query("SELECT count(*)::int n FROM pg_locks WHERE locktype='advisory' AND granted")).rows[0].n;
       await c.end();process.stdout.write(JSON.stringify({jobs:jobs.length,encrypted:jobs.every(j=>j.payload.startsWith('v1.')&&!j.payload.includes(process.argv[1])),locks}));})().catch(()=>process.exit(1))`,email);
     expect(JSON.parse(result)).toMatchObject({jobs:1,encrypted:true,locks:0});
-  } finally { execFileSync('docker',['compose','start','--wait','mailpit'],{cwd:'..',stdio:'pipe'}); }
-  const {waitForEmail}=await import('../../utils/mailpit');
+  } finally { execFileSync('docker',['compose','start','mailpit'],{cwd:'..',stdio:'pipe'}); }
+  const {waitForEmail,MAILPIT_URL}=await import('../../utils/mailpit');
   const fresh=await playwrightRequest.newContext();
-  try { await waitForEmail(fresh,email,'Completa tu registro'); } finally { await fresh.dispose(); }
+  try {
+    await expect.poll(async()=>{
+      try { return (await fresh.get(`${MAILPIT_URL}/api/v1/info`)).status(); } catch { return 0; }
+    },{timeout:15_000}).toBe(200);
+    await waitForEmail(fresh,email,'Completa tu registro');
+  } finally { await fresh.dispose(); }
 });
 
 test('ARC-01 cuota de fotos conserva el archivo anterior y limita la concurrencia de trabajo', async ({request}) => {
