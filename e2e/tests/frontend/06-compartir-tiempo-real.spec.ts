@@ -71,7 +71,7 @@ test.describe('Frontend web · listas compartidas en tiempo real', () => {
     await page.getByTestId('share-email-input').fill('nadie.registrado@example.com');
     await page.getByTestId('share-submit').click();
 
-    await expect(page.getByText(/invitación enviada/i)).toBeVisible();
+    await expect(page.getByText(/el enlace para crear una cuenta y unirse a la lista/i)).toBeVisible();
     await expect(page.getByTestId('share-email-input')).toHaveValue('');
   });
 
