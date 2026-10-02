@@ -1,5 +1,7 @@
 # MyTaskLists 2.1.0 — invitaciones, edición e imágenes
 
+La distribución Android final es **2.1.1 / versionCode 3**. La prueba nativa de 2.1.0 detectó que Expo Fetch no acepta adjuntos `{ uri }`; se sustituyen por `File` de `expo-file-system`, con lectura real de bytes. El APK 2.1.0 no se anuncia en el manifiesto público.
+
 ## Comportamiento
 
 - La persona propietaria puede compartir una lista con un correo sin cuenta. Se envía un enlace de registro; al crear una cuenta con ese correo verificado, se aceptan las invitaciones pendientes que no hayan vencido. Las invitaciones duran 72 horas. Los roles editor y lector se conservan; compartir no transfiere la propiedad.
