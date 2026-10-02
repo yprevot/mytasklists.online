@@ -58,7 +58,7 @@ test.describe('Frontend web · listas compartidas en tiempo real', () => {
     await expect(page.getByTestId('list-members-badge')).toContainText('2 integrantes');
   });
 
-  test('CP-WEB-027 · avisa si se intenta compartir con alguien sin cuenta', async ({
+  test('CP-WEB-027 · envía invitación a alguien sin cuenta', async ({
     page,
     request,
   }) => {
@@ -71,7 +71,8 @@ test.describe('Frontend web · listas compartidas en tiempo real', () => {
     await page.getByTestId('share-email-input').fill('nadie.registrado@example.com');
     await page.getByTestId('share-submit').click();
 
-    await expect(page.getByTestId('share-error')).toContainText('registrarse');
+    await expect(page.getByText(/el enlace para crear una cuenta y unirse a la lista/i)).toBeVisible();
+    await expect(page.getByTestId('share-email-input')).toHaveValue('');
   });
 
   test('CP-WEB-028 · lo que una persona marca se actualiza al instante en la otra', async ({

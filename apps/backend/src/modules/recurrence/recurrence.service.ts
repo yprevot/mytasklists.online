@@ -90,7 +90,7 @@ export class RecurrenceService implements OnModuleInit {
       const days = item.recurrenceDays ?? 0;
       if (days <= 0) {
         item.nextActivationAt = null;
-        await this.items.save(item);
+        await this.items.update(item.id, { nextActivationAt: null });
         continue;
       }
 
@@ -103,7 +103,7 @@ export class RecurrenceService implements OnModuleInit {
       item.nextActivationAt = null;
       item.overdueNotifiedAt = null;
       item.cycleCount += 1;
-      await this.items.save(item);
+      await this.items.update(item.id, { status: item.status, activatedAt: item.activatedAt, dueAt: item.dueAt, purchasedAt: null, purchasedById: null, nextActivationAt: null, overdueNotifiedAt: null, cycleCount: item.cycleCount });
 
       const list = await this.lists.findOne({ where: { id: item.listId } });
       if (!list) continue;
@@ -154,7 +154,7 @@ export class RecurrenceService implements OnModuleInit {
 
     for (const item of overdue) {
       item.overdueNotifiedAt = now;
-      await this.items.save(item);
+      await this.items.update(item.id, { overdueNotifiedAt: now });
 
       const list = await this.lists.findOne({ where: { id: item.listId } });
       if (!list) continue;
@@ -202,7 +202,7 @@ export class RecurrenceService implements OnModuleInit {
     item.purchasedAt = shift(item.purchasedAt);
     item.lastPurchasedAt = shift(item.lastPurchasedAt);
     item.overdueNotifiedAt = null;
-    await this.items.save(item);
+    await this.items.update(item.id, { activatedAt: item.activatedAt, dueAt: item.dueAt, nextActivationAt: item.nextActivationAt, purchasedAt: item.purchasedAt, lastPurchasedAt: item.lastPurchasedAt, overdueNotifiedAt: null });
 
     await this.listsService.invalidate(item.listId);
     return this.runSweep();

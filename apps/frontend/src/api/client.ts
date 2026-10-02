@@ -106,14 +106,15 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     ...languageHeader(),
     ...((headers as Record<string, string>) ?? {}),
   };
-  if (body !== undefined) finalHeaders['Content-Type'] = 'application/json';
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  if (body !== undefined && !isFormData) finalHeaders['Content-Type'] = 'application/json';
   if (auth && tokenStore.access) finalHeaders.Authorization = `Bearer ${tokenStore.access}`;
 
   const response = await fetch(`${API_URL}${path}`, {
     ...rest,
     credentials: 'same-origin',
     headers: finalHeaders,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : isFormData ? body as FormData : JSON.stringify(body),
   });
 
   if (response.status === 401 && auth && retry) {

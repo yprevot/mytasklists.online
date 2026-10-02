@@ -1,10 +1,11 @@
 import UNITS from '../../../../packages/ui-data/units.json';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Badge } from './ui';
 import { colors, spacing } from '../theme';
 import type { Item } from '../types';
+import { API_URL } from '../api/client';
 
 interface Props {
   item: Item;
@@ -13,34 +14,31 @@ interface Props {
   disabled?: boolean;
   /** Primera fila de la hoja: sin filete arriba */
   first?: boolean;
+  onEdit: (item: Item) => void;
 }
 
 /**
  * Producto pendiente. El estado se lee en el aro del check y en la etiqueta:
  * gris (una sola vez), etiqueta amarilla (recurrente al día) y rojo (vencido).
  */
-export function ItemRow({ item, onPurchase, onLongPress, disabled, first }: Props) {
+export function ItemRow({ item, onPurchase, onLongPress, disabled, first, onEdit }: Props) {
   const { t, i18n } = useTranslation();
 
   return (
-    <Pressable
-      testID="pending-item"
-      accessibilityLabel={t('item.markPurchased', { name: item.name })}
-      onPress={() => !disabled && onPurchase(item)}
-      onLongPress={() => onLongPress?.(item)}
-      style={({ pressed }) => [
+    <View testID="pending-item" style={[
         styles.row,
         !first && styles.divided,
         item.isOverdue && { backgroundColor: colors.dangerSoft },
-        pressed && { backgroundColor: item.isOverdue ? '#fbe3dd' : '#f8faf7' },
-      ]}
-    >
+      ]}>
+      <Pressable accessibilityRole="checkbox" accessibilityLabel={t('item.markPurchased', { name: item.name })} accessibilityState={{ checked: false }} onPress={() => !disabled && onPurchase(item)} onLongPress={() => onLongPress?.(item)} disabled={disabled} style={({ pressed }) => [styles.checkboxWrap, pressed && { opacity: .65 }]}>
       <View
         style={[styles.checkbox, item.isOverdue && { borderColor: colors.danger }]}
         testID="item-checkbox"
       />
+      </Pressable>
 
-      <View style={{ flex: 1 }}>
+      <Pressable style={{ flex: 1 }} onPress={() => !disabled && onPurchase(item)} onLongPress={() => onLongPress?.(item)} disabled={disabled} accessibilityLabel={t('item.markPurchased', { name: item.name })}>
+        {item.imageUrl && <Image source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}` }} style={{ width: 56, height: 56, borderRadius: 8, marginBottom: 5 }} />}
         <Text
           style={[styles.name, item.isOverdue && { color: colors.dangerInk }]}
           testID="item-name"
@@ -65,8 +63,10 @@ export function ItemRow({ item, onPurchase, onLongPress, disabled, first }: Prop
             <Text style={styles.meta}>{t('item.dueIn', { count: item.daysUntilDue })}</Text>
           ) : null}
         </View>
-      </View>
-    </Pressable>
+        {item.note ? <Text style={styles.meta} numberOfLines={2}>{item.note}</Text> : null}
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${t('item.edit')}: ${item.name}`} onPress={() => onEdit(item)} disabled={disabled} style={styles.edit}><Text style={{ color: colors.brand, fontWeight: '700' }}>{t('item.edit')}</Text></Pressable>
+    </View>
   );
 }
 
@@ -89,6 +89,8 @@ const styles = StyleSheet.create({
     borderColor: colors.lineStrong,
     backgroundColor: colors.surface,
   },
+  checkboxWrap: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  edit: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 16, fontWeight: '600', color: colors.ink, letterSpacing: -0.15 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 4, flexWrap: 'wrap' },
   meta: { fontSize: 13, color: colors.inkSoft },

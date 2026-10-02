@@ -1,19 +1,25 @@
-import { BadRequestException, HttpException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcryptjs';
 import type { Locale } from '@lista/contracts';
-import { User, AuthProvider } from '../../database/entities';
+import { User, AuthProvider, InvitationStatus, ListInvitation, ListMember } from '../../database/entities';
 import { MailService } from '../mail/mail.service';
 import { registrationTemplate } from '../mail/mail.templates';
 import { CompleteRegistrationDto } from './dto/registration.dto';
+import { CacheService } from '../../redis/cache.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { RT } from '../realtime/realtime.events';
+import { toMemberView } from '../lists/list.mapper';
 
 const digest = (token: string) => createHash('sha256').update(token).digest('hex');
 const invalid = () => new BadRequestException('El enlace no es válido o ya expiró');
 @Injectable()
 export class RegistrationService {
-  constructor(private readonly db: DataSource, private readonly mail: MailService, private readonly config: ConfigService) {}
+  private readonly logger = new Logger(RegistrationService.name);
+  constructor(private readonly db: DataSource, private readonly mail: MailService, private readonly config: ConfigService,
+    private readonly cache: CacheService, private readonly realtime: RealtimeGateway) {}
   async request(email: string, locale: Locale): Promise<{ ok: true; cooldownSeconds: number }> {
     const started = Date.now();
     // Health check applies to every address, including existing accounts.
@@ -59,8 +65,9 @@ export class RegistrationService {
     if (dto.password !== dto.passwordConfirmation) throw new BadRequestException('Las contraseñas no coinciden');
     if (Buffer.byteLength(dto.password, 'utf8') > 72) throw new BadRequestException('La contraseña no puede superar 72 bytes');
     const passwordHash = await bcrypt.hash(dto.password, 12);
+    const joinedLists: string[] = [];
     try {
-      return await this.db.transaction(async m => {
+      const user = await this.db.transaction(async m => {
         const [row] = await m.query('SELECT * FROM registration_requests WHERE token_hash=$1 FOR UPDATE', [digest(dto.token)]);
         if (!row || row.consumed_at || new Date(row.expires_at).getTime() <= Date.now()) throw invalid();
         const repo = m.getRepository(User);
@@ -68,9 +75,37 @@ export class RegistrationService {
           throw new BadRequestException('Ya existe una cuenta con este correo electrónico');
         const user = await repo.save(repo.create({ email: row.email, fullName: dto.fullName.trim(),
           whatsapp: dto.whatsapp, passwordHash, locale: row.locale, emailVerified: true, provider: AuthProvider.LOCAL }));
+        const pendingInvitations = await m.getRepository(ListInvitation).find({
+          where: { email: row.email, status: InvitationStatus.PENDING },
+        });
+        const now = new Date();
+        for (const invitation of pendingInvitations) {
+          if (invitation.expiresAt.getTime() <= now.getTime()) {
+            invitation.status = InvitationStatus.REVOKED;
+            await m.getRepository(ListInvitation).save(invitation);
+            continue;
+          }
+          await m.getRepository(ListMember).upsert({
+            listId: invitation.listId, userId: user.id, role: invitation.role, notifyOnChange: true,
+          }, ['listId', 'userId']);
+          invitation.status = InvitationStatus.ACCEPTED;
+          await m.getRepository(ListInvitation).save(invitation);
+          joinedLists.push(invitation.listId);
+        }
         await m.query('UPDATE registration_requests SET consumed_at=now() WHERE email=$1', [row.email]);
         return user;
       });
+      for (const listId of joinedLists) {
+        await this.cache.del(CacheService.listDetailKey(listId));
+        try {
+          const member = await this.db.getRepository(ListMember).findOne({ where: { listId, userId: user.id } });
+          if (member) {
+            member.user = user;
+            this.realtime.emitToList(listId, RT.LIST_MEMBER_ADDED, { listId, member: toMemberView(member), actorId: user.id });
+          }
+        } catch { this.logger.warn('No se pudo emitir la aceptación de una invitación'); }
+      }
+      return user;
     } catch (e) {
       if ((e as { code?: string }).code === '23505') throw new BadRequestException('Ya existe una cuenta con este correo electrónico');
       throw e;

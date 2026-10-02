@@ -1,8 +1,9 @@
 import UNITS from '../../../../packages/ui-data/units.json';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { itemsApi } from '../api/endpoints';
 import { ApiError } from '../api/client';
+import { prepareItemImage } from '../utils/item-image';
 
 interface Props {
   listId: string;
@@ -27,6 +28,8 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
   const [recurrenceDays, setRecurrenceDays] = useState('14');
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [image, setImage] = useState<File | null>(null);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -40,17 +43,29 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
     }
     setSaving(true);
     try {
-      await itemsApi.create(listId, {
+      const created = await itemsApi.create(listId, {
         name: trimmed,
         quantity: amount,
         unit: selectedUnit,
         isRecurring,
         ...(isRecurring ? { recurrenceDays: Number(recurrenceDays) || 14 } : {}),
       });
+      const selectedImage = image;
       setName('');
+      setImage(null);
+      if (fileRef.current) fileRef.current.value = '';
       setQuantity('1');setUnit('pza');setCustomUnit('');
+      if (selectedImage) {
+        try {
+          const body = new FormData();
+          body.append('file', await prepareItemImage(selectedImage));
+          await itemsApi.uploadImage(created.id, body);
+        } catch (error) {
+          onError(en ? 'Item added, but its image could not be uploaded.' : 'El elemento se agregó, pero no se pudo subir su imagen.');
+        }
+      }
     } catch (error) {
-      onError(error instanceof ApiError ? error.message : t('addItem.failed'));
+      onError(error instanceof ApiError ? error.message : (error as Error).message || t('addItem.failed'));
     } finally {
       setSaving(false);
     }
@@ -179,6 +194,10 @@ export function AddItemForm({ listId, disabled, onError }: Props) {
                 </div>
               </div>
             )}
+            <div className="col-12">
+              <label className="form-label" htmlFor="item-image">{en ? 'Photo (optional)' : 'Imagen (opcional)'}</label>
+              <input ref={fileRef} id="item-image" className="form-control" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => setImage(event.target.files?.[0] ?? null)} />
+            </div>
           </div>
         )}
       </div>

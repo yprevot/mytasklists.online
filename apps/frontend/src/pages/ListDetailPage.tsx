@@ -13,6 +13,7 @@ import { PendingItem } from '../components/PendingItem';
 import { PurchasedItem } from '../components/PurchasedItem';
 import { ShareModal } from '../components/ShareModal';
 import type { Item, ListDetail } from '../types';
+import { EditItemModal } from '../components/EditItemModal';
 
 export function ListDetailPage() {
   const { id = '' } = useParams();
@@ -26,6 +27,7 @@ export function ListDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
   const reloadTimer = useRef<number | null>(null);
 
   const load = useCallback(async () => {
@@ -280,6 +282,7 @@ export function ListDetailPage() {
                 onPurchase={purchase}
                 onDelete={remove}
                 onAdvanceClock={advanceClock}
+                onEdit={setEditingItem}
               />
             ))}
           </ul>
@@ -308,6 +311,7 @@ export function ListDetailPage() {
                 disabled={busy}
                 onRestore={restore}
                 onClose={close}
+                onEdit={setEditingItem}
               />
             ))}
           </ul>
@@ -323,6 +327,7 @@ export function ListDetailPage() {
           onNotice={notify}
         />
       )}
+      {editingItem && <EditItemModal item={editingItem} onClose={() => setEditingItem(null)} onSaved={() => { void load(); }} onError={(message) => notify(message, false)} />}
     </div>
   );
 }

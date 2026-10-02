@@ -1,4 +1,8 @@
 import { BillingService } from '../billing/billing.service';
+import { ConfigService } from '@nestjs/config';
+import { randomBytes } from 'node:crypto';
+import { MailService } from '../mail/mail.service';
+import { listInvitationTemplate } from '../mail/mail.templates';
 import {
   BadRequestException,
   ForbiddenException,
@@ -10,7 +14,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import {
   ActivityLog,
+  InvitationStatus,
   ItemStatus,
+  ListInvitation,
   ListItem,
   ListMember,
   MemberRole,
@@ -23,6 +29,7 @@ import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { RT } from '../realtime/realtime.events';
 import { NotificationsService } from '../notifications/notifications.service';
 import { isItemOverdue } from '../items/item.mapper';
+import { ItemImageStorage } from '../items/item-image.storage';
 import {
   ListDetailView,
   ListSummaryView,
@@ -40,6 +47,7 @@ export class ListsService {
   constructor(
     @InjectRepository(ShoppingList) private readonly lists: Repository<ShoppingList>,
     @InjectRepository(ListMember) private readonly members: Repository<ListMember>,
+    @InjectRepository(ListInvitation) private readonly invitations: Repository<ListInvitation>,
     @InjectRepository(ListItem) private readonly items: Repository<ListItem>,
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(ActivityLog) private readonly activity: Repository<ActivityLog>,
@@ -48,6 +56,9 @@ export class ListsService {
     private readonly notifications: NotificationsService,
     private readonly dataSource: DataSource,
     private readonly billing: BillingService,
+    private readonly mail: MailService,
+    private readonly config: ConfigService,
+    private readonly imageStorage: ItemImageStorage,
   ) {}
 
   // ── Permisos ────────────────────────────────────────────────────────
@@ -204,9 +215,11 @@ export class ListsService {
   async remove(listId: string, userId: string): Promise<void> {
     await this.assertOwner(listId, userId);
     const list = await this.lists.findOneOrFail({ where: { id: listId } });
+    const imageKeys = (await this.items.find({ where: { listId }, select: { imageKey: true } })).map((item) => item.imageKey);
     const memberIds = (await this.members.find({ where: { listId } })).map((m) => m.userId);
 
     await this.lists.remove(list);
+    await Promise.allSettled(imageKeys.map((key) => this.imageStorage.remove(key)));
     await this.cache.del(
       CacheService.listDetailKey(listId),
       ...memberIds.map((id) => CacheService.userListsKey(id)),
@@ -216,11 +229,12 @@ export class ListsService {
   }
 
   // ── Compartir ───────────────────────────────────────────────────────
-  async share(listId: string, actorId: string, dto: ShareListDto): Promise<ListDetailView> {
+  async share(listId: string, actorId: string, dto: ShareListDto): Promise<ListDetailView & { invitationSent?: boolean; invitationEmail?: string }> {
     await this.assertOwner(listId, actorId);
     if (!dto.email && !dto.userId) {
       throw new BadRequestException('Indica el correo o el id de la persona');
     }
+    if (dto.role === MemberRole.OWNER) throw new BadRequestException('No se puede asignar la propiedad al compartir una lista');
 
     const target = dto.userId
       ? await this.users.findOne({ where: { id: dto.userId } })
@@ -230,9 +244,44 @@ export class ListsService {
           .getOne();
 
     if (!target) {
-      throw new NotFoundException(
-        'No encontramos a esa persona. Debe registrarse antes de que puedas compartirle la lista.',
-      );
+      if (!dto.email) throw new NotFoundException('El usuario no existe');
+      const email = dto.email!.trim().toLowerCase();
+      const actor = await this.users.findOne({ where: { id: actorId } });
+      if (actor?.email.toLowerCase() === email) throw new BadRequestException('Esta lista ya es tuya');
+      await this.mail.assertAvailable();
+      const list = await this.lists.findOneOrFail({ where: { id: listId } });
+      const lifetimeHours = 72;
+      const invite = await this.dataSource.transaction(async manager => {
+        await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`invite:${listId}:${email}`]);
+        const repo = manager.getRepository(ListInvitation);
+        let pending = await repo.createQueryBuilder('invite')
+          .where('invite.listId = :listId AND lower(invite.email) = :email AND invite.status = :status',
+            { listId, email, status: InvitationStatus.PENDING })
+          .getOne();
+        const token = randomBytes(32).toString('base64url');
+        if (pending) {
+          pending.token = token;
+          pending.role = dto.role ?? MemberRole.EDITOR;
+          pending.invitedById = actorId;
+          pending.expiresAt = new Date(Date.now() + lifetimeHours * 3600_000);
+        } else {
+          pending = repo.create({
+            listId, email, token, invitedById: actorId,
+            role: dto.role ?? MemberRole.EDITOR, status: InvitationStatus.PENDING,
+            expiresAt: new Date(Date.now() + lifetimeHours * 3600_000),
+          });
+        }
+        return repo.save(pending);
+      });
+      const base = this.config.get<string>('publicUrl', 'http://localhost:8080').replace(/\/$/, '');
+      const registrationUrl = `${base}/app/register?email=${encodeURIComponent(email)}`;
+      try {
+        await this.mail.send(email, listInvitationTemplate(actor?.locale ?? 'es', list.name, actor?.fullName ?? 'MyTaskLists', registrationUrl, lifetimeHours));
+      } catch {
+        await this.invitations.update({ id: invite.id, token: invite.token, status: InvitationStatus.PENDING }, { status: InvitationStatus.REVOKED });
+        throw new BadRequestException('No se pudo enviar la invitación. Comprueba el correo e inténtalo de nuevo.');
+      }
+      return Object.assign(await this.findOne(listId, actorId), { invitationSent: true, invitationEmail: email });
     }
     if (target.id === actorId) throw new BadRequestException('Esta lista ya es tuya');
 
@@ -246,6 +295,10 @@ export class ListsService {
         role: dto.role ?? MemberRole.EDITOR,
         notifyOnChange: true,
       }),
+    );
+    await this.invitations.update(
+      { listId, email: target.email.toLowerCase(), status: InvitationStatus.PENDING },
+      { status: InvitationStatus.ACCEPTED },
     );
     member.user = target;
 

@@ -2,6 +2,7 @@ import UNITS from '../../../../packages/ui-data/units.json';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Item } from '../types';
+import { API_URL } from '../api/client';
 
 interface Props {
   item: Item;
@@ -9,6 +10,7 @@ interface Props {
   onPurchase: (item: Item) => void;
   onDelete: (item: Item) => void;
   onAdvanceClock: (item: Item, days: number) => void;
+  onEdit: (item: Item) => void;
 }
 
 const formatQuantity = (item: Item, language: string): string =>
@@ -22,7 +24,7 @@ const formatQuantity = (item: Item, language: string): string =>
  *  · azul  → recurrente dentro de su plazo
  *  · rojo  → recurrente vencido (pasó su plazo sin comprarse)
  */
-export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClock }: Props) {
+export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClock, onEdit }: Props) {
   const { t, i18n } = useTranslation();
   const [busy, setBusy] = useState(false);
 
@@ -59,6 +61,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
       />
 
       <div className="flex-grow-1 min-w-0">
+        {item.imageUrl && <img src={`${API_URL}${item.imageUrl}`} alt="" loading="lazy" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, marginBottom: 6 }} />}
         <div className="d-flex flex-wrap align-items-center gap-2">
           <span className="lc-item-name text-truncate" data-testid="item-name">
             {item.name}
@@ -100,6 +103,7 @@ export function PendingItem({ item, disabled, onPurchase, onDelete, onAdvanceClo
       </div>
 
       <div className="d-flex align-items-center gap-1 flex-shrink-0">
+        <button className="lc-icon-btn" type="button" onClick={() => onEdit(item)} disabled={disabled} aria-label={`${t('item.edit')}: ${item.name}`} data-testid="item-edit"><i className="bi bi-pencil" aria-hidden="true" /></button>
         {item.isRecurring && (
           <div className="dropdown">
             <button

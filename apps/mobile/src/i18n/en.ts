@@ -108,6 +108,7 @@ export const en: Catalog<typeof es> = {
     advance: 'Move forward 14 days',
   },
   item: {
+    edit: 'Edit',
     markPurchased: 'Mark {{name}} as bought',
     every: 'every {{count}} d',
     overdue: 'overdue {{count}} d',

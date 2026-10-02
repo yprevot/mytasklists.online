@@ -17,6 +17,7 @@ import { RT } from '../realtime/realtime.events';
 import { NotificationsService } from '../notifications/notifications.service';
 import { addDays, ItemView, toItemView } from './item.mapper';
 import { CreateItemDto, ReorderItemsDto, UpdateItemDto } from './dto/item.dto';
+import { ItemImageStorage } from './item-image.storage';
 
 /** Eventos que avisan de un cambio dentro de una lista */
 type ListChangeEvent =
@@ -40,6 +41,7 @@ export class ItemsService {
     private readonly billing: BillingService,
     private readonly realtime: RealtimeGateway,
     private readonly notifications: NotificationsService,
+    private readonly imageStorage: ItemImageStorage,
   ) {}
 
   // ── Helpers ─────────────────────────────────────────────────────────
@@ -182,7 +184,19 @@ export class ItemsService {
       }
     }
 
-    await this.items.save(item);
+    // Only the edited fields are written, so concurrent image changes survive.
+    const changes = {
+      ...(dto.name !== undefined ? { name: item.name } : {}),
+      ...(dto.quantity !== undefined ? { quantity: item.quantity } : {}),
+      ...(dto.unit !== undefined ? { unit: item.unit } : {}),
+      ...(dto.note !== undefined ? { note: item.note } : {}),
+      ...(dto.category !== undefined ? { category: item.category } : {}),
+      ...(dto.isRecurring !== undefined || dto.recurrenceDays !== undefined ? {
+        isRecurring: item.isRecurring, recurrenceDays: item.recurrenceDays,
+        overdueNotifiedAt: item.overdueNotifiedAt, dueAt: item.dueAt, nextActivationAt: item.nextActivationAt,
+      } : {}),
+    };
+    if (Object.keys(changes).length) await this.items.update(itemId, changes);
     const view = toItemView(await this.loadItem(itemId));
     await this.afterChange(item.listId, RT.ITEM_UPDATED, { item: view, actorId: userId });
 
@@ -202,6 +216,46 @@ export class ItemsService {
     await this.log({ listId: item.listId, userId, itemId, action: 'item.updated', summary: item.name });
     return view;
   }
+
+  async uploadImage(itemId: string, userId: string, buffer: Buffer, mimeType: string): Promise<ItemView> {
+    const item = await this.loadItem(itemId);
+    await this.listsService.assertMember(item.listId, userId, true);
+    const imageKey = await this.imageStorage.save(buffer, mimeType);
+    let previous: string | null = null;
+    try {
+      previous = await this.items.manager.transaction(async (manager) => {
+        const repo = manager.getRepository(ListItem);
+        const current = await repo.findOne({ where: { id: itemId }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
+        if (!current) throw new NotFoundException('El producto no existe');
+        await repo.update(itemId, { imageKey });
+        return current.imageKey;
+      });
+    }
+    catch (error) { await this.imageStorage.remove(imageKey); throw error; }
+    if (previous) await this.imageStorage.remove(previous).catch(() => undefined);
+    const view = toItemView(await this.loadItem(itemId));
+    await this.afterChange(item.listId, RT.ITEM_UPDATED, { item: view, actorId: userId });
+    await this.log({ listId: item.listId, userId, itemId, action: 'item.image_updated', summary: item.name });
+    return view;
+  }
+
+  async removeImage(itemId: string, userId: string): Promise<ItemView> {
+    const item = await this.loadItem(itemId);
+    await this.listsService.assertMember(item.listId, userId, true);
+    const previous = await this.items.manager.transaction(async (manager) => {
+      const repo = manager.getRepository(ListItem);
+      const current = await repo.findOne({ where: { id: itemId }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
+      if (!current) throw new NotFoundException('El producto no existe');
+      await repo.update(itemId, { imageKey: null });
+      return current.imageKey;
+    });
+    if (previous) await this.imageStorage.remove(previous).catch(() => undefined);
+    const view = toItemView(await this.loadItem(itemId));
+    await this.afterChange(item.listId, RT.ITEM_UPDATED, { item: view, actorId: userId });
+    return view;
+  }
+
+  readImage(key: string) { return this.imageStorage.read(key); }
 
   // ── Marcar como comprado ────────────────────────────────────────────
   /**
@@ -227,7 +281,10 @@ export class ItemsService {
     item.nextActivationAt =
       item.isRecurring && item.recurrenceDays ? addDays(now, item.recurrenceDays) : null;
 
-    await this.items.save(item);
+    await this.items.update(itemId, {
+      status: item.status, purchasedAt: item.purchasedAt, lastPurchasedAt: item.lastPurchasedAt,
+      purchasedById: item.purchasedById, overdueNotifiedAt: null, nextActivationAt: item.nextActivationAt,
+    });
     const view = toItemView(await this.loadItem(itemId));
     await this.afterChange(item.listId, RT.ITEM_PURCHASED, { item: view, actorId: userId });
 
@@ -274,7 +331,10 @@ export class ItemsService {
       item.dueAt = addDays(new Date(item.activatedAt), item.recurrenceDays);
     }
 
-    await this.items.save(item);
+    await this.items.update(itemId, {
+      status: item.status, purchasedAt: null, purchasedById: null,
+      nextActivationAt: null, overdueNotifiedAt: null, dueAt: item.dueAt,
+    });
     const view = toItemView(await this.loadItem(itemId));
     await this.afterChange(item.listId, RT.ITEM_RESTORED, { item: view, actorId: userId });
 
@@ -305,7 +365,7 @@ export class ItemsService {
     await this.listsService.assertMember(item.listId, userId, true);
 
     item.status = ItemStatus.ARCHIVED;
-    await this.items.save(item);
+    await this.items.update(itemId, { status: item.status });
     await this.afterChange(item.listId, RT.ITEM_REMOVED, {
       itemId,
       actorId: userId,
@@ -324,6 +384,7 @@ export class ItemsService {
     const { listId, name } = item;
 
     await this.items.remove(item);
+    await this.imageStorage.remove(item.imageKey).catch((error) => this.logger.warn(`No se pudo borrar la imagen del producto: ${(error as Error).message}`));
     await this.afterChange(listId, RT.ITEM_REMOVED, { itemId, actorId: userId, permanent: true });
 
     const list = await this.listsService.getListOrFail(listId);

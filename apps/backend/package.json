@@ -17,6 +17,7 @@
     "@apple/app-store-server-library": "^3.1.0",
     "@fastify/cookie": "^11.1.2",
     "@fastify/helmet": "^13.1.1",
+    "@fastify/multipart": "^10.1.2",
     "@fastify/static": "^10.1.5",
     "@nestjs/common": "^12.1.2",
     "@nestjs/config": "^12.0.1",
@@ -42,6 +43,7 @@
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "sharp": "^0.35.5",
     "socket.io": "^4.8.4",
     "stripe": "^23.0.0",
     "typeorm": "^1.1.1"

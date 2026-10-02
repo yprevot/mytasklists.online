@@ -14,6 +14,7 @@ import {
   IsString,
   IsUUID,
   Length,
+  MaxLength,
 } from 'class-validator';
 import { MemberRole } from '../../../database/entities';
 
@@ -75,6 +76,7 @@ export class ShareListDto implements ShareListRequest {
   @ApiPropertyOptional({ description: 'Correo de la persona con la que se comparte' })
   @IsOptional()
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
+  @MaxLength(180)
   email?: string;
 
   @ApiPropertyOptional({ description: 'Alternativa: id del usuario' })

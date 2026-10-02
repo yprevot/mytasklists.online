@@ -61,6 +61,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      ITEM_IMAGE_DIR: /app/uploads/items
       BILLING_ENABLED: ${BILLING_ENABLED:-false}
       BILLING_COMMERCE_READY: ${BILLING_COMMERCE_READY:-false}
       BILLING_BENEFITS_ES: ${BILLING_BENEFITS_ES:-}
@@ -167,6 +168,7 @@ services:
       redis: { condition: service_healthy }
     volumes:
       - ${DOWNLOADS_PATH:-./downloads}:/downloads:ro
+      - item-images:/app/uploads/items
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -245,6 +247,7 @@ services:
 volumes:
   postgres18-data:
   redis-data:
+  item-images:
 
 networks:
   frontend:

@@ -1,10 +1,11 @@
 import UNITS from '../../../../packages/ui-data/units.json';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Badge, CheckGlyph, CrossGlyph } from './ui';
 import { colors, spacing } from '../theme';
 import type { Item } from '../types';
+import { API_URL } from '../api/client';
 
 interface Props {
   item: Item;
@@ -12,10 +13,11 @@ interface Props {
   onClose: (item: Item) => void;
   disabled?: boolean;
   first?: boolean;
+  onEdit: (item: Item) => void;
 }
 
 /** Producto comprado: se muestra tachado y se quita con la "x" */
-export function PurchasedRow({ item, onRestore, onClose, disabled, first }: Props) {
+export function PurchasedRow({ item, onRestore, onClose, disabled, first, onEdit }: Props) {
   const { t, i18n } = useTranslation();
   const knownUnit=UNITS.find(u=>u.value===item.unit);
   const unitLabel=knownUnit?(i18n.language.startsWith('en')?knownUnit.en:knownUnit.es):item.unit;
@@ -32,6 +34,7 @@ export function PurchasedRow({ item, onRestore, onClose, disabled, first }: Prop
       </Pressable>
 
       <View style={{ flex: 1 }}>
+        {item.imageUrl && <Image source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `${API_URL}${item.imageUrl}` }} style={{ width: 56, height: 56, borderRadius: 8, marginBottom: 5 }} />}
         <Text style={styles.name} testID="purchased-name" numberOfLines={1}>
           {item.name}
         </Text>
@@ -47,6 +50,8 @@ export function PurchasedRow({ item, onRestore, onClose, disabled, first }: Prop
           )}
         </View>
       </View>
+
+      <Pressable onPress={() => onEdit(item)} accessibilityRole="button" accessibilityLabel={`${t('item.edit')}: ${item.name}`} disabled={disabled} style={styles.edit}><Text style={{ color: colors.brand, fontWeight: '700' }}>{t('item.edit')}</Text></Pressable>
 
       <Pressable
         onPress={() => !disabled && onClose(item)}
@@ -89,4 +94,5 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 3 },
   meta: { fontSize: 13, color: colors.muted },
   close: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  edit: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
 });

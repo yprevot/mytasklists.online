@@ -53,7 +53,7 @@ export const listsApi = {
     api.patch<ListDetail>(`/lists/${id}`, payload),
   remove: (id: string) => api.delete<{ ok: boolean }>(`/lists/${id}`),
   share: (id: string, email: string, role = 'editor') =>
-    api.post<ListDetail>(`/lists/${id}/share`, { email, role }),
+    api.post<ListDetail & { invitationSent?: boolean; invitationEmail?: string }>(`/lists/${id}/share`, { email, role }),
   setMyNotifications: (id: string, notifyOnChange: boolean) =>
     api.patch<ListDetail>(`/lists/${id}/notifications`, { notifyOnChange }),
   removeMember: (id: string, userId: string) =>
@@ -75,6 +75,8 @@ export const itemsApi = {
   ) => api.post<Item>(`/lists/${listId}/items`, payload),
   update: (itemId: string, payload: Record<string, unknown>) =>
     api.patch<Item>(`/items/${itemId}`, payload),
+  uploadImage: (itemId: string, image: FormData) => api.post<Item>(`/items/${itemId}/image`, image),
+  removeImage: (itemId: string) => api.delete<Item>(`/items/${itemId}/image`),
   purchase: (itemId: string) => api.post<Item>(`/items/${itemId}/purchase`),
   restore: (itemId: string) => api.post<Item>(`/items/${itemId}/restore`),
   close: (itemId: string) => api.delete<{ id: string }>(`/items/${itemId}/close`),

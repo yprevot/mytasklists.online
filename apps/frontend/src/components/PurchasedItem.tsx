@@ -2,12 +2,14 @@ import UNITS from '../../../../packages/ui-data/units.json';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import type { Item } from '../types';
+import { API_URL } from '../api/client';
 
 interface Props {
   item: Item;
   disabled?: boolean;
   onRestore: (item: Item) => void;
   onClose: (item: Item) => void;
+  onEdit: (item: Item) => void;
 }
 
 const relativeDate = (iso: string | null, t: TFunction): string => {
@@ -23,7 +25,7 @@ const relativeDate = (iso: string | null, t: TFunction): string => {
  * Fila de la lista de abajo (productos ya comprados).
  * Se muestran tachados y se quitan manualmente con la "x".
  */
-export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
+export function PurchasedItem({ item, disabled, onRestore, onClose, onEdit }: Props) {
   const { t, i18n } = useTranslation();
   const knownUnit=UNITS.find(u=>u.value===item.unit);
   const unitLabel=knownUnit?(i18n.language.startsWith('en')?knownUnit.en:knownUnit.es):item.unit;
@@ -46,6 +48,7 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
       />
 
       <div className="flex-grow-1 min-w-0">
+        {item.imageUrl && <img src={`${API_URL}${item.imageUrl}`} alt="" loading="lazy" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, marginBottom: 6 }} />}
         <div className="d-flex flex-wrap align-items-center gap-2">
           <span className="lc-item-name text-truncate" data-testid="purchased-name">
             {item.name}
@@ -64,6 +67,7 @@ export function PurchasedItem({ item, disabled, onRestore, onClose }: Props) {
         </div>
       </div>
 
+      <button className="lc-icon-btn" type="button" onClick={() => onEdit(item)} disabled={disabled} aria-label={`${t('item.edit')}: ${item.name}`} data-testid="item-edit"><i className="bi bi-pencil" aria-hidden="true" /></button>
       <button
         className="lc-icon-btn"
         type="button"

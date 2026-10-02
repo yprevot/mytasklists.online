@@ -17,10 +17,13 @@ import { useTranslation } from 'react-i18next';
 import { Badge, Button, SectionLabel } from '../components/ui';
 import { ItemRow } from '../components/ItemRow';
 import { PurchasedRow } from '../components/PurchasedRow';
+import { ItemPhotoPicker } from '../components/ItemPhotoPicker';
+import { EditItemModal } from '../components/EditItemModal';
 import { itemsApi, listsApi } from '../api/endpoints';
 import { useSocket, useSocketEvent } from '../context/SocketContext';
 import { colors, radius, shadow, spacing } from '../theme';
 import type { Item, ListDetail } from '../types';
+import { itemImageForm } from '../utils/item-image';
 
 const PRESETS = [3, 7, 14, 30];
 
@@ -42,6 +45,8 @@ export function ListDetailScreen({ route, navigation }: any) {
   const [recurrenceDays, setRecurrenceDays] = useState(14);
   const [shareEmail, setShareEmail] = useState('');
   const [showShare, setShowShare] = useState(false);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -98,7 +103,7 @@ export function ListDetailScreen({ route, navigation }: any) {
     const amount=Number(quantity.replace(',','.'));const selected=unit==='custom'?customUnit.trim():unit;
     if(!Number.isFinite(amount)||amount<0.01||amount>99999||Math.abs(Math.round(amount*100)-amount*100)>1e-7||!selected||selected.length>20){Alert.alert(t('common.oops'),en?'Enter a valid quantity and unit.':'Escribe una cantidad y unidad válidas.');return;}
     setBusy(true);
-    try {await itemsApi.create(listId,{name:name.trim(),quantity:amount,unit:selected,isRecurring,...(isRecurring?{recurrenceDays}:{})});setName('');setQuantity('1');setUnit('pza');setCustomUnit('');await load();}
+    try {const created=await itemsApi.create(listId,{name:name.trim(),quantity:amount,unit:selected,isRecurring,...(isRecurring?{recurrenceDays}:{})});const selectedPhoto=photo;setName('');setQuantity('1');setUnit('pza');setCustomUnit('');setPhoto(null);if(selectedPhoto){try{await itemsApi.uploadImage(created.id,await itemImageForm(selectedPhoto));}catch{Alert.alert(en?'Item added':'Elemento agregado',en?'The photo could not be uploaded.':'No se pudo subir la foto.');}}await load();}
     catch(e){Alert.alert(t('common.oops'),(e as Error).message);}finally{setBusy(false);}
   };
 
@@ -147,6 +152,7 @@ export function ListDetailScreen({ route, navigation }: any) {
           <Picker.Item label={en?'Custom…':'Personalizado…'} value="custom"/>
         </Picker>
         {unit==='custom' && <TextInput accessibilityLabel={en?'Unit name':'Nombre de la unidad'} style={styles.addInput} value={customUnit} onChangeText={setCustomUnit} maxLength={20} placeholder={en?'Unit name':'Nombre de la unidad'} testID="item-custom-unit"/>}
+        <Text style={{ color: colors.ink, marginTop: spacing.md }}>{en ? 'Photo (optional)' : 'Foto (opcional)'}</Text><ItemPhotoPicker uri={photo} onChange={setPhoto} />
         <View style={styles.recurRow}>
           <Text style={styles.recurLabel}>{t('detail.repeat')}</Text>
           <Switch
@@ -220,7 +226,8 @@ export function ListDetailScreen({ route, navigation }: any) {
             testID="share-submit"
             onPress={() =>
               guard(async () => {
-                await listsApi.share(listId, shareEmail.trim().toLowerCase());
+                const result = await listsApi.share(listId, shareEmail.trim().toLowerCase());
+                if (result.invitationSent) Alert.alert(en ? 'Invitation sent' : 'Invitación enviada', en ? `A registration link was sent to ${result.invitationEmail}.` : `Enviamos un enlace de registro a ${result.invitationEmail}.`);
                 setShareEmail('');
                 setShowShare(false);
               })
@@ -249,6 +256,7 @@ export function ListDetailScreen({ route, navigation }: any) {
             first={index === 0}
             disabled={busy}
             onPurchase={(target: Item) => guard(() => itemsApi.purchase(target.id))}
+            onEdit={setEditingItem}
             onLongPress={(target: Item) =>
               Alert.alert(target.name, t('detail.whatToDo'), [
                 { text: t('common.cancel'), style: 'cancel' },
@@ -289,11 +297,13 @@ export function ListDetailScreen({ route, navigation }: any) {
                 disabled={busy}
                 onRestore={(target) => guard(() => itemsApi.restore(target.id))}
                 onClose={(target) => guard(() => itemsApi.close(target.id))}
+                onEdit={setEditingItem}
               />
             ))}
           </View>
         </>
       )}
+      {editingItem && <EditItemModal key={editingItem.id} item={editingItem} onClose={() => setEditingItem(null)} onSaved={() => { void load(); }} />}
     </ScrollView>
   );
 }
