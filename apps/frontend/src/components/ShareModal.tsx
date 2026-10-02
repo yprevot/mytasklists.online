@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { listsApi } from '../api/endpoints';
+import { listsApi, type PendingInvitation } from '../api/endpoints';
 import { ApiError } from '../api/client';
 import type { ListDetail } from '../types';
 
@@ -13,11 +13,32 @@ interface Props {
 }
 
 export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const en = i18n.language.startsWith('en');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isOwner = list.ownerId === currentUserId;
+  const [pending, setPending] = useState<PendingInvitation[]>([]);
+  const [loadingInvites, setLoadingInvites] = useState(false);
+  const [canceling, setCanceling] = useState<string | null>(null);
+  const loadInvites = useCallback(async () => {
+    if (!isOwner) return;
+    setLoadingInvites(true);
+    try { setPending(await listsApi.invitations(list.id)); }
+    catch (err) { setError(err instanceof ApiError ? err.message : t('share.failed')); }
+    finally { setLoadingInvites(false); }
+  }, [isOwner, list.id, t]);
+  useEffect(() => { void loadInvites(); }, [loadInvites]);
+  const cancel = async (invitation: PendingInvitation) => {
+    setCanceling(invitation.id); setError(null);
+    try {
+      await listsApi.revokeInvitation(list.id, invitation.id);
+      setPending(current => current.filter(i => i.id !== invitation.id));
+      onNotice(en ? 'Invitation canceled' : 'Invitación cancelada', true);
+    } catch (err) { setError(err instanceof ApiError ? err.message : t('share.failed')); }
+    finally { setCanceling(null); }
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -31,6 +52,7 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
         ? t('share.invited', { email: email.trim().toLowerCase() })
         : t('share.shared', { email: email.trim().toLowerCase() }), true);
       onChanged();
+      await loadInvites();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('share.failed'));
     } finally {
@@ -102,6 +124,19 @@ export function ShareModal({ list, currentUserId, onClose, onChanged, onNotice }
                 </p>
               )}
 
+              {isOwner && <section className="mb-4" aria-label={en ? 'Pending invitations' : 'Invitaciones pendientes'}>
+                <h6 className="lc-section-title">{en ? 'Pending invitations' : 'Invitaciones pendientes'}</h6>
+                {loadingInvites ? <p role="status">{en ? 'Loading…' : 'Cargando…'}</p> : pending.length === 0
+                  ? <p className="text-muted small">{en ? 'No pending invitations.' : 'No hay invitaciones pendientes.'}</p>
+                  : <ul className="list-group list-group-flush">{pending.map(invite => <li key={invite.id}
+                      className="list-group-item d-flex align-items-center gap-2 px-0" data-testid="pending-invitation">
+                    <div className="flex-grow-1 min-w-0"><div className="text-break">{invite.email}</div>
+                      <small className="text-muted">{en ? 'Expires' : 'Expira'} {new Date(invite.expiresAt).toLocaleDateString(i18n.language)}</small></div>
+                    <button type="button" className="btn btn-sm btn-outline-danger" disabled={canceling !== null}
+                      aria-label={`${en ? 'Cancel invitation to' : 'Cancelar invitación a'} ${invite.email}`}
+                      onClick={() => void cancel(invite)}>{canceling === invite.id ? (en ? 'Canceling…' : 'Cancelando…') : (en ? 'Cancel' : 'Cancelar')}</button>
+                  </li>)}</ul>}
+              </section>}
               <h6 className="lc-section-title mb-2">{t('share.members', { count: list.members.length })}</h6>
               <ul className="list-group list-group-flush" data-testid="member-list">
                 {list.members.map((member) => (

@@ -56,7 +56,7 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('La sesión ya no es válida. Vuelve a iniciar sesión.');
     }
 
-    request.user = { id: payload.sub, email: payload.email, role: payload.role };
+    request.user = { id: payload.sub, email: payload.email, role: payload.role, sessionVersion: payload.sv };
     return true;
   }
 }

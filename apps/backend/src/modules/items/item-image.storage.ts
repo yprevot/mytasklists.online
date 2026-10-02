@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, UnsupportedMediaTypeException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnsupportedMediaTypeException, HttpException } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
+import { DataSource } from 'typeorm';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile, stat, opendir } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import sharp from 'sharp';
 
@@ -16,6 +18,61 @@ const TYPES = new Map<string, { extension: string; signature: (bytes: Buffer) =>
 @Injectable()
 export class ItemImageStorage {
   private readonly root = resolve(process.env.ITEM_IMAGE_DIR || join(process.cwd(), 'uploads', 'items'));
+  private readonly logger = new Logger(ItemImageStorage.name);
+  private active = 0;
+  private cleaning = false;
+  constructor(private readonly db: DataSource) {}
+
+  async size(key: string): Promise<number> { return (await stat(join(this.root, key))).size; }
+
+  /** Admission before buffering multipart bodies, including decompression and writing. */
+  async limited<T>(work: () => Promise<T>): Promise<T> {
+    if (this.active >= 2) throw new HttpException('Hay varias imágenes procesándose. Inténtalo en unos segundos.', 429);
+    this.active++;
+    try { return await work(); } finally { this.active--; }
+  }
+
+  @Interval(5000)
+  async cleanDeleted(): Promise<void> {
+    if (this.cleaning) return;
+    this.cleaning = true;
+    try {
+      await this.db.transaction(async manager => {
+        const rows = await manager.query(`SELECT image_key FROM image_deletions WHERE available_at<=now()
+          ORDER BY created_at LIMIT 50 FOR UPDATE SKIP LOCKED`);
+        for (const row of rows) {
+          const [live] = await manager.query('SELECT id FROM list_items WHERE image_key=$1 LIMIT 1', [row.image_key]);
+          if (live) continue;
+          try {
+            await this.remove(row.image_key);
+            await manager.query('DELETE FROM image_deletions WHERE image_key=$1', [row.image_key]);
+          } catch {
+            await manager.query("UPDATE image_deletions SET attempts=attempts+1,available_at=now()+interval '1 minute' WHERE image_key=$1", [row.image_key]);
+            this.logger.warn('Limpieza de imagen pendiente; se reintentará');
+          }
+        }
+      });
+    } catch { this.logger.warn('No se pudo ejecutar la limpieza de imágenes'); }
+    finally { this.cleaning = false; }
+  }
+
+  /** Stream directory entries; the one-hour grace protects uploads not yet committed. */
+  @Interval(3600000)
+  async reconcile(): Promise<void> {
+    try {
+      const directory = await opendir(this.root);
+      for await (const entry of directory) {
+        if (!entry.isFile() || !/^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(entry.name)) continue;
+        const info = await stat(join(this.root, entry.name)).catch(() => null);
+        if (!info || Date.now() - info.mtimeMs < 3600000) continue;
+        const [live] = await this.db.query('SELECT id FROM list_items WHERE image_key=$1 LIMIT 1', [entry.name]);
+        if (!live) await this.db.query('INSERT INTO image_deletions(image_key) VALUES($1) ON CONFLICT DO NOTHING', [entry.name]);
+        else await this.db.query('UPDATE list_items SET image_bytes=$2 WHERE image_key=$1 AND image_bytes=0', [entry.name, info.size]);
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') this.logger.warn('Conciliación de imágenes pendiente');
+    }
+  }
 
   async save(buffer: Buffer, declaredType: string): Promise<string> {
     const type = TYPES.get(declaredType);

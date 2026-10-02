@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import type { ServerEventName, ServerEvents } from '@lista/contracts';
-import { SOCKET_URL, tokens } from '../api/client';
+import { SOCKET_URL, tokens, renewSession } from '../api/client';
 import { useAuth } from './AuthContext';
 
 interface Value {
@@ -43,13 +43,32 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       reconnection: true,
     });
     socket.on('connect', () => setConnected(true));
-    socket.on('disconnect', () => setConnected(false));
-    socket.on('connect_error', () => setConnected(false));
+    let disposed = false;
+    let recovering = false;
+    let lastRecovery = 0;
+    const recover = async () => {
+      if (disposed || recovering || Date.now() - lastRecovery < 5000) return;
+      recovering = true;
+      lastRecovery = Date.now();
+      try {
+        const renewed = await renewSession();
+        if (renewed && !disposed) socket.connect();
+      } finally { recovering = false; }
+    };
+    socket.on('disconnect', reason => {
+      setConnected(false);
+      if (reason === 'io server disconnect') void recover();
+    });
+    socket.on('connect_error', error => {
+      setConnected(false);
+      if (/token|sesión|session/i.test(error.message)) { socket.disconnect(); void recover(); }
+    });
 
     socketRef.current = socket;
     force((value) => value + 1);
 
     return () => {
+      disposed = true;
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;

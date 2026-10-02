@@ -49,6 +49,9 @@ export class ListInvitation {
   @Column({ name: 'expires_at', type: 'timestamptz' })
   expiresAt: Date;
 
+  @Column({ name: 'last_sent_at', type: 'timestamptz', nullable: true })
+  lastSentAt: Date | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 }

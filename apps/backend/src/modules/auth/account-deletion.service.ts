@@ -71,8 +71,8 @@ export class AccountDeletionService {
     const appleRevoked = await this.revokeApple(user, dto.appleAuthorizationCode);
 
     const memberships = await this.dataSource.getRepository(ListMember).find({ where: { userId } });
-    const ownedIds = memberships.filter((m) => m.role === MemberRole.OWNER).map((m) => m.listId);
-    const joinedIds = memberships.filter((m) => m.role !== MemberRole.OWNER).map((m) => m.listId);
+    const ownedIds = (await this.dataSource.getRepository(ShoppingList).find({ where: { ownerId: userId }, select: { id: true } })).map(l => l.id);
+    const joinedIds = memberships.filter((m) => !ownedIds.includes(m.listId)).map((m) => m.listId);
     const affectedLists = [...ownedIds, ...joinedIds];
     // Quienes ven esas listas: hay que limpiar su caché de "mis listas"
     const affectedUsers = affectedLists.length

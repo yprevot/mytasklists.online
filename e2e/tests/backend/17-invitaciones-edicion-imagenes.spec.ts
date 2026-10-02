@@ -92,6 +92,6 @@ test('IMG-03 · foto y edición simultáneas conservan ambos cambios', async ({ 
   ]);
   expect(upload.status()).toBe(201); expect(edit.status()).toBe(200);
   const final = (await getList(request, owner.accessToken, list.id)).pending[0];
-  expect(final).toMatchObject({ name: 'Nombre editado', quantity: 2.5 }); expect(final.imageUrl).toMatch(/\.jpg$/);
+  expect(final).toMatchObject({ name: 'Nombre editado', quantity: 2.5 }); expect(final.imageUrl).toMatch(/\.jpg\?grant=/);
   const image = await request.get(`${API_URL}${final.imageUrl}`); expect(image.status()).toBe(200); expect((await sharp(await image.body()).metadata()).width).toBe(1600);
 });

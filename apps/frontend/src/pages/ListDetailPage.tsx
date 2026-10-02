@@ -45,6 +45,15 @@ export function ListDetailPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const refreshVisible = () => { if (document.visibilityState === 'visible') void load(); };
+    const timer = window.setInterval(refreshVisible, 240000);
+    window.addEventListener('focus', refreshVisible);
+    document.addEventListener('visibilitychange', refreshVisible);
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', refreshVisible);
+      document.removeEventListener('visibilitychange', refreshVisible); };
+  }, [load]);
+
   // Al entrar a la pantalla nos unimos a la sala de la lista
   useEffect(() => {
     if (!socket || !id) return;

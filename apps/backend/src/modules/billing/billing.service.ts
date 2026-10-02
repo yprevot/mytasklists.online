@@ -28,6 +28,8 @@ export class BillingService {
     return {plan:active?'premium':'free',subscription:active||rows[0]||null,accountToken:userId,googleAccountId:createHash('sha256').update(userId).digest('hex')};
   }
   async assertCapacity(userId:string,kind:'lists'|'items',count:number) {
+    const technical=kind==='lists'?100:2000;
+    if(count>=technical)throw new ForbiddenException('Se alcanzó el límite técnico de capacidad. Reduce las listas o elementos antes de añadir más.');
     const premium=(await this.state(userId)).plan==='premium';const limit=this.limit(`${premium?'PREMIUM':'FREE'}_MAX_${kind==='lists'?'LISTS':'ITEMS_PER_LIST'}`);
     if(limit && count>=limit)throw new ForbiddenException('Has alcanzado el límite de tu plan. Conservas tus datos; revisa Mi plan para ampliar tu capacidad.');
   }

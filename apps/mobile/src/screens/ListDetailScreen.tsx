@@ -1,8 +1,10 @@
+import { useAuth } from '../context/AuthContext';
 import { Picker } from '@react-native-picker/picker';
 import UNITS from '../../../../packages/ui-data/units.json';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Alert,
   Pressable,
   RefreshControl,
@@ -19,7 +21,7 @@ import { ItemRow } from '../components/ItemRow';
 import { PurchasedRow } from '../components/PurchasedRow';
 import { ItemPhotoPicker } from '../components/ItemPhotoPicker';
 import { EditItemModal } from '../components/EditItemModal';
-import { itemsApi, listsApi } from '../api/endpoints';
+import { itemsApi, listsApi, type PendingInvitation } from '../api/endpoints';
 import { useSocket, useSocketEvent } from '../context/SocketContext';
 import { colors, radius, shadow, spacing } from '../theme';
 import type { Item, ListDetail } from '../types';
@@ -30,6 +32,8 @@ const PRESETS = [3, 7, 14, 30];
 export function ListDetailScreen({ route, navigation }: any) {
   const listId: string = route.params.id;
   const { socket } = useSocket();
+  const { user } = useAuth();
+  const [pending, setPending] = useState<PendingInvitation[]>([]);
   const { t, i18n } = useTranslation();
   const en=i18n.language.startsWith('en');
   const [quantity,setQuantity]=useState('1');
@@ -69,6 +73,16 @@ export function ListDetailScreen({ route, navigation }: any) {
       socket.emit('list:leave', { listId });
     };
   }, [socket, listId]);
+
+  useEffect(() => {
+    const timer = setInterval(() => { if (AppState.currentState === 'active') void load(); }, 240000);
+    const listener = AppState.addEventListener('change', state => { if (state === 'active') void load(); });
+    return () => { clearInterval(timer); listener.remove(); };
+  }, [load]);
+  useEffect(() => {
+    if (!showShare || list?.ownerId !== user?.id) return;
+    void listsApi.invitations(listId).then(setPending).catch(error => Alert.alert(t('common.oops'), error.message));
+  }, [showShare, list, listId, user?.id, t]);
 
   const onEvent = useCallback(
     (payload: { listId?: string }) => {
@@ -211,6 +225,7 @@ export function ListDetailScreen({ route, navigation }: any) {
 
       {showShare && (
         <View style={styles.shareCard} testID="share-form">
+          {list.ownerId === user?.id && <>
           <TextInput
             testID="share-email-input"
             style={styles.addInput}
@@ -229,11 +244,20 @@ export function ListDetailScreen({ route, navigation }: any) {
                 const result = await listsApi.share(listId, shareEmail.trim().toLowerCase());
                 if (result.invitationSent) Alert.alert(en ? 'Invitation sent' : 'Invitación enviada', en ? `A registration link was sent to ${result.invitationEmail}.` : `Enviamos un enlace de registro a ${result.invitationEmail}.`);
                 setShareEmail('');
-                setShowShare(false);
+                setPending(await listsApi.invitations(listId));
               })
             }
             style={{ marginTop: spacing.sm }}
           />
+          <SectionLabel>{en ? 'Pending invitations' : 'Invitaciones pendientes'}</SectionLabel>
+          {pending.length === 0 ? <Text style={{color:colors.inkSoft}}>{en ? 'No pending invitations.' : 'No hay invitaciones pendientes.'}</Text>
+            : pending.map(invite => <View key={invite.id} style={{paddingVertical:spacing.sm, gap:spacing.sm}} testID="pending-invitation">
+              <Text style={{color:colors.ink}}>{invite.email}</Text>
+              <Text style={{color:colors.inkSoft}}>{en ? 'Expires' : 'Expira'} {new Date(invite.expiresAt).toLocaleDateString(i18n.language)}</Text>
+              <Button title={en ? 'Cancel invitation' : 'Cancelar invitación'} disabled={busy}
+                onPress={() => guard(async () => { await listsApi.revokeInvitation(listId, invite.id); setPending(await listsApi.invitations(listId)); })} />
+            </View>)}
+          </>}
           <View style={styles.notifyRow}>
             <Text style={styles.recurLabel}>{t('detail.notify')}</Text>
             <Switch

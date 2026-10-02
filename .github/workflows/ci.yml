@@ -53,6 +53,19 @@ jobs:
       - run: npm run typecheck
       - run: npm run build --workspaces --if-present
 
+  dependencies:
+    name: Seguridad de dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm ci --prefix apps/mobile --no-audit --no-fund
+      - run: node scripts/audit-dependencies.mjs
+
   e2e:
     name: Pruebas e2e
     needs: build

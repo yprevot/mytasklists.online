@@ -16,15 +16,12 @@
 name: Desplegar
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
-    paths-ignore:
-      - 'apps/mobile/**'
-      - 'docs/**'
-      - 'e2e/**'
-      - '**/*.md'
-      - '.github/workflows/mobile.yml'
   workflow_dispatch:
+
 
 concurrency:
   group: deploy-production
@@ -32,15 +29,26 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   verificar:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    outputs:
+      sha: ${{ steps.release.outputs.sha }}
     name: Verificar
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Exigir CI del SHA exacto en main
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: node scripts/verify-release.mjs
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -60,9 +68,9 @@ jobs:
       # publicar antes la app nueva y subir MOBILE_MIN_VERSION (docs/COMPATIBILIDAD.md).
       # Una vez coordinado, se lanza a mano con "Run workflow".
       - name: Solo cambios sin riesgo alto
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_run'
         env:
-          BEFORE: ${{ github.event.before }}
+          BEFORE: ${{ github.event.workflow_run.head_sha }}^
         run: |
           node scripts/impact.mjs "$BEFORE" | tee -a "$GITHUB_STEP_SUMMARY"
           level=$(node scripts/impact.mjs "$BEFORE" --json | jq -r .level)
@@ -116,9 +124,11 @@ jobs:
             file: infra/nginx/gateway/Dockerfile
             context: .
             build_args: |
-              RELEASE_SHA=${{ github.sha }}
+              RELEASE_SHA=${{ needs.verificar.outputs.sha }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.verificar.outputs.sha }}
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         with:
@@ -139,7 +149,7 @@ jobs:
           build-args: ${{ matrix.build_args }}
           tags: |
             ${{ steps.image.outputs.name }}:main
-            ${{ steps.image.outputs.name }}:${{ github.sha }}
+            ${{ steps.image.outputs.name }}:${{ needs.verificar.outputs.sha }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
           provenance: true
@@ -147,12 +157,14 @@ jobs:
 
   desplegar:
     name: Desplegar en Coolify
-    needs: publicar
+    needs: [verificar, publicar]
     if: vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.verificar.outputs.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -181,6 +193,24 @@ jobs:
             echo "::warning::Imágenes publicadas, pero no se despliega: faltan COOLIFY_WEBHOOK, COOLIFY_TOKEN o SITE_URL en el entorno production (docs/DESPLIEGUE.md §5)."
           fi
 
+      - name: Fijar imágenes al SHA aprobado
+        if: steps.coolify.outputs.listo == 'true'
+        env:
+          RELEASE_SHA: ${{ needs.verificar.outputs.sha }}
+          RELEASE_SSH_KEY: ${{ secrets.COOLIFY_RELEASE_SSH_KEY }}
+          RELEASE_SSH_HOST_KEY: ${{ secrets.COOLIFY_RELEASE_HOST_KEY }}
+          RELEASE_SSH_HOST: ${{ vars.COOLIFY_RELEASE_HOST }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/verify-release.mjs
+          test -n "$RELEASE_SSH_KEY" && test -n "$RELEASE_SSH_HOST_KEY" && test -n "$RELEASE_SSH_HOST"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$RELEASE_SSH_KEY" > ~/.ssh/release_key
+          chmod 600 ~/.ssh/release_key
+          printf '%s\n' "$RELEASE_SSH_HOST_KEY" > ~/.ssh/known_hosts
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes -i ~/.ssh/release_key "root@$RELEASE_SSH_HOST" "release $RELEASE_SHA"
+          rm ~/.ssh/release_key
+
       - name: Pedir el despliegue a Coolify
         if: steps.coolify.outputs.listo == 'true'
         env:
@@ -197,7 +227,7 @@ jobs:
         if: steps.coolify.outputs.listo == 'true'
         env:
           SITE_URL: ${{ vars.SITE_URL }}
-          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ needs.verificar.outputs.sha }}
         run: |
           test -n "$SITE_URL"
           for attempt in $(seq 1 60); do

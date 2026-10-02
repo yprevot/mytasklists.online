@@ -1,3 +1,4 @@
+import { SensitiveThrottle } from '../../common/throttle/throttle-profiles';
 import {
   Body,
   Controller,
@@ -62,7 +63,19 @@ export class ListsController {
     return { ok: true };
   }
 
+  @Get(':id/invitations')
+  pendingInvitations(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.lists.pendingInvitations(id, user.id);
+  }
+
+  @Delete(':id/invitations/:invitationId')
+  revokeInvitation(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string,
+    @Param('invitationId', ParseUUIDPipe) invitationId: string) {
+    return this.lists.revokeInvitation(id, user.id, invitationId);
+  }
+
   // ── Integrantes ─────────────────────────────────────────────────────
+  @SensitiveThrottle()
   @Post(':id/share')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Comparte la lista con otra persona registrada' })

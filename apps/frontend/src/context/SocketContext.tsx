@@ -10,7 +10,7 @@ import {
 import { io, type Socket } from 'socket.io-client';
 import type { ServerEventName, ServerEvents } from '@lista/contracts';
 import { useAuth } from './AuthContext';
-import { tokenStore } from '../api/client';
+import { tokenStore, refreshSession } from '../api/client';
 import { useToast } from './ToastContext';
 import type { AppNotification } from '../types';
 
@@ -62,8 +62,26 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     });
 
     socket.on('connect', () => setConnected(true));
-    socket.on('disconnect', () => setConnected(false));
-    socket.on('connect_error', () => setConnected(false));
+    let disposed = false;
+    let recovering = false;
+    let lastRecovery = 0;
+    const recover = async () => {
+      if (disposed || recovering || Date.now() - lastRecovery < 5000) return;
+      recovering = true;
+      lastRecovery = Date.now();
+      try {
+        const renewed = await refreshSession();
+        if (renewed && !disposed) socket.connect();
+      } finally { recovering = false; }
+    };
+    socket.on('disconnect', reason => {
+      setConnected(false);
+      if (reason === 'io server disconnect') void recover();
+    });
+    socket.on('connect_error', error => {
+      setConnected(false);
+      if (/token|sesión|session/i.test(error.message)) { socket.disconnect(); void recover(); }
+    });
 
     socket.on('notification', (notification: AppNotification) => {
       setNotifications((current) => [notification, ...current].slice(0, 50));
@@ -83,6 +101,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     force((value) => value + 1);
 
     return () => {
+      disposed = true;
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
