@@ -12,11 +12,13 @@ El registro y las invitaciones escriben un outbox en su transacción. El conteni
 
 ## Identidades y despliegue
 
-`POSTGRES_USER/PASSWORD` inicializan PostgreSQL y se usan exclusivamente en el contenedor transitorio `migrate`. La API usa `APP_DB_USER/PASSWORD`, sin SUPERUSER, CREATEROLE, CREATEDB, REPLICATION, BYPASSRLS ni CREATE de esquema. Tiene CRUD sobre tablas de negocio y acceso a sus secuencias; no tiene acceso a la tabla de migraciones. Las migraciones conceden permisos sobre las nuevas tablas antes de arrancar la API.
+La base sigue el modelo de yunitztech: un único usuario, `POSTGRES_USER/PASSWORD`, propietario de la base. La API lo usa y ejecuta las migraciones al arrancar (`RUN_MIGRATIONS=true`). PostgreSQL y Redis solo están en la red `backend` (`internal: true`) y no publican puertos.
+
+`apps/backend/src/database/run-migrations.ts` y la prueba `SEC-02` corresponden a un rol de aplicación sin privilegios (`APP_DB_USER`). Producción no los usa; quedan como referencia para la revisión pendiente.
 
 `Desplegar` se ejecuta después de `CI` aprobado en main, o manualmente si el SHA ya pasó ese CI. Comprueba la punta actual de main y publica las cinco imágenes con el SHA exacto. Una clave SSH dedicada en `production` (`COOLIFY_RELEASE_SSH_KEY`, `COOLIFY_RELEASE_HOST_KEY`, variable `COOLIFY_RELEASE_HOST`) solo ejecuta `scripts/ops/mytasklists-release.py` mediante comando forzado, sin shell ni forwarding. Este comprueba CI de nuevo y solo cambia `IMAGE_TAG` de MyTaskLists en Coolify. El token existente conserva su permiso de despliegue.
 
-Para rollback se fija explícitamente `IMAGE_TAG` a una revisión anterior validada en Coolify y se redespliega. El comando automático exige la punta de main; un rollback exige la operación administrativa documentada. Las migraciones de esta entrega añaden columnas/tablas y siguen siendo compatibles con la imagen anterior. Mantener los credenciales de aplicación para el próximo avance; nunca reemplazar el volumen PostgreSQL.
+Para rollback se fija explícitamente `IMAGE_TAG` a una revisión anterior validada en Coolify y se redespliega. El comando automático exige la punta de main; un rollback exige la operación administrativa documentada. Las migraciones de esta entrega añaden columnas/tablas y siguen siendo compatibles con la imagen anterior. Nunca reemplazar el volumen PostgreSQL.
 
 ## Copias y retención
 
@@ -25,3 +27,12 @@ La política Restic incluye `/var/lib/docker/volumes/*_item-images/_data`, los v
 ## Dependencias móviles
 
 `uuid` transitivo de Xcode se fija a 11.1.1 y se valida compilando el APK. `node-forge` 1.4.0 continúa afectado por [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv), sin versión corregida publicada al 1 de octubre de 2026. La excepción de herramientas de CI es exacta para ese aviso y caduca el 31 de octubre; otros avisos bloquean CI. No declara corregida la dependencia. El APK directo tiene OTA desactivado. Revisar una publicación corregida antes del vencimiento y ejecutar `node scripts/audit-dependencies.mjs` después de actualizar.
+
+## Pendiente de revisión: aislamiento de red en Coolify
+
+Detectado el 2 de octubre de 2026 y aplazado para revisarlo con calma. Afecta a mytasklists (vps1) y a yunitztech (vps2).
+
+- Coolify 4.3.23 añade la red `<uuid>` de la app, que no es interna, a todos los servicios del compose (`bootstrap/helpers/parsers.php`). No ofrece opción para excluir uno; solo lo evita `network_mode`. Por eso PostgreSQL y Redis comparten red con gateway, frontend, landing y dashboard.
+- Coolify conecta Traefik (`coolify-proxy`) a las redes de las apps, incluida `_backend`, aunque sea `internal: true`. En vps2 ese mismo Traefik está conectado también a Coolify, Authelia, Listmonk, Umami y Stalwart.
+- Desde internet no hay exposición: 5432, 6379 y 3000 están cerrados, y UFW con `DOCKER-USER` solo admite 80/443 hacia contenedores. El riesgo es interno: un contenedor vecino o Traefik comprometidos llegan por red a PostgreSQL y Redis, y solo los separa la contraseña. Con un único usuario propietario, ese acceso tiene todos los privilegios sobre la base.
+- Opciones para evaluar, aplicándolas igual en ambas apps: rol de aplicación sin privilegios (`APP_DB_USER`, ver `run-migrations.ts`); IP fija del backend en `_backend` (`ipv4_address`) y `pg_hba.conf` limitado a esa IP; usuarios ACL en Redis.
