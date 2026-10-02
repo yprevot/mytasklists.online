@@ -53,25 +53,6 @@ services:
       retries: 5
     networks: [frontend]
 
-  migrate:
-    <<: *hardening
-    restart: "no"
-    image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX}-backend:${IMAGE_TAG:?Define IMAGE_TAG con el SHA validado}
-    command: [node, dist/database/run-migrations.js]
-    mem_limit: 256m
-    cpus: 0.5
-    environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-mytasklists}
-      POSTGRES_USER: ${POSTGRES_USER:-lista}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
-      APP_DB_USER: ${APP_DB_USER:?Define APP_DB_USER}
-      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Define APP_DB_PASSWORD}
-    depends_on:
-      postgres: { condition: service_healthy }
-    networks: [backend]
-
   backend:
     <<: *hardening
     image: ${IMAGE_PREFIX:?Define IMAGE_PREFIX}-backend:${IMAGE_TAG:?Define IMAGE_TAG con el SHA validado}
@@ -123,8 +104,8 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-mytasklists}
-      POSTGRES_USER: ${APP_DB_USER:?Define APP_DB_USER}
-      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:?Define APP_DB_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-lista}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:?Define REDIS_PASSWORD}
@@ -141,7 +122,7 @@ services:
       CORS_ORIGINS: ${SITE_URL}
       # Saltos de proxy de confianza: solo el gateway (él ya resuelve la IP real de Traefik)
       TRUST_PROXY: 1
-      RUN_MIGRATIONS: "false"
+      RUN_MIGRATIONS: "true"
       RUN_SEED: "false"
       SWAGGER_ENABLED: "false"
       ALLOW_TIME_TRAVEL: "false"
@@ -183,7 +164,6 @@ services:
       LISTMONK_URL: ${LISTMONK_URL:-}                     # https://news.mytasklists.online
       LISTMONK_LIST_UUID: ${LISTMONK_LIST_UUID:-}
     depends_on:
-      migrate: { condition: service_completed_successfully }
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
     volumes:
